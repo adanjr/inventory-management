@@ -126,8 +126,7 @@ const Manufacturers = () => {
         <EditManufacturerModal
           isOpen={isEditModalOpen}
           onClose={() => setIsEditModalOpen(false)}
-          manufacturer={selectedManufacturer}
-          onEdit={handleEditManufacturer}
+          manufacturerId = {selectedManufacturer.manufacturer_id}        
         />
       )}
     </div>

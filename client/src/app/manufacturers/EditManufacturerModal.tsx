@@ -5,7 +5,7 @@ import Header from "@/app/(components)/Header";
 type EditManufacturerModalProps = {
   isOpen: boolean;
   onClose: () => void;
-  manufacturerId: string | null;
+  manufacturerId: string; 
 };
 
 const EditManufacturerModal = ({ isOpen, onClose, manufacturerId }: EditManufacturerModalProps) => {
