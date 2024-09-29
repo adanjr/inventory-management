@@ -9,7 +9,6 @@ import {
 import { PlusCircleIcon, SearchIcon, PencilIcon, TrashIcon } from "lucide-react";
 import Header from "@/app/(components)/Header";
 import CreateCustomerModal from "./CreateCustomerModal";
-import EditCustomerModal from "./EditCustomerModal";
 import { Customer } from "@/state/api";
 
 const Customers = () => {
@@ -128,13 +127,6 @@ const Customers = () => {
         onClose={() => setIsCreateModalOpen(false)}
         onCreate={handleCreateCustomer}
       />
-      {selectedCustomer && (
-        <EditCustomerModal
-          isOpen={isEditModalOpen}
-          onClose={() => setIsEditModalOpen(false)}
-          customerId={selectedCustomer.id}
-        />
-      )}
     </div>
   );
 };
