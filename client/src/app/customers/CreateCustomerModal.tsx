@@ -3,15 +3,15 @@ import { v4 } from "uuid";
 import Header from "@/app/(components)/Header";
 
 type CustomerFormData = {
-  customer_id: string;
+  id: string;
   name: string;
   email: string;
-  address: string;
-  phone: string;
-  postal_code: string;
-  city: string;
-  state: string;
-  country: string;
+  phone?: string;
+  address?: string;
+  city?: string;
+  state?: string;
+  country?: string;
+  postalCode?: string;
 };
 
 type CreateCustomerModalProps = {
@@ -25,16 +25,16 @@ const CreateCustomerModal = ({
   onClose,
   onCreate,
 }: CreateCustomerModalProps) => {
-  const [formData, setFormData] = useState({
-    customer_id: v4(),
+  const [formData, setFormData] = useState<CustomerFormData>({
+    id: v4(),
     name: "",
     email: "",
     phone: "",
     address: "",
-    postal_code: "",
     city: "",
     state: "",
     country: "",
+    postalCode: "",
   });
 
   const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
@@ -54,8 +54,7 @@ const CreateCustomerModal = ({
   if (!isOpen) return null;
 
   const labelCssStyles = "block text-sm font-medium text-gray-700";
-  const inputCssStyles =
-    "block w-full mb-2 p-2 border-gray-500 border-2 rounded-md";
+  const inputCssStyles = "block w-full mb-2 p-2 border-gray-500 border-2 rounded-md";
 
   return (
     <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-20">
@@ -63,7 +62,7 @@ const CreateCustomerModal = ({
         <Header name="Crear Nuevo Cliente" />
         <form onSubmit={handleSubmit} className="mt-5">
           {/* CUSTOMER NAME */}
-          <label htmlFor="customerName" className={labelCssStyles}>
+          <label htmlFor="name" className={labelCssStyles}>
             Nombre del Cliente
           </label>
           <input
@@ -76,36 +75,35 @@ const CreateCustomerModal = ({
             required
           />
 
-          {/* EMAIL */}
-          <label htmlFor="customerEmail" className={labelCssStyles}>
-            Correo Electrónico
+          {/* CUSTOMER EMAIL */}
+          <label htmlFor="email" className={labelCssStyles}>
+            Email
           </label>
           <input
             type="email"
             name="email"
-            placeholder="Correo Electrónico"
+            placeholder="Email"
             onChange={handleChange}
             value={formData.email}
             className={inputCssStyles}
             required
           />
 
-          {/* PHONE */}
-          <label htmlFor="phoneEmail" className={labelCssStyles}>
-            Telefono
+          {/* CUSTOMER PHONE */}
+          <label htmlFor="phone" className={labelCssStyles}>
+            Teléfono
           </label>
           <input
-            type="phone"
+            type="text"
             name="phone"
-            placeholder="Telefono"
+            placeholder="Teléfono"
             onChange={handleChange}
             value={formData.phone}
             className={inputCssStyles}
-            required
           />
 
-          {/* ADDRESS */}
-          <label htmlFor="customerAddress" className={labelCssStyles}>
+          {/* CUSTOMER ADDRESS */}
+          <label htmlFor="address" className={labelCssStyles}>
             Dirección
           </label>
           <input
@@ -117,21 +115,8 @@ const CreateCustomerModal = ({
             className={inputCssStyles}
           />
 
-          {/* POSTAL CODE */}
-          <label htmlFor="customerPostalCode" className={labelCssStyles}>
-            Código Postal
-          </label>
-          <input
-            type="text"
-            name="postal_code"
-            placeholder="Código Postal"
-            onChange={handleChange}
-            value={formData.postal_code}
-            className={inputCssStyles}
-          />
-
-          {/* CITY */}
-          <label htmlFor="customerCity" className={labelCssStyles}>
+          {/* CUSTOMER CITY */}
+          <label htmlFor="city" className={labelCssStyles}>
             Ciudad
           </label>
           <input
@@ -143,8 +128,8 @@ const CreateCustomerModal = ({
             className={inputCssStyles}
           />
 
-          {/* STATE */}
-          <label htmlFor="customerState" className={labelCssStyles}>
+          {/* CUSTOMER STATE */}
+          <label htmlFor="state" className={labelCssStyles}>
             Estado
           </label>
           <input
@@ -156,8 +141,8 @@ const CreateCustomerModal = ({
             className={inputCssStyles}
           />
 
-          {/* COUNTRY */}
-          <label htmlFor="customerCountry" className={labelCssStyles}>
+          {/* CUSTOMER COUNTRY */}
+          <label htmlFor="country" className={labelCssStyles}>
             País
           </label>
           <input
@@ -169,7 +154,20 @@ const CreateCustomerModal = ({
             className={inputCssStyles}
           />
 
-          {/* CREATE ACTIONS */}
+          {/* CUSTOMER POSTAL CODE */}
+          <label htmlFor="postalCode" className={labelCssStyles}>
+            Código Postal
+          </label>
+          <input
+            type="text"
+            name="postalCode"
+            placeholder="Código Postal"
+            onChange={handleChange}
+            value={formData.postalCode}
+            className={inputCssStyles}
+          />
+
+          {/* ACTIONS */}
           <button
             type="submit"
             className="mt-4 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-700"
