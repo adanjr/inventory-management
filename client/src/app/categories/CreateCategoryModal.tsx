@@ -3,15 +3,9 @@ import { v4 } from "uuid";
 import Header from "@/app/(components)/Header";
 
 type CategoryFormData = {
-  category_id: string;
+  categoryId: string;
   name: string;
   description: string;
-  address: string;
-  phone: string;
-  postal_code: string;
-  city: string;
-  state: string;
-  country: string;
 };
 
 type CreateCategoryModalProps = {
@@ -29,12 +23,6 @@ const CreateCategoryModal = ({
     category_id: v4(),
     name: "",
     description: "",
-    phone: "",
-    address: "",
-    postal_code: "",
-    city: "",
-    state: "",
-    country: "",
   });
 
   const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
@@ -47,7 +35,12 @@ const CreateCategoryModal = ({
 
   const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    onCreate(formData);
+    const newCategory: CategoryFormData = {
+      categoryId: formData.category_id,
+      name: formData.name,
+      description: formData.description,
+    };
+    onCreate(newCategory);
     onClose();
   };
 
@@ -78,10 +71,10 @@ const CreateCategoryModal = ({
 
           {/* DESCRIPTION */}
           <label htmlFor="categoryDescription" className={labelCssStyles}>
-          Descripcion
+            Descripcion
           </label>
           <input
-            type="description"
+            type="text" // Cambiar a 'text' en vez de 'description'
             name="description"
             placeholder="Descripcion"
             onChange={handleChange}
