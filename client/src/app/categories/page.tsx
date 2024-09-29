@@ -84,7 +84,7 @@ const Categories = () => {
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-10 justify-between">
         {categories.map((category) => (
           <div
-            key={category.category_id}
+            key={category.id}
             className="border shadow rounded-md p-4 max-w-full w-full mx-auto"
           >
             <div className="flex flex-col items-center">
@@ -124,7 +124,7 @@ const Categories = () => {
         <EditCategoryModal
           isOpen={isEditModalOpen}
           onClose={() => setIsEditModalOpen(false)}
-          categoryId={selectedCategory.category_id}
+          categoryId={selectedCategory.id}
         />
       )}
     </div>
