@@ -1,7 +1,11 @@
 "use client";
 
 import { useState } from "react";
-import { useGetManufacturersQuery, useCreateManufacturerMutation, useUpdateManufacturerMutation, useDeleteManufacturerMutation } from "@/state/api";
+import { 
+  useGetManufacturersQuery, 
+  useCreateManufacturerMutation, 
+  useUpdateManufacturerMutation, 
+  useDeleteManufacturerMutation } from "@/state/api";
 import { PlusCircleIcon, SearchIcon, PencilIcon, TrashIcon } from "lucide-react";
 import Header from "@/app/(components)/Header";
 import CreateManufacturerModal from "./CreateManufacturerModal";
@@ -58,7 +62,7 @@ const Manufacturers = () => {
           <SearchIcon className="w-5 h-5 text-gray-500 m-2" />
           <input
             className="w-full py-2 px-4 rounded bg-white"
-            placeholder="Buscar fabricantes..."
+            placeholder="Buscar Marcas..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />
@@ -67,13 +71,13 @@ const Manufacturers = () => {
 
       {/* HEADER BAR */}
       <div className="flex justify-between items-center mb-6">
-        <Header name="Fabricantes" />
+        <Header name="Marcas" />
         <button
           className="flex items-center bg-blue-500 hover:bg-blue-700 text-gray-200 font-bold py-2 px-4 rounded"
           onClick={() => setIsCreateModalOpen(true)}
         >
           <PlusCircleIcon className="w-5 h-5 mr-2 !text-gray-200" /> Crear
-          Fabricante
+          Marcas
         </button>
       </div>
 
@@ -88,10 +92,10 @@ const Manufacturers = () => {
               <h3 className="text-lg text-gray-900 font-semibold">
                 {manufacturer.name}
               </h3>
-              <p className="text-gray-800">Country: {manufacturer.country}</p>
+              <p className="text-gray-800">Pais: {manufacturer.country}</p>
               {manufacturer.contact_info && (
                 <div className="text-sm text-gray-600 mt-1">
-                  Contact: {manufacturer.contact_info}
+                  Contacto: {manufacturer.contact_info}
                 </div>
               )}
               <div className="flex mt-4">

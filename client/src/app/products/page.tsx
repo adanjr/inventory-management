@@ -1,23 +1,29 @@
 "use client";
 
 import { useCreateProductMutation, useGetProductsQuery } from "@/state/api";
-import { PlusCircleIcon, SearchIcon } from "lucide-react";
+import { PlusCircleIcon, SearchIcon, EditIcon } from "lucide-react";
 import { useState } from "react";
 import Header from "@/app/(components)/Header";
 import Rating from "@/app/(components)/Rating";
 import CreateProductModal from "./CreateProductModal";
+import EditProductModal from "./EditProductModal";
 import Image from "next/image";
 
 type ProductFormData = {
   name: string;
+  description: string;
   price: number;
   stockQuantity: number;
   rating: number;
+  categoryId: number;
+  isSerialized: boolean;
 };
 
 const Products = () => {
   const [searchTerm, setSearchTerm] = useState("");
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [selectedProduct, setSelectedProduct] = useState<ProductFormData | null>(null);
 
   const {
     data: products,
@@ -26,8 +32,21 @@ const Products = () => {
   } = useGetProductsQuery(searchTerm);
 
   const [createProduct] = useCreateProductMutation();
+  
   const handleCreateProduct = async (productData: ProductFormData) => {
     await createProduct(productData);
+    setIsCreateModalOpen(false);
+  };
+
+  const handleEditProductClick = (product: ProductFormData) => {
+    setSelectedProduct(product);
+    setIsEditModalOpen(true);
+  };
+
+  const handleUpdateProduct = (productId: string, updatedData: ProductFormData) => {
+    // Aquí puedes actualizar la lista de productos o ejecutar cualquier lógica adicional.
+    console.log(`Product with ID ${productId} was updated`, updatedData);
+    // También puedes volver a obtener los productos o modificar el estado de los productos.
   };
 
   if (isLoading) {
@@ -62,7 +81,7 @@ const Products = () => {
         <Header name="Productos" />
         <button
           className="flex items-center bg-blue-500 hover:bg-blue-700 text-gray-200 font-bold py-2 px-4 rounded"
-          onClick={() => setIsModalOpen(true)}
+          onClick={() => setIsCreateModalOpen(true)}
         >
           <PlusCircleIcon className="w-5 h-5 mr-2 !text-gray-200" /> Crear
           Producto
@@ -101,18 +120,33 @@ const Products = () => {
                     <Rating rating={product.rating} />
                   </div>
                 )}
+                {/* Edit Button */}
+                <button
+                  className="mt-4 flex items-center bg-yellow-500 hover:bg-yellow-700 text-gray-200 font-bold py-1 px-3 rounded"
+                  onClick={() => handleEditProductClick(product)}
+                >
+                  <EditIcon className="w-5 h-5 mr-2 !text-gray-200" /> Editar
+                </button>
               </div>
             </div>
           ))
         )}
       </div>
 
-      {/* MODAL */}
+      {/* MODALS */}
       <CreateProductModal
-        isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
+        isOpen={isCreateModalOpen}
+        onClose={() => setIsCreateModalOpen(false)}
         onCreate={handleCreateProduct}
       />
+      {selectedProduct && (
+        <EditProductModal
+          isOpen={isEditModalOpen}
+          onClose={() => setIsEditModalOpen(false)}
+          product={selectedProduct}
+          onUpdate={handleUpdateProduct}
+        />
+      )}
     </div>
   );
 };

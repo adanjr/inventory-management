@@ -14,39 +14,340 @@ datasource db {
 }
 
 model Users {
-  userId String @id
-  name   String
-  email  String
+  userId           String      @id @default(uuid())
+  name             String
+  email            String      @unique
+  password         String
+  roles            UserRole[]
+  locations_managed Locations[]
+}
+
+model Roles {
+  roleId        String          @id @default(uuid())
+  name          String          @unique
+  users         UserRole[]      // Relación con la tabla intermedia UserRole
+  permissions   RolePermission[] // Relación con la tabla intermedia RolePermission
+}
+
+model Permissions {
+  permissionId String           @id @default(uuid())
+  name         String           @unique
+  description  String?
+  roles        RolePermission[] // Relación con la tabla intermedia RolePermission
+}
+
+// Tabla intermedia para User <-> Role
+model UserRole {
+  id        String @id @default(uuid())
+  user      Users  @relation(fields: [userId], references: [userId])
+  userId    String
+  role      Roles  @relation(fields: [roleId], references: [roleId])
+  roleId    String
+
+  @@unique([userId, roleId])
+}
+
+// Tabla intermedia para Role <-> Permission
+model RolePermission {
+  id           String      @id @default(uuid())
+  role         Roles       @relation(fields: [roleId], references: [roleId])
+  roleId       String
+  permission   Permissions @relation(fields: [permissionId], references: [permissionId])
+  permissionId String
+
+  @@unique([roleId, permissionId])
 }
 
 model Products {
-  productId     String      @id
-  name          String
-  price         Float
-  rating        Float?
-  stockQuantity Int
-  Sales         Sales[]
-  Purchases     Purchases[]
+  productId          Int      @id @default(autoincrement())
+  name               String
+  description        String?
+  price              Float
+  rating             Float?
+  stockQuantity      Int
+  category           Categories  @relation(fields: [categoryId], references: [categoryId])
+  categoryId         Int
+  manufacturer       Manufacturers  @relation(fields: [manufacturerId], references: [manufacturerId])
+  manufacturerId     Int
+  mainImageUrl       String?      
+  additionalImages   String[]   
+  inventoryLocations InventoryLocations[]
+  saleDetails        SaleDetails[]
+  purchaseDetails    PurchaseDetails[]
+  movements          Movements[]     
+}
+
+model Categories {
+  categoryId   Int          @id @default(autoincrement())
+  name         String
+  description  String
+  products     Products[]     
+}
+
+model Manufacturers {
+  manufacturerId  Int        @id @default(autoincrement())
+  name            String
+  country         String
+  contact_info    String?
+  products     Products[] 
+}
+
+model Vehicles {
+  vehicleId        Int            @id @default(autoincrement())
+  vin              String?        @unique // Vehicle Identification Number (opcional para motocicletas)
+  internal_serial  String?        @unique
+  vehicleType      VehicleTypes   @relation(fields: [vehicleTypeId], references: [vehicleTypeId])
+  vehicleTypeId    Int            // Identifica si es un coche o una motocicleta
+  make             Makes          @relation(fields: [makeId], references: [makeId])
+  makeId           Int            // Marca del vehículo
+  model            Models         @relation(fields: [modelId], references: [modelId])
+  modelId          Int            // Modelo del vehículo
+  year             Int            // Año de fabricación
+  color            Colors         @relation(fields: [colorId], references: [colorId])
+  colorId          Int            // Color del vehículo
+  engineType       EngineTypes    @relation(fields: [engineTypeId], references: [engineTypeId])
+  engineTypeId     Int            // Tipo de motor
+  fuelType         FuelTypes?     @relation(fields: [fuelTypeId], references: [fuelTypeId])
+  fuelTypeId       Int?           // Solo aplica para vehículos que no sean completamente eléctricos
+  transmission     Transmissions  @relation(fields: [transmissionId], references: [transmissionId])
+  transmissionId   Int            // Transmisión
+  mileage          Float          // Kilometraje del vehículo
+  batteryCapacity  Float?         // Capacidad de la batería en kWh (opcional, solo para eléctricos)
+  range            Float?         // Autonomía del vehículo en km (solo para eléctricos)
+  wheelCount       Int            // Número de ruedas (4 para autos, 2 para motocicletas)
+  price            Float          // Precio de venta del vehículo
+  status           VehicleStatus  @relation(fields: [statusId], references: [statusId])
+  statusId         Int            // Estado del vehículo
+  stockNumber      String         @unique // Número de inventario interno
+  barcode          String?        @unique // Código de barras único (opcional, para inventario)
+  qrCode           String?        @unique // Código QR único (opcional, para inventario)
+  description      String?        // Descripción del vehículo (opcional)
+  mainImageUrl     String?      
+  additionalImages String[]  
+  lastAuditDate    DateTime?      // Fecha de la última auditoría de inventario
+  createdAt        DateTime?       @default(now())
+  updatedAt        DateTime?       @updatedAt
+  auditLogs        AuditLogs[]    // Relación con registros de auditoría
+  vehicleInventoryLocations VehicleInventoryLocations[]  
+  saleDetail       SaleDetails[]
+  purchaseDetail   PurchaseDetails[]
+  movements        Movements[] 
+}
+
+model VehicleTypes {
+  vehicleTypeId Int         @id @default(autoincrement())
+  name          String      @unique  // Ejemplo: "Automóvil", "Motocicleta"
+  vehicles      Vehicles[]
+}
+
+model Makes {
+  makeId   Int      @id @default(autoincrement())
+  name     String   @unique
+  country  String?   
+  website  String?
+  phone    String?
+  mail     String?
+  vehicles Vehicles[]
+  models   Models[]
+}
+
+model Models {
+  modelId            Int      @id @default(autoincrement())
+  name               String   @unique
+  make               Makes    @relation(fields: [makeId], references: [makeId])
+  makeId             Int      // Marca del vehículo
+  year_start         String?   
+  year_end           String?
+  type               String?
+  battery_capacity   Float?   // Capacidad de batería en kWh (para eléctricos)
+  electric_range     Float?   // Rango en km para vehículos eléctricos
+  vehicles   Vehicles[]
+}
+
+model Colors {
+  colorId  Int        @id @default(autoincrement())
+  name     String     @unique
+  vehicles Vehicles[]
+}
+
+model EngineTypes {
+  engineTypeId Int        @id @default(autoincrement())
+  name         String     @unique
+  description  String?    // Descripción opcional del tipo de motor
+  vehicles     Vehicles[]
+}
+
+model FuelTypes {
+  fuelTypeId Int        @id @default(autoincrement())
+  name       String     @unique // Ejemplo: "Gasolina", "Diésel", "Eléctrico"
+  vehicles   Vehicles[]
+}
+
+model Transmissions {
+  transmissionId Int        @id @default(autoincrement())
+  type           String     @unique  // Tipo de transmisión
+  vehicles       Vehicles[]
+}
+
+model VehicleStatus {
+  statusId Int        @id @default(autoincrement())
+  name     String     @unique // Estado del vehículo
+  vehicles Vehicles[]
 }
 
 model Sales {
-  saleId      String   @id
-  productId   String
+  saleId      Int           @id @default(autoincrement())   
   timestamp   DateTime
   quantity    Int
   unitPrice   Float
   totalAmount Float
-  product     Products @relation(fields: [productId], references: [productId])
+  customer    Customers?    @relation(fields: [customerId], references: [customerId])
+  customerId  Int?
+  saleDetails SaleDetails[]
+}
+
+model SaleDetails {
+  saleDetailId  Int         @id @default(autoincrement())
+  sale          Sales       @relation(fields: [saleId], references: [saleId])
+  saleId        Int         
+  product       Products?   @relation(fields: [productId], references: [productId])
+  productId     Int?      
+  vehicle       Vehicles?   @relation(fields: [vehicleId], references: [vehicleId])  
+  vehicleId     Int?       
+  quantity      Int        
+  unitPrice     Float
+  subtotal      Float
+}
+
+model Locations {
+  locationId        Int         @id @default(autoincrement())
+  name              String
+  type              String      // "branch" para sucursales, "warehouse" para bodegas
+  address           String?
+  postalCode        String?     // Código postal opcional
+  city              String?     // Ciudad opcional
+  state             String?     // Estado opcional
+  country           String?     // País opcional
+  created_at        DateTime    @default(now())
+  manager           Users?      @relation(fields: [managerId], references: [userId]) // Relación con User
+  managerId         String?
+  latitude          Float?      // Coordenada de latitud para geolocalización
+  longitude         Float?      // Coordenada de longitud para geolocalización  
+  mainImageUrl     String?      
+  additionalImages String[]       
+  inventoryLocation InventoryLocations[]
+  unitLocation      VehicleInventoryLocations[]
+  movementFrom      Movements[] @relation("MovementFrom")
+  movementTo        Movements[] @relation("MovementTo")
+}
+
+model InventoryLocations {
+  inventoryLocationId Int       @id @default(autoincrement())
+  product             Products? @relation(fields: [productId], references: [productId])
+  productId           Int?      
+  location            Locations @relation(fields: [locationId], references: [locationId])
+  locationId          Int   
+  quantity_in_stock   Int?
+  last_updated_at     DateTime @updatedAt
+}
+
+model VehicleInventoryLocations {
+  vehicleInventoryLocationId   Int        @id @default(autoincrement())
+  vehicle                      Vehicles?  @relation(fields: [vehicleId], references: [vehicleId])  
+  vehicleId                    Int?      
+  location                     Locations  @relation(fields: [locationId], references: [locationId])
+  locationId                   Int       
+  status                       String     // Estado de la unidad (disponible, en tránsito, etc.)
+  lastUpdatedAt                DateTime   @updatedAt
+}
+
+model Movements {
+  movementId      Int         @id @default(autoincrement())
+  product         Products?   @relation(fields: [productId], references: [productId])
+  productId       Int?   
+  vehicles        Vehicles?   @relation(fields: [vehicleId], references: [vehicleId])
+  vehicleId       Int?       
+  fromLocation    Locations   @relation("MovementFrom", fields: [fromLocationId], references: [locationId])
+  fromLocationId  Int       
+  toLocation      Locations   @relation("MovementTo", fields: [toLocationId], references: [locationId])
+  toLocationId    Int  
+  quantity        Int?        // Solo para productos sin número de serie
+  movementType    String      // "entry", "exit", "transfer"
+  movementDate    DateTime    @default(now())
+  status          String      // Estado del movimiento (completed, in transit)
+  notes           String?
+  lastUpdatedAt   DateTime    @updatedAt
+}
+
+model Customers {
+  customerId   Int      @id @default(autoincrement())
+  name         String
+  email        String   @unique
+  phone        String
+  address      String?  // Dirección opcional
+  postalCode   String?  // Código postal opcional
+  city         String?  // Ciudad opcional
+  state        String?  // Estado opcional
+  country      String?  // País opcional
+  mainImageUrl String?
+  sales        Sales[]
+  createdAt    DateTime @default(now())  
+}
+
+model Suppliers {
+  supplierId    Int      @id @default(autoincrement())
+  name          String
+  address       String?
+  postalCode    String?
+  city          String?
+  state         String?
+  country       String?
+  email         String?
+  phone         String?
+  mainImageUrl  String?
+  createdAt     DateTime @default(now())
+  purchase      Purchases[]
 }
 
 model Purchases {
-  purchaseId String   @id
-  productId  String
-  timestamp  DateTime
-  quantity   Int
-  unitCost   Float
-  totalCost  Float
-  product    Products @relation(fields: [productId], references: [productId])
+  purchaseId      Int        @id @default(autoincrement())  
+  timestamp       DateTime
+  quantity        Int
+  unitCost        Float
+  totalCost       Float
+  supplier        Suppliers? @relation(fields: [supplierId], references: [supplierId])
+  supplierId      Int?
+  purchaseDetails PurchaseDetails[]
+}
+
+model PurchaseDetails {
+  purchaseDetailId  Int         @id @default(autoincrement())
+  purchase          Purchases   @relation(fields: [purchaseId], references: [purchaseId])
+  purchaseId        Int       
+  product           Products    @relation(fields: [productId], references: [productId])
+  productId         Int
+  vehicles          Vehicles?   @relation(fields: [vehicleId], references: [vehicleId])
+  vehicleId         Int?        
+  quantity          Int        // Para productos sin número de serie
+  unitPrice         Float
+  subtotal          Float
+}
+
+model AuditLogs {
+  auditLogId    Int        @id @default(autoincrement())
+  vehicle       Vehicles   @relation(fields: [vehicleId], references: [vehicleId])
+  vehicleId     Int         // Relación con el vehículo auditado
+  auditDate     DateTime    // Fecha de la auditoría
+  auditType     AuditTypes  @relation(fields: [auditTypeId], references: [auditTypeId])
+  auditTypeId   Int 
+  notes         String?     // Notas de la auditoría
+  createdAt     DateTime    @default(now())
+}
+
+model AuditTypes {
+  auditTypeId   Int         @id @default(autoincrement())
+  name          String      @unique // Ejemplo: "Inventario Físico", "Ajuste de Inventario", "Auditoría General"
+  auditLogs     AuditLogs[]
 }
 
 model Expenses {
@@ -86,9 +387,6 @@ model ExpenseByCategory {
   expenseSummary      ExpenseSummary @relation(fields: [expenseSummaryId], references: [expenseSummaryId])
 }
 
-model Manufacturer {
-  manufacturer_id String         @id
-  name            String
-  country         String
-  contact_info    String?
-}
+
+
+

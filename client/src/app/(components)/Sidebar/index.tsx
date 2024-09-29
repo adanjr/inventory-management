@@ -4,19 +4,25 @@ import { useAppDispatch, useAppSelector } from "@/app/redux";
 import { setIsSidebarCollapsed } from "@/state";
 import {
   Archive,
+  Boxes,
+  Car,
   CircleDollarSign,
   Clipboard,
+  Copyright,
+  Building,
   Factory,
   Layout,
   LucideIcon,
-  Menu,
+  Map,
+  Menu,  
   SlidersHorizontal,
+  SquareUser,
   User,
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import React from "react";
+import React, { useState } from "react";
 
 interface SidebarLinkProps {
   href: string;
@@ -66,9 +72,40 @@ const Sidebar = () => {
     (state) => state.global.isSidebarCollapsed
   );
 
+  const [filterText, setFilterText] = useState(""); // Estado del filtro de búsqueda
+
   const toggleSidebar = () => {
     dispatch(setIsSidebarCollapsed(!isSidebarCollapsed));
   };
+
+  // Lista de enlaces que aparecen en el sidebar
+  const sidebarLinks = [
+    { href: "/dashboard", icon: Layout, label: "Dashboard" },
+    { href: "/inventory", icon: Archive, label: "Inventario" },
+    { href: "/manufacturers", icon: Copyright, label: "Marcas" },
+    { href: "/categories", icon: Boxes, label: "Categorias" },
+    { href: "/products", icon: Clipboard, label: "Productos" },
+    { href: "/colors", icon: Boxes, label: "Colores" },
+    { href: "/engineTypes", icon: Boxes, label: "Tipos de Motor" },
+    { href: "/fuelTypes", icon: Boxes, label: "Tipos de Combustible" },
+    { href: "/makes", icon: Factory, label: "Fabricantes" },
+    { href: "/models", icon: Boxes, label: "Modelos" },
+    { href: "/transmissions", icon: Boxes, label: "Tipos de Transmision" },
+    { href: "/vehicleStatus", icon: Boxes, label: "Estatus de Vehiculo" },
+    { href: "/vehicleTypes", icon: Boxes, label: "Tipos de Vehiculo" },
+    { href: "/vehicles", icon: Car, label: "Vehiculos" },
+    { href: "/customers", icon: SquareUser, label: "Clientes" },
+    { href: "/suppliers", icon: Building, label: "Proveedores" },
+    { href: "/locations", icon: Map, label: "Suc/Almacenes" },
+    { href: "/users", icon: User, label: "Usuarios" },
+    { href: "/settings", icon: SlidersHorizontal, label: "Configuracion" },
+    { href: "/expenses", icon: CircleDollarSign, label: "Gastos" },
+  ];
+
+  // Filtrar enlaces según el texto de búsqueda
+  const filteredLinks = sidebarLinks.filter((link) =>
+    link.label.toLowerCase().includes(filterText.toLowerCase())
+  );
 
   const sidebarClassNames = `fixed flex flex-col ${
     isSidebarCollapsed ? "w-0 md:w-16" : "w-72 md:w-64"
@@ -105,50 +142,30 @@ const Sidebar = () => {
         </button>
       </div>
 
+      {/* SEARCH INPUT */}
+      {!isSidebarCollapsed && (
+        <div className="px-8 mt-4">
+          <input
+            type="text"
+            placeholder="Buscar..."
+            className="w-full p-2 border border-gray-300 rounded-md"
+            value={filterText}
+            onChange={(e) => setFilterText(e.target.value)}
+          />
+        </div>
+      )}
+
       {/* LINKS */}
-      <div className="flex-grow mt-8">
-        <SidebarLink
-          href="/dashboard"
-          icon={Layout}
-          label="Dashboard"
-          isCollapsed={isSidebarCollapsed}
-        />
-        <SidebarLink
-          href="/inventory"
-          icon={Archive}
-          label="Inventario"
-          isCollapsed={isSidebarCollapsed}
-        />
-        <SidebarLink
-          href="/manufacturers"
-          icon={Factory}
-          label="Fabricantes"
-          isCollapsed={isSidebarCollapsed}
-        />
-        <SidebarLink
-          href="/products"
-          icon={Clipboard}
-          label="Productos"
-          isCollapsed={isSidebarCollapsed}
-        />
-        <SidebarLink
-          href="/users"
-          icon={User}
-          label="Usuarios"
-          isCollapsed={isSidebarCollapsed}
-        />
-        <SidebarLink
-          href="/settings"
-          icon={SlidersHorizontal}
-          label="Configuracion"
-          isCollapsed={isSidebarCollapsed}
-        />
-        <SidebarLink
-          href="/expenses"
-          icon={CircleDollarSign}
-          label="Gastos"
-          isCollapsed={isSidebarCollapsed}
-        />
+      <div className="flex-grow mt-4 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-400 scrollbar-track-gray-200">
+        {filteredLinks.map((link) => (
+          <SidebarLink
+            key={link.href}
+            href={link.href}
+            icon={link.icon}
+            label={link.label}
+            isCollapsed={isSidebarCollapsed}
+          />
+        ))}
       </div>
 
       {/* FOOTER */}

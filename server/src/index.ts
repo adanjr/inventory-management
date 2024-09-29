@@ -10,6 +10,19 @@ import productRoutes from "./routes/productRoutes";
 import userRoutes from "./routes/userRoutes";
 import expenseRoutes from "./routes/expenseRoutes";
 import manufacturerRoutes from "./routes/manufacturerRoutes";
+import customerRoutes from "./routes/customerRoutes";
+import supplierRoutes from "./routes/supplierRoutes";
+import categoryRoutes from "./routes/categoryRoutes";
+import locationRoutes from "./routes/locationRoutes";
+import vehicleTypeRoutes from "./routes/vehicleTypeRoutes"; // Rutas para VehicleTypes
+import makeRoutes from "./routes/makeRoutes"; // Rutas para Makes
+import modelRoutes from "./routes/modelRoutes"; // Rutas para Models
+import colorRoutes from "./routes/colorRoutes"; // Rutas para Colors
+import engineTypeRoutes from "./routes/engineTypeRoutes"; // Rutas para EngineTypes
+import fuelTypeRoutes from "./routes/fuelTypeRoutes"; // Rutas para FuelTypes
+import transmissionRoutes from "./routes/transmissionRoutes"; // Rutas para Transmissions
+import vehicleStatusRoutes from "./routes/vehicleStatusRoutes"; // Rutas para VehicleStatus
+import vehicleRoutes from "./routes/vehicleRoutes"; // Rutas para Vehicles
 
 /* CONFIGURATIONS */
 dotenv.config();
@@ -28,6 +41,19 @@ app.use("/products", productRoutes); // http://localhost:8000/products
 app.use("/users", userRoutes); // http://localhost:8000/users
 app.use("/expenses", expenseRoutes); // http://localhost:8000/expenses
 app.use("/manufacturers", manufacturerRoutes); // http://localhost:8000/manufacturers
+app.use("/customers", customerRoutes); // http://localhost:8000/customers
+app.use("/suppliers", supplierRoutes); // http://localhost:8000/suppliers
+app.use("/categories", categoryRoutes); // http://localhost:8000/categories
+app.use("/locations", locationRoutes); // http://localhost:8000/locations
+app.use("/vehicle-types", vehicleTypeRoutes); // http://localhost:8000/vehicle-types
+app.use("/makes", makeRoutes); // http://localhost:8000/makes
+app.use("/models", modelRoutes); // http://localhost:8000/models
+app.use("/colors", colorRoutes); // http://localhost:8000/colors
+app.use("/engine-types", engineTypeRoutes); // http://localhost:8000/engine-types
+app.use("/fuel-types", fuelTypeRoutes); // http://localhost:8000/fuel-types
+app.use("/transmissions", transmissionRoutes); // http://localhost:8000/transmissions
+app.use("/vehicle-status", vehicleStatusRoutes); // http://localhost:8000/vehicle-status
+app.use("/vehicles", vehicleRoutes); // http://localhost:8000/vehicles
 
 /* SERVER */
 const port = Number(process.env.PORT) || 3001;
