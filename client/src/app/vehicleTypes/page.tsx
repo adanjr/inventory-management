@@ -10,7 +10,7 @@ import {
 import { PlusCircleIcon, SearchIcon, PencilIcon, TrashIcon } from "lucide-react";
 import Header from "@/app/(components)/Header";
 import CreateVehicleTypeModal from "./CreateVehicleTypeModal";
-import EditVehicleTypeModal from "./EditVehicleTypeModal";
+
 import { VehicleType } from "@/state/api";
 
 const VehicleTypes = () => {
@@ -30,13 +30,7 @@ const VehicleTypes = () => {
     setIsCreateModalOpen(false);
   };
 
-  const handleEditVehicleType = async (vehicleTypeId: string, updatedData: Partial<VehicleType>) => {
-    if (vehicleTypeId) {
-      await updateVehicleType({ id: vehicleTypeId, data: updatedData });
-      setIsEditModalOpen(false);
-    }
-  };
-
+ 
   const handleDeleteVehicleType = async (vehicleTypeId: string) => {
     if (vehicleTypeId) {
       await deleteVehicleType(vehicleTypeId);
@@ -120,13 +114,7 @@ const VehicleTypes = () => {
         onClose={() => setIsCreateModalOpen(false)}
         onCreate={handleCreateVehicleType}
       />
-      {selectedVehicleType && (
-        <EditVehicleTypeModal
-          isOpen={isEditModalOpen}
-          onClose={() => setIsEditModalOpen(false)}
-          vehicleTypeId={selectedVehicleType.vehicleTypeId}
-        />
-      )}
+       
     </div>
   );
 };

@@ -5,12 +5,13 @@ import {
   useGetTransmissionsQuery,
   useCreateTransmissionMutation,
   useUpdateTransmissionMutation,
-  useDeleteTransmissionMutation,
+  useDeleteTransmissionMutation,  
+  NewTransmission,
 } from "@/state/api";
 import { PlusCircleIcon, SearchIcon, PencilIcon, TrashIcon } from "lucide-react";
 import Header from "@/app/(components)/Header";
 import CreateTransmissionModal from "./CreateTransmissionModal";
-import EditTransmissionModal from "./EditTransmissionModal";
+
 import { Transmission } from "@/state/api";
 
 const Transmissions = () => {
@@ -25,17 +26,12 @@ const Transmissions = () => {
   const [updateTransmission] = useUpdateTransmissionMutation();
   const [deleteTransmission] = useDeleteTransmissionMutation();
 
-  const handleCreateTransmission = async (transmissionData: Transmission) => {
+  const handleCreateTransmission = async (transmissionData: NewTransmission) => {
     await createTransmission(transmissionData);
     setIsCreateModalOpen(false);
   };
 
-  const handleEditTransmission = async (transmissionId: string, updatedData: Partial<Transmission>) => {
-    if (transmissionId) {
-      await updateTransmission({ id: transmissionId, data: updatedData });
-      setIsEditModalOpen(false);
-    }
-  };
+   
 
   const handleDeleteTransmission = async (transmissionId: string) => {
     if (transmissionId) {
@@ -120,13 +116,7 @@ const Transmissions = () => {
         onClose={() => setIsCreateModalOpen(false)}
         onCreate={handleCreateTransmission}
       />
-      {selectedTransmission && (
-        <EditTransmissionModal
-          isOpen={isEditModalOpen}
-          onClose={() => setIsEditModalOpen(false)}
-          transmissionId={selectedTransmission.transmissionId}
-        />
-      )}
+      
     </div>
   );
 };

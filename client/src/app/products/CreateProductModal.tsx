@@ -10,6 +10,7 @@ type ProductFormData = {
   stockQuantity: number;
   rating: number;
   categoryId: string;
+  manufacturerId: string;
   isSerialized: boolean;  
 };
 
@@ -34,6 +35,7 @@ const CreateProductModal = ({
     stockQuantity: 0,
     rating: 0,
     categoryId: "",
+    manufacturerId: "",
     isSerialized: false,
   });
 
@@ -81,7 +83,7 @@ const CreateProductModal = ({
               {isCategoriesLoading ? "Cargando categorías..." : "Selecciona una categoría"}
             </option>
             {categories.map((category) => (
-              <option key={category.category_id} value={category.category_id}>
+              <option key={category.categoryId} value={category.categoryId}>
                 {category.name}
               </option>
             ))}

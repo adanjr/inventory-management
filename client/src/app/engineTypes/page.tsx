@@ -10,7 +10,6 @@ import {
 import { PlusCircleIcon, SearchIcon, PencilIcon, TrashIcon } from "lucide-react";
 import Header from "@/app/(components)/Header";
 import CreateEngineTypeModal from "./CreateEngineTypeModal";
-import EditEngineTypeModal from "./EditEngineTypeModal";
 import { EngineType } from "@/state/api";
 
 const EngineTypes = () => {
@@ -30,12 +29,7 @@ const EngineTypes = () => {
     setIsCreateModalOpen(false);
   };
 
-  const handleEditEngineType = async (engineTypeId: string, updatedData: Partial<EngineType>) => {
-    if (engineTypeId) {
-      await updateEngineType({ id: engineTypeId, data: updatedData });
-      setIsEditModalOpen(false);
-    }
-  };
+   
 
   const handleDeleteEngineType = async (engineTypeId: string) => {
     if (engineTypeId) {
@@ -120,13 +114,7 @@ const EngineTypes = () => {
         onClose={() => setIsCreateModalOpen(false)}
         onCreate={handleCreateEngineType}
       />
-      {selectedEngineType && (
-        <EditEngineTypeModal
-          isOpen={isEditModalOpen}
-          onClose={() => setIsEditModalOpen(false)}
-          engineTypeId={selectedEngineType.engineTypeId}
-        />
-      )}
+       
     </div>
   );
 };

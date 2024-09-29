@@ -9,7 +9,7 @@ import {
 import { PlusCircleIcon, SearchIcon, PencilIcon, TrashIcon } from "lucide-react";
 import Header from "@/app/(components)/Header";
 import CreateManufacturerModal from "./CreateManufacturerModal";
-import EditManufacturerModal from "./EditManufacturerModal";
+ 
 import { Manufacturer } from "@/state/api";
 
 const Manufacturers = () => {
@@ -28,13 +28,7 @@ const Manufacturers = () => {
     await createManufacturer(manufacturerData);
     setIsCreateModalOpen(false);
   };
-
-  const handleEditManufacturer = async (manufacturerId: string, updatedData: Partial<Manufacturer>) => {
-    if (manufacturerId) {
-      await updateManufacturer({ id: manufacturerId, data: updatedData });
-      setIsEditModalOpen(false);
-    }
-  };
+ 
 
   const handleDeleteManufacturer = async (manufacturerId: string) => {
     if (manufacturerId) {
@@ -126,13 +120,7 @@ const Manufacturers = () => {
         onClose={() => setIsCreateModalOpen(false)}
         onCreate={handleCreateManufacturer}
       />
-      {selectedManufacturer && (
-        <EditManufacturerModal
-          isOpen={isEditModalOpen}
-          onClose={() => setIsEditModalOpen(false)}
-          manufacturerId = {selectedManufacturer.manufacturer_id}        
-        />
-      )}
+       
     </div>
   );
 };

@@ -12,7 +12,7 @@ import {
 import { PlusCircleIcon, SearchIcon, PencilIcon, TrashIcon } from "lucide-react";
 import Header from "@/app/(components)/Header";
 import CreateModelModal from "./CreateModelModal";
-import EditModelModal from "./EditModelModal";
+ 
 import { Model } from "@/state/api";
 
 const Models = () => {
@@ -33,29 +33,18 @@ const Models = () => {
       // Convierte los valores a los tipos correctos
       const modelData = {
         ...newModelData,
-        battery_capacity: parseFloat(newModelData.battery_capacity || "0"),
-        electric_range: parseFloat(newModelData.electric_range || "0"),
-        makeId: parseInt(newModelData.makeId, 10), // Si makeId debería ser un número
+        battery_capacity: newModelData.battery_capacity,
+        electric_range: newModelData.electric_range,
+        makeId: newModelData.makeId, // Si makeId debería ser un número
       };
-  
-      console.log("Creating model with data:", modelData); // Log para depuración
+       
       await createModel(modelData).unwrap();
       setIsCreateModalOpen(false);
     } catch (error) {
       console.error("Failed to create model:", error);
     }
   };
-
-  const handleEditModel = async (modelId: string, updatedData: Partial<Model>) => {
-    if (modelId) {
-      try {
-        await updateModel({ id: modelId, data: updatedData }).unwrap();
-        setIsEditModalOpen(false);
-      } catch (error) {
-        console.error("Failed to update model:", error);
-      }
-    }
-  };
+ 
 
   const handleDeleteModel = async (modelId: string) => {
     if (modelId) {
@@ -117,7 +106,7 @@ const Models = () => {
                 {model.name}
               </h3>
               {model.makeId && (
-                <p className="text-gray-600">Fabricante: {model.make.name}</p>
+                <p className="text-gray-600">Fabricante: {model.make?.name}</p>
               )}
               {model.year_start && (
                 <p className="text-gray-600">Año Inicio: {model.year_start}</p>
@@ -155,14 +144,7 @@ const Models = () => {
         makes={makes}
       />
 
-      {selectedModel && (
-        <EditModelModal
-          isOpen={isEditModalOpen}
-          onClose={() => setIsEditModalOpen(false)}
-          modelId={selectedModel.modelId}
-          onEdit={handleEditModel} // Pasar la función para editar
-        />
-      )}
+       
     </div>
   );
 };

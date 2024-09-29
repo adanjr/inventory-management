@@ -9,7 +9,7 @@ import {
 import { PlusCircleIcon, SearchIcon, PencilIcon, TrashIcon } from "lucide-react";
 import Header from "@/app/(components)/Header";
 import CreateSupplierModal from "./CreateSupplierModal";
-import EditSupplierModal from "./EditSupplierModal";
+ 
 import { Supplier } from "@/state/api";
 
 const Suppliers = () => {
@@ -29,12 +29,7 @@ const Suppliers = () => {
     setIsCreateModalOpen(false);
   };
 
-  const handleEditSupplier = async (supplierId: string, updatedData: Partial<Supplier>) => {
-    if (supplierId) {
-      await updateSupplier({ id: supplierId, data: updatedData });
-      setIsEditModalOpen(false);
-    }
-  };
+  
 
   const handleDeleteSupplier = async (supplierId: string) => {
     if (supplierId) {
@@ -84,7 +79,7 @@ const Suppliers = () => {
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-10 justify-between">
         {suppliers.map((supplier) => (
           <div
-            key={supplier.supplier_id}
+            key={supplier.supplierId}
             className="border shadow rounded-md p-4 max-w-full w-full mx-auto"
           >
             <div className="flex flex-col items-center">
@@ -112,7 +107,7 @@ const Suppliers = () => {
                 </button>
                 <button
                   className="text-red-500 hover:text-red-700 flex items-center"
-                  onClick={() => handleDeleteSupplier(supplier.id)}
+                  onClick={() => handleDeleteSupplier(supplier.supplierId)}
                 >
                   <TrashIcon className="w-5 h-5 mr-2" /> Eliminar
                 </button>
@@ -128,13 +123,7 @@ const Suppliers = () => {
         onClose={() => setIsCreateModalOpen(false)}
         onCreate ={handleCreateSupplier}
       />
-      {selectedSupplier && (
-        <EditSupplierModal
-          isOpen={isEditModalOpen}
-          onClose={() => setIsEditModalOpen(false)}
-          supplierId={selectedSupplier.supplier_id}
-        />
-      )}
+       
     </div>
   );
 };

@@ -225,7 +225,6 @@ export interface NewVehicle {
   range?: number;
   wheelCount: number;
   price: number;
-  statusId: string;
   stockNumber: string;
   barcode?: string;
   qrCode?: string;
@@ -356,10 +355,10 @@ export interface UpdatedCustomer {
 }
 
 export interface Supplier {
-  supplier_id: string;
+  supplierId: string;
   name: string;
   address: string;
-  postal_code: string;
+  postalCode: string;
   city: string;
   state: string;
   country: string;
@@ -370,7 +369,7 @@ export interface Supplier {
 export interface NewSupplier {
   name: string;
   address: string;
-  postal_code: string;
+  postalCode: string;
   city: string;
   state: string;
   country: string;

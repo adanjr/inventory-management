@@ -10,7 +10,6 @@ import {
 import { PlusCircleIcon, SearchIcon, PencilIcon, TrashIcon } from "lucide-react";
 import Header from "@/app/(components)/Header";
 import CreateFuelTypeModal from "./CreateFuelTypeModal";
-import EditFuelTypeModal from "./EditFuelTypeModal";
 import { FuelType } from "@/state/api";
 
 const FuelTypes = () => {
@@ -120,13 +119,7 @@ const FuelTypes = () => {
         onClose={() => setIsCreateModalOpen(false)}
         onCreate={handleCreateFuelType}
       />
-      {selectedFuelType && (
-        <EditFuelTypeModal
-          isOpen={isEditModalOpen}
-          onClose={() => setIsEditModalOpen(false)}
-          fuelTypeId={selectedFuelType.fuelTypeId}
-        />
-      )}
+      
     </div>
   );
 };

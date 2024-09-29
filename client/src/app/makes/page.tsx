@@ -10,7 +10,7 @@ import {
 import { PlusCircleIcon, SearchIcon, PencilIcon, TrashIcon } from "lucide-react";
 import Header from "@/app/(components)/Header";
 import CreateMakeModal from "./CreateMakeModal";
-import EditMakeModal from "./EditMakeModal";
+ 
 import { Make } from "@/state/api";
 
 const Makes = () => {
@@ -30,13 +30,7 @@ const Makes = () => {
     setIsCreateModalOpen(false);
   };
 
-  const handleEditMake = async (makeId: string, updatedData: Partial<Make>) => {
-    if (makeId) {
-      await updateMake({ id: makeId, data: updatedData });
-      setIsEditModalOpen(false);
-    }
-  };
-
+   
   const handleDeleteMake = async (makeId: string) => {
     if (makeId) {
       await deleteMake(makeId);
@@ -123,13 +117,7 @@ const Makes = () => {
         onClose={() => setIsCreateModalOpen(false)}
         onCreate={handleCreateMake}
       />
-      {selectedMake && (
-        <EditMakeModal
-          isOpen={isEditModalOpen}
-          onClose={() => setIsEditModalOpen(false)}
-          makeId={selectedMake.makeId}
-        />
-      )}
+      
     </div>
   );
 };

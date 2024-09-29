@@ -2,8 +2,8 @@ import React, { ChangeEvent, FormEvent, useState } from "react";
 import { v4 } from "uuid"; // Esto se puede eliminar si no lo necesitas
 import Header from "@/app/(components)/Header";
 
-type TransmissionFormData = {
-  type: string; // Cambiar a 'type'
+type TransmissionFormData = {  
+  type: string; 
 };
 
 type CreateTransmissionModalProps = {
@@ -17,7 +17,7 @@ const CreateTransmissionModal = ({
   onClose,
   onCreate,
 }: CreateTransmissionModalProps) => {
-  const [formData, setFormData] = useState<TransmissionFormData>({
+  const [formData, setFormData] = useState<TransmissionFormData>({    
     type: "", // Solo el campo 'type'
   });
 

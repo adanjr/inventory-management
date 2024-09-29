@@ -6,11 +6,12 @@ import {
   useCreateVehicleStatusMutation,
   useUpdateVehicleStatusMutation,
   useDeleteVehicleStatusMutation,
+  NewVehicleStatus,
 } from "@/state/api";
 import { PlusCircleIcon, SearchIcon, PencilIcon, TrashIcon } from "lucide-react";
 import Header from "@/app/(components)/Header";
 import CreateVehicleStatusModal from "./CreateVehicleStatusModal";
-import EditVehicleStatusModal from "./EditVehicleStatusModal";
+ 
 import { VehicleStatus } from "@/state/api";
 
 const VehicleStatuses = () => {
@@ -25,17 +26,11 @@ const VehicleStatuses = () => {
   const [updateVehicleStatus] = useUpdateVehicleStatusMutation();
   const [deleteVehicleStatus] = useDeleteVehicleStatusMutation();
 
-  const handleCreateVehicleStatus = async (vehicleStatusData: VehicleStatus) => {
+  const handleCreateVehicleStatus = async (vehicleStatusData: NewVehicleStatus) => {
     await createVehicleStatus(vehicleStatusData);
     setIsCreateModalOpen(false);
   };
 
-  const handleEditVehicleStatus = async (vehicleStatusId: string, updatedData: Partial<VehicleStatus>) => {
-    if (vehicleStatusId) {
-      await updateVehicleStatus({ id: vehicleStatusId, data: updatedData });
-      setIsEditModalOpen(false);
-    }
-  };
 
   const handleDeleteVehicleStatus = async (vehicleStatusId: string) => {
     if (vehicleStatusId) {
@@ -120,13 +115,7 @@ const VehicleStatuses = () => {
         onClose={() => setIsCreateModalOpen(false)}
         onCreate={handleCreateVehicleStatus}
       />
-      {selectedVehicleStatus && (
-        <EditVehicleStatusModal
-          isOpen={isEditModalOpen}
-          onClose={() => setIsEditModalOpen(false)}
-          vehicleStatusId={selectedVehicleStatus.statusId}
-        />
-      )}
+    
     </div>
   );
 };

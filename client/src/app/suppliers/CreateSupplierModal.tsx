@@ -3,12 +3,12 @@ import { v4 } from "uuid";
 import Header from "@/app/(components)/Header";
 
 type SupplierFormData = {
-  supplier_id: string;
+  supplierId: string;
   name: string;
   email: string;
   address: string;
   phone: string;
-  postal_code: string;
+  postalCode: string;
   city: string;
   state: string;
   country: string;
@@ -26,12 +26,12 @@ const CreateSupplierModal = ({
   onCreate,
 }: CreateSupplierModalProps) => {
   const [formData, setFormData] = useState({
-    supplier_id: v4(),
+    supplierId: v4(),
     name: "",
     email: "",
     phone: "",
     address: "",
-    postal_code: "",
+    postalCode: "",
     city: "",
     state: "",
     country: "",
@@ -123,10 +123,10 @@ const CreateSupplierModal = ({
           </label>
           <input
             type="text"
-            name="postal_code"
+            name="postalCode"
             placeholder="Código Postal"
             onChange={handleChange}
-            value={formData.postal_code}
+            value={formData.postalCode}
             className={inputCssStyles}
           />
 

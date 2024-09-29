@@ -3,7 +3,7 @@ import Header from "@/app/(components)/Header";
 
 type ModelFormData = {
   name: string;
-  makeId: string;
+  makeId: number;
   year_start?: string;
   year_end?: string;
   type?: string; // Se mantiene como string
@@ -26,7 +26,7 @@ const CreateModelModal = ({
 }: CreateModelModalProps) => {
   const [formData, setFormData] = useState<ModelFormData>({
     name: "",
-    makeId: "",
+    makeId: 0,
     year_start: "",
     year_end: "",
     type: "", // Inicializar como string

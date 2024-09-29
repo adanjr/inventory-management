@@ -44,7 +44,6 @@ const CreateVehicle = () => {
     range: 0,
     wheelCount: 2,
     price: 0,
-    statusId: "",
     stockNumber: "",
     barcode: "",
     qrCode: "",

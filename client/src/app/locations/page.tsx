@@ -10,7 +10,6 @@ import { PlusCircleIcon, SearchIcon, PencilIcon, TrashIcon } from "lucide-react"
 import { MapContainer, TileLayer, Marker } from 'react-leaflet'; 
 import Header from "@/app/(components)/Header";
 import CreateLocationModal from "./CreateLocationModal";
-import EditLocationModal from "./EditLocationModal";
 import { Location } from "@/state/api";
 
 const Locations = () => {
@@ -30,12 +29,7 @@ const Locations = () => {
     setIsCreateModalOpen(false);
   };
 
-  const handleEditLocation = async (locationId: string, updatedData: Partial<Location>) => {
-    if (locationId) {
-      await updateLocation({ id: locationId, data: updatedData });
-      setIsEditModalOpen(false);
-    }
-  };
+ 
 
   const handleDeleteLocation = async (locationId: string) => {
     if (locationId) {
@@ -103,18 +97,7 @@ const Locations = () => {
             {/* Mapa fijo que muestra la ubicación */}
             {location.latitude && location.longitude && (
               <div className="mt-4 w-full h-48">
-                <MapContainer
-                  center={[location.latitude, location.longitude]}
-                  zoom={13}
-                  scrollWheelZoom={false}
-                  style={{ height: "100%", width: "100%" }}
-                  dragging={false}  // Deshabilitar el desplazamiento
-                  touchZoom={false} // Deshabilitar zoom táctil
-                  doubleClickZoom={false} // Deshabilitar zoom por doble clic
-                  zoomControl={false} // Ocultar controles de zoom
-                >                  
-                  <Marker position={[location.latitude, location.longitude]} />
-                </MapContainer>
+                <span>Mapa</span>
               </div>
             )}
 
@@ -146,13 +129,7 @@ const Locations = () => {
         onClose={() => setIsCreateModalOpen(false)}
         onCreate={handleCreateLocation}
       />
-      {selectedLocation && (
-        <EditLocationModal
-          isOpen={isEditModalOpen}
-          onClose={() => setIsEditModalOpen(false)}
-          locationId = {selectedLocation.location_id}        
-        />
-      )}
+      
     </div>
   );
 };
