@@ -82,6 +82,7 @@ const Sidebar = () => {
   const sidebarLinks = [
     { href: "/dashboard", icon: Layout, label: "Dashboard" },
     { href: "/inventory", icon: Archive, label: "Inventario" },
+    { href: "/vehicles", icon: Car, label: "Vehiculos" },
     { href: "/manufacturers", icon: Copyright, label: "Marcas" },
     { href: "/categories", icon: Boxes, label: "Categorias" },
     { href: "/products", icon: Clipboard, label: "Productos" },
@@ -92,8 +93,7 @@ const Sidebar = () => {
     { href: "/models", icon: Boxes, label: "Modelos" },
     { href: "/transmissions", icon: Boxes, label: "Tipos de Transmision" },
     { href: "/vehicleStatus", icon: Boxes, label: "Estatus de Vehiculo" },
-    { href: "/vehicleTypes", icon: Boxes, label: "Tipos de Vehiculo" },
-    { href: "/vehicles", icon: Car, label: "Vehiculos" },
+    { href: "/vehicleTypes", icon: Boxes, label: "Tipos de Vehiculo" },    
     { href: "/customers", icon: SquareUser, label: "Clientes" },
     { href: "/suppliers", icon: Building, label: "Proveedores" },
     { href: "/locations", icon: Map, label: "Suc/Almacenes" },

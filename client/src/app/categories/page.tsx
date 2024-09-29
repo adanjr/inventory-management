@@ -84,7 +84,7 @@ const Categories = () => {
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-10 justify-between">
         {categories.map((category) => (
           <div
-            key={category.id}
+            key={category.categoryId}
             className="border shadow rounded-md p-4 max-w-full w-full mx-auto"
           >
             <div className="flex flex-col items-center">
@@ -104,7 +104,7 @@ const Categories = () => {
                 </button>
                 <button
                   className="text-red-500 hover:text-red-700 flex items-center"
-                  onClick={() => handleDeleteCategory(category.id)}
+                  onClick={() => handleDeleteCategory(category.categoryId)}
                 >
                   <TrashIcon className="w-5 h-5 mr-2" /> Eliminar
                 </button>
@@ -120,13 +120,7 @@ const Categories = () => {
         onClose={() => setIsCreateModalOpen(false)}
         onCreate={handleCreateCategory}
       />
-      {selectedCategory && (
-        <EditCategoryModal
-          isOpen={isEditModalOpen}
-          onClose={() => setIsEditModalOpen(false)}
-          categoryId={selectedCategory.id}
-        />
-      )}
+       
     </div>
   );
 };
