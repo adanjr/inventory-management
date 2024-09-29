@@ -119,7 +119,7 @@ const Categories = () => {
         isOpen={isCreateModalOpen}
         onClose={() => setIsCreateModalOpen(false)}
         onCreate={handleCreateCategory}
-      />
+        />
        
     </div>
   );
