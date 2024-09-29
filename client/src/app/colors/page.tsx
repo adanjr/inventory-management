@@ -10,7 +10,6 @@ import {
 import { PlusCircleIcon, SearchIcon, PencilIcon, TrashIcon } from "lucide-react";
 import Header from "@/app/(components)/Header";
 import CreateColorModal from "./CreateColorModal";
-import EditColorModal from "./EditColorModal";
 import { Color } from "@/state/api";
 
 const Colors = () => {
@@ -120,13 +119,7 @@ const Colors = () => {
         onClose={() => setIsCreateModalOpen(false)}
         onCreate={handleCreateColor}
       />
-      {selectedColor && (
-        <EditColorModal
-          isOpen={isEditModalOpen}
-          onClose={() => setIsEditModalOpen(false)}
-          colorId={selectedColor.colorId}
-        />
-      )}
+      
     </div>
   );
 };
