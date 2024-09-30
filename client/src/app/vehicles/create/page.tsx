@@ -30,15 +30,15 @@ const CreateVehicle = () => {
   const [formData, setFormData] = useState({
     vin: "",
     internal_serial: "",
-    vehicleTypeId: "",
-    makeId: "",
-    modelId: "",
+    vehicleTypeId: 0,
+    makeId: 0,
+    modelId: 0,
     year: 2024,
-    colorId: "",
-    engineTypeId: "",
-    fuelTypeId: "",
-    transmissionId: "",
-    statusId: "",
+    colorId: 0,
+    engineTypeId: 0,
+    fuelTypeId: 0,
+    transmissionId: 0,
+    statusId: 0,
     mileage: 0,
     batteryCapacity: 0,
     range: 0,
@@ -52,7 +52,29 @@ const CreateVehicle = () => {
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
+  
+    // Convierte a número si el campo es un ID
+    const isIdField = [
+      "vehicleTypeId",
+      "makeId",
+      "modelId",
+      "colorId",
+      "engineTypeId",
+      "fuelTypeId",
+      "transmissionId",
+      "statusId",
+      "mileage",  // Si también quieres que sea un número
+      "batteryCapacity",
+      "range",
+      "wheelCount",
+      "price",
+      "year",
+    ].includes(name);
+  
+    setFormData((prev) => ({
+      ...prev,
+      [name]: isIdField ? parseInt(value) : value, // Mantener como cadena, la conversión se hará al enviar
+    }));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -99,7 +121,7 @@ const CreateVehicle = () => {
               >
                 <option value="">Seleccione un tipo de vehículo</option>
                 {vehicleTypes?.map((type: any) => (
-                  <option key={type.id} value={type.id}>
+                  <option key={type.vehicleTypeId} value={type.vehicleTypeId}>
                     {type.name}
                   </option>
                 ))}
@@ -119,7 +141,7 @@ const CreateVehicle = () => {
               >
                 <option value="">Seleccione una marca</option>
                 {makes?.map((make: any) => (
-                  <option key={make.id} value={make.id}>
+                  <option key={make.makeId} value={make.makeId}>
                     {make.name}
                   </option>
                 ))}
@@ -139,11 +161,11 @@ const CreateVehicle = () => {
               >
                 <option value="">Seleccione un modelo</option>
                 {models?.map((model: any) => (
-                  <option key={model.id} value={model.id}>
+                  <option key={model.modelId} value={model.modelId}>
                     {model.name}
                   </option>
                 ))}
-              </select>
+              </select> 
             )}
           </div>
           <div>
@@ -169,7 +191,7 @@ const CreateVehicle = () => {
               >
                 <option value="">Seleccione un color</option>
                 {colors?.map((color: any) => (
-                  <option key={color.id} value={color.id}>
+                  <option key={color.colorId} value={color.colorId}>
                     {color.name}
                   </option>
                 ))}
@@ -189,7 +211,7 @@ const CreateVehicle = () => {
               >
                 <option value="">Seleccione un tipo de motor</option>
                 {engineTypes?.map((engineType: any) => (
-                  <option key={engineType.id} value={engineType.id}>
+                  <option key={engineType.engineTypeId} value={engineType.engineTypeId}>
                     {engineType.name}
                   </option>
                 ))}
@@ -210,7 +232,7 @@ const CreateVehicle = () => {
               >
                 <option value="">Seleccione un Tipo de Combustible</option>
                 {fueltypes?.map((fueltype: any) => (
-                  <option key={fueltype.id} value={fueltype.id}>
+                  <option key={fueltype.fuelTypeId} value={fueltype.fuelTypeId}>
                     {fueltype.name}
                   </option>
                 ))}
@@ -231,7 +253,7 @@ const CreateVehicle = () => {
               >
                 <option value="">Seleccione una transmisión</option>
                 {transmissions?.map((transmission: any) => (
-                  <option key={transmission.id} value={transmission.id}>
+                  <option key={transmission.transmissionId} value={transmission.transmissionId}>
                     {transmission.type}
                   </option>
                 ))}
@@ -312,7 +334,7 @@ const CreateVehicle = () => {
               >
                 <option value="">Seleccione un Estatus</option>
                 {vehicleStatuses?.map((vehicleStatus: any) => (
-                  <option key={vehicleStatus.id} value={vehicleStatus.id}>
+                  <option key={vehicleStatus.statusId} value={vehicleStatus.statusId}>
                     {vehicleStatus.name}
                   </option>
                 ))}

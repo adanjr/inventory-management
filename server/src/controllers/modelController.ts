@@ -40,7 +40,7 @@ export const createModel = async (req: Request, res: Response): Promise<void> =>
     });
     res.status(201).json(model);
   } catch (error) {
-    res.status(500).json({ message: "Error creating model" });
+    res.status(500).json({ message: "Error creating model" + error });
   }
 };
 

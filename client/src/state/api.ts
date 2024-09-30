@@ -211,15 +211,15 @@ export interface Vehicle {
 export interface NewVehicle {
   vin?: string;
   internal_serial?: string;
-  vehicleTypeId: string;
-  makeId: string;
-  modelId: string;
+  vehicleTypeId: number;
+  makeId: number;
+  modelId: number;
   year: number;
-  colorId: string;
-  engineTypeId: string;
-  fuelTypeId?: string;
-  transmissionId: string;
-  statusId: string;
+  colorId: number;
+  engineTypeId: number;
+  fuelTypeId?: number;
+  transmissionId: number;
+  statusId: number;
   mileage: number;
   batteryCapacity?: number;
   range?: number;

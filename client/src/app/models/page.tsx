@@ -33,9 +33,13 @@ const Models = () => {
       // Convierte los valores a los tipos correctos
       const modelData = {
         ...newModelData,
-        battery_capacity: newModelData.battery_capacity,
-        electric_range: newModelData.electric_range,
-        makeId: newModelData.makeId, // Si makeId debería ser un número
+        makeId: parseInt(newModelData.makeId as any), // Convertir makeId a número
+      battery_capacity: newModelData.battery_capacity
+        ? parseFloat(newModelData.battery_capacity.toString())
+        : undefined,
+      electric_range: newModelData.electric_range
+        ? parseFloat(newModelData.electric_range.toString())
+        : undefined,
       };
        
       await createModel(modelData).unwrap();

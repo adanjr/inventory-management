@@ -34,7 +34,7 @@ export const getVehicles = async (req: Request, res: Response): Promise<void> =>
 
 // Crear un nuevo vehículo
 export const createVehicle = async (req: Request, res: Response): Promise<void> => {
-  try {
+  try {  
     const {
       vin,
       internal_serial,

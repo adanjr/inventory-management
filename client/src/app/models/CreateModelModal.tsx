@@ -30,15 +30,15 @@ const CreateModelModal = ({
     year_start: "",
     year_end: "",
     type: "", // Inicializar como string
-    battery_capacity: undefined,
-    electric_range: undefined,
+    battery_capacity: 0,
+    electric_range: 0,
   });
 
   const handleChange = (e: ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     setFormData({
       ...formData,
-      [name]: value,
+      [name]: name === "makeId" ? parseInt(value) : value,
     });
   };
 
