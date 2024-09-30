@@ -443,6 +443,59 @@ export interface UpdatedLocation {
   longitude?: number;
 }
 
+export interface Sale {
+  saleId: number;
+  timestamp: string; // o Date dependiendo de tu preferencia
+  quantity: number;
+  unitPrice: number;
+  totalAmount: number;
+  customerId?: number;
+  saleDetails: SaleDetail[];
+}
+
+export interface SaleDetail {
+  saleDetailId: number;
+  saleId: number;
+  productId?: number;
+  vehicleId?: number;
+  quantity: number;
+  unitPrice: number;
+  subtotal: number;
+}
+
+export interface NewSale {
+  timestamp: string; // o Date
+  quantity: number;
+  unitPrice: number;
+  customerId?: number;
+  saleDetails: NewSaleDetail[];
+}
+
+export interface NewSaleDetail {
+  productId?: number;
+  vehicleId?: number;
+  quantity: number;
+  unitPrice: number;
+  subtotal: number;
+}
+
+export interface UpdatedSale {
+  timestamp?: string; // o Date
+  quantity?: number;
+  unitPrice?: number;
+  customerId?: number;
+  saleDetails?: UpdatedSaleDetail[];
+}
+
+export interface UpdatedSaleDetail {
+  saleDetailId: number; // Necesario para identificar el detalle que se va a actualizar
+  productId?: number;
+  vehicleId?: number;
+  quantity?: number;
+  unitPrice?: number;
+  subtotal?: number;
+}
+
 export const api = createApi({
   baseQuery: fetchBaseQuery({ baseUrl: process.env.NEXT_PUBLIC_API_BASE_URL }),
   reducerPath: "api",
@@ -456,6 +509,7 @@ export const api = createApi({
     "Transmissions",
     "VehicleStatus",
     "Vehicles",
+    "Sales",
   ],
   endpoints: (build) => ({
     getDashboardMetrics: build.query<DashboardMetrics, void>({
@@ -928,7 +982,37 @@ export const api = createApi({
         method: "DELETE",
       }),
       invalidatesTags: ["Vehicles"],
+    }),
+    getSales: build.query<Sale[], string | void>({
+      query: (search) => ({
+        url: "/sales",
+        params: search ? { search } : {},
+      }),
+      providesTags: ["Sales"],
+    }),
+    createSale: build.mutation<Sale, NewSale>({
+      query: (newVehicle) => ({
+        url: "/vehicles",
+        method: "POST",
+        body: newSale,
+      }),
+      invalidatesTags: ["Vehicles"],
     }), 
+    updateSale: build.mutation<Sale, { id: number; data: UpdatedSale }>({
+      query: ({ id, data }) => ({
+        url: `/sales/${id}`,
+        method: "PUT",
+        body: data,
+      }),
+      invalidatesTags: ["Sales"],
+    }),
+    deleteSale: build.mutation<void, number>({
+      query: (id) => ({
+        url: `/sales/${id}`,
+        method: "DELETE",
+      }),
+      invalidatesTags: ["Sales"],
+    }),
   }),
 });
 
@@ -1012,4 +1096,9 @@ export const {
    useCreateVehicleMutation,
    useUpdateVehicleMutation,
    useDeleteVehicleMutation,
+
+   useGetSalesQuery,
+   useCreateSaleMutation,
+   useUpdateSaleMutation,
+   useDeleteSaleMutation,
 } = api;
