@@ -26,7 +26,15 @@ export const getVehicles = async (req: Request, res: Response): Promise<void> =>
         vehicleType: true,
       },
     });
-    res.json(vehicles);
+
+    const vehiclesWithMakeName = vehicles.map(vehicle => ({
+      ...vehicle,
+      makeName: vehicle.make?.name || 'N/A',  // Crear makeName a partir del campo make
+      modelName: vehicle.model?.name || 'N/A', // Crear modelName a partir del campo model
+      // Puedes hacer lo mismo para otros campos si es necesario
+    }));
+    
+    res.json(vehiclesWithMakeName);
   } catch (error) {
     res.status(500).json({ message: "Error retrieving vehicles" });
   }

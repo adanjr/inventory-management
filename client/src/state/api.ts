@@ -185,7 +185,9 @@ export interface Vehicle {
   internal_serial?: string;
   vehicleTypeId: string;
   makeId: string;
+  makeName: string;
   modelId: string;
+  modelName: string;
   make: { name: string } | null; // Asegúrate de que puede ser nulo
   model: { name: string };
   year: number;

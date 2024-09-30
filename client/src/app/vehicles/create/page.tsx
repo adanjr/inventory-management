@@ -129,7 +129,7 @@ const CreateVehicle = () => {
             )}
           </div>
           <div>
-            <label className="block text-gray-700 font-semibold">Marca</label>
+            <label className="block text-gray-700 font-semibold">Fabricante</label>
             {makesLoading ? (
               <p>Cargando...</p>
             ) : (
@@ -139,7 +139,7 @@ const CreateVehicle = () => {
                 onChange={handleInputChange}
                 className="w-full border border-gray-200 rounded-lg px-4 py-2 focus:outline-none focus:border-gray-500 focus:ring-2 focus:ring-gray-200"
               >
-                <option value="">Seleccione una marca</option>
+                <option value="">Seleccione un fabricante</option>
                 {makes?.map((make: any) => (
                   <option key={make.makeId} value={make.makeId}>
                     {make.name}
