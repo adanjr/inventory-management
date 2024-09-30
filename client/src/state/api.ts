@@ -983,36 +983,6 @@ export const api = createApi({
       }),
       invalidatesTags: ["Vehicles"],
     }),
-    getSales: build.query<Sale[], string | void>({
-      query: (search) => ({
-        url: "/sales",
-        params: search ? { search } : {},
-      }),
-      providesTags: ["Sales"],
-    }),
-    createSale: build.mutation<Sale, NewSale>({
-      query: (newVehicle) => ({
-        url: "/vehicles",
-        method: "POST",
-        body: newSale,
-      }),
-      invalidatesTags: ["Vehicles"],
-    }), 
-    updateSale: build.mutation<Sale, { id: number; data: UpdatedSale }>({
-      query: ({ id, data }) => ({
-        url: `/sales/${id}`,
-        method: "PUT",
-        body: data,
-      }),
-      invalidatesTags: ["Sales"],
-    }),
-    deleteSale: build.mutation<void, number>({
-      query: (id) => ({
-        url: `/sales/${id}`,
-        method: "DELETE",
-      }),
-      invalidatesTags: ["Sales"],
-    }),
   }),
 });
 
@@ -1096,9 +1066,5 @@ export const {
    useCreateVehicleMutation,
    useUpdateVehicleMutation,
    useDeleteVehicleMutation,
-
-   useGetSalesQuery,
-   useCreateSaleMutation,
-   useUpdateSaleMutation,
-   useDeleteSaleMutation,
+ 
 } = api;
