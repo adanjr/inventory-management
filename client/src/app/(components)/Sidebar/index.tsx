@@ -247,93 +247,95 @@ const Sidebar = () => {
 
       {/* LINKS */}
       <div className="flex-grow mt-4 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-400 scrollbar-track-gray-200">
-        {filteredMenuItems.map((item, index) => (
-          <div key={index}>
-            {/* Menú de nivel 1 */}
-            <div
-              className={`cursor-pointer flex items-center px-8 py-4 hover:bg-blue-100 gap-3 ${
-                isSidebarCollapsed ? "justify-center" : "justify-start"
-              }`}
-              onClick={
-                item.subItems.length > 0
-                  ? item.label === "Catálogos"
-                    ? toggleCatalog
-                    : item.label === "Inventario"
-                    ? toggleInventory
-                    : item.label === "Ventas"
-                    ? toggleSales
-                    : item.label === "Compras"
-                    ? togglePurchases
-                    : item.label === "Finanzas"
-                    ? toggleFinance
-                    : item.label === "Administracion"
-                    ? toggleManagement
-                    : toggleReports
-                  : undefined
-              }
-            >
-              <item.icon className="w-6 h-6 !text-gray-700" />
-              {!isSidebarCollapsed && (
-                <span className="font-medium text-gray-700">{item.label}</span>
-              )}
-              {!isSidebarCollapsed && item.subItems.length > 0 && (
-                <span>
-                  {
-                  item.label === "Catálogos" && isCatalogOpen ? (
-                    <ChevronUp />
-                  ) : item.label === "Inventario" && isInventoryOpen ? (
-                    <ChevronUp />
-                  ) : item.label === "Ventas" && isSalesOpen ? (
-                    <ChevronUp />
-                  ) : item.label === "Compras" && isPurchasesOpen ? (
-                    <ChevronUp />
-                  ) : item.label === "Administracion" && isManagementOpen ? (
-                    <ChevronUp />
-                  ) : item.label === "Finanzas" && isFinanceOpen ? (
-                    <ChevronUp />
-                  ) :item.label === "Reportes" && isReportsOpen ? (
-                    <ChevronUp />
-                  ) : (
-                    <ChevronDown />
-                  )}
-                </span>
-              )}
-            </div>
+      {filteredMenuItems.map((item, index) => (
+        <div key={index}>
+          {/* Menú de nivel 1 */}
+          <div
+            className={`cursor-pointer flex items-center px-8 py-4 hover:bg-blue-100 gap-3 ${
+              isSidebarCollapsed ? "justify-center" : "justify-start"
+            }`}
+            onClick={
+              (item?.subItems?.length || 0) > 0 // Verifica si subItems existe y tiene elementos
+                ? item?.label === "Catálogos"
+                  ? toggleCatalog
+                  : item?.label === "Inventario"
+                  ? toggleInventory
+                  : item?.label === "Ventas"
+                  ? toggleSales
+                  : item?.label === "Compras"
+                  ? togglePurchases
+                  : item?.label === "Finanzas"
+                  ? toggleFinance
+                  : item?.label === "Administracion"
+                  ? toggleManagement
+                  : toggleReports
+                : undefined
+            }
+          >
+            {/* Verificar si 'item.icon' es un componente válido */}
+            {item?.icon && <item.icon className="w-6 h-6 !text-gray-700" />}
+            
+            {!isSidebarCollapsed && (
+              <span className="font-medium text-gray-700">{item?.label}</span>
+            )}
 
-            {/* Menú de nivel 2 */}
-            {item.subItems.length > 0 && !isSidebarCollapsed && (
-              <div
-                className={`ml-8 ${
-                  item.label === "Catálogos" && isCatalogOpen
-                    ? "block"
-                    : item.label === "Inventario" && isInventoryOpen
-                    ? "block"
-                    : item.label === "Ventas" && isSalesOpen
-                    ? "block"
-                    : item.label === "Compras" && isPurchasesOpen
-                    ? "block"
-                    : item.label === "Finanzas" && isFinanceOpen
-                    ? "block"
-                    : item.label === "Administracion" && isManagementOpen
-                    ? "block"
-                    : item.label === "Reportes" && isReportsOpen
-                    ? "block"
-                    : "hidden"
-                }`}
-              >
-                {item.subItems.map((subItem, subIndex) => (
-                  <SidebarLink
-                    key={subIndex}
-                    href={subItem.href}
-                    icon={subItem.icon}
-                    label={subItem.label}
-                    isCollapsed={isSidebarCollapsed}
-                  />
-                ))}
-              </div>
+            {!isSidebarCollapsed && (item?.subItems?.length || 0) > 0 && (
+              <span>
+                {item?.label === "Catálogos" && isCatalogOpen ? (
+                  <ChevronUp />
+                ) : item?.label === "Inventario" && isInventoryOpen ? (
+                  <ChevronUp />
+                ) : item?.label === "Ventas" && isSalesOpen ? (
+                  <ChevronUp />
+                ) : item?.label === "Compras" && isPurchasesOpen ? (
+                  <ChevronUp />
+                ) : item?.label === "Finanzas" && isFinanceOpen ? (
+                  <ChevronUp />
+                ) : item?.label === "Administracion" && isManagementOpen ? (
+                  <ChevronUp />
+                ) : item?.label === "Reportes" && isReportsOpen ? (
+                  <ChevronUp />
+                ) : (
+                  <ChevronDown />
+                )}
+              </span>
             )}
           </div>
-        ))}
+          {/* Menú de nivel 2 */}
+          {(item?.subItems?.length || 0) > 0 && !isSidebarCollapsed && (
+            <div
+              className={`ml-8 ${
+                item?.label === "Catálogos" && isCatalogOpen
+                  ? "block"
+                  : item?.label === "Inventario" && isInventoryOpen
+                  ? "block"
+                  : item?.label === "Ventas" && isSalesOpen
+                  ? "block"
+                  : item?.label === "Compras" && isPurchasesOpen
+                  ? "block"
+                  : item?.label === "Finanzas" && isFinanceOpen
+                  ? "block"
+                  : item?.label === "Administracion" && isManagementOpen
+                  ? "block"
+                  : item?.label === "Reportes" && isReportsOpen
+                  ? "block"
+                  : "hidden"
+              }`}
+            >
+              {item?.subItems?.map((subItem, subIndex) => (
+                <SidebarLink
+                  key={subIndex}
+                  href={subItem.href}
+                  icon={subItem.icon}
+                  label={subItem.label}
+                  isCollapsed={isSidebarCollapsed}
+                />
+              ))}
+            </div>
+          )}
+        </div>
+      ))}
+
       </div>
     </div>
   );
