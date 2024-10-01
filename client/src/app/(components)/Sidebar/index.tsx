@@ -1,4 +1,4 @@
-"use client";
+ "use client";
 
 import { useAppDispatch, useAppSelector } from "@/app/redux";
 import { setIsSidebarCollapsed } from "@/state";
@@ -13,18 +13,18 @@ import {
   CreditCard,
   Building,
   Factory,
-  HandCoins,
   Layout,
   LucideIcon,
   Map,
-  MonitorDot,
   Menu,
+  MonitorDot,
   SlidersHorizontal,
   ShoppingBag,
   SquareUser,
   User,
   ChevronDown,
   ChevronUp,
+  HandCoins,  
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
@@ -80,28 +80,122 @@ const Sidebar = () => {
   );
 
   const [filterText, setFilterText] = useState(""); // Estado del filtro de búsqueda
-
-  // Estados para controlar submenús
   const [isCatalogOpen, setIsCatalogOpen] = useState(false);
   const [isInventoryOpen, setIsInventoryOpen] = useState(false);
   const [isSalesOpen, setIsSalesOpen] = useState(false);
   const [isPurchasesOpen, setIsPurchasesOpen] = useState(false);
+  const [isManagementOpen, setIsManagementOpen] = useState(false);
   const [isFinanceOpen, setIsFinanceOpen] = useState(false);
   const [isReportsOpen, setIsReportsOpen] = useState(false);
-  const [isManagementOpen, setIsManagementOpen] = useState(false);
 
   const toggleSidebar = () => {
     dispatch(setIsSidebarCollapsed(!isSidebarCollapsed));
   };
 
-  // Funciones para controlar los submenús
   const toggleCatalog = () => setIsCatalogOpen(!isCatalogOpen);
   const toggleInventory = () => setIsInventoryOpen(!isInventoryOpen);
   const toggleSales = () => setIsSalesOpen(!isSalesOpen);
   const togglePurchases = () => setIsPurchasesOpen(!isPurchasesOpen);
-  const toggleReports = () => setIsReportsOpen(!isReportsOpen);
   const toggleManagement = () => setIsManagementOpen(!isManagementOpen);
   const toggleFinance = () => setIsFinanceOpen(!isFinanceOpen);
+  const toggleReports = () => setIsReportsOpen(!isReportsOpen);
+ 
+  // Lista completa del menú
+  const menuItems = [
+    {
+      label: "Dashboard",
+      icon: Layout,
+      href: "/dashboard",
+      subItems: [],
+    },
+    {
+      label: "Catálogos",
+      icon: Boxes,
+      href: "",
+      subItems: [
+        { label: "Categorías", href: "/categories", icon: Boxes },
+        { label: "Colores", href: "/colors", icon: Boxes },
+        { label: "Estatus de Vehiculo", href: "/vehicleStatus", icon: Boxes },
+        { label: "Fabricantes", href: "/makes", icon: Factory },
+        { label: "Marcas", href: "/manufacturers", icon: Copyright },
+        { label: "Modelos", href: "/models", icon: Clipboard },
+        { label: "Tipos de Combustible", href: "/fuelTypes", icon: Boxes }, 
+        { label: "Tipos de Motor", href: "/engineTypes", icon: Boxes }, 
+        { label: "Tipos de Transmision", href: "/transmissions", icon: Boxes },            
+        { label: "Tipos de Vehiculo", href: "/vehicleTypes", icon: Boxes },
+      ],
+    },
+    {
+      label: "Inventario",
+      icon: Archive,
+      href: "",
+      subItems: [
+        { label: "Inventario General", href: "/inventory", icon: Archive },
+        { label: "Vehículos", href: "/vehicles", icon: Car },
+        { label: "Productos", href: "/products", icon: Clipboard },
+        { label: "Suc/Almacenes", href: "/locations", icon: Map },
+      ],
+    },
+    {
+      label: "Ventas",
+      icon: BadgeDollarSign,
+      href: "",
+      subItems: [
+        { label: "Punto de Venta", href: "/sales", icon: BadgeDollarSign },
+        { label: "Clientes", href: "/customers", icon: SquareUser },
+      ],
+    },
+    {
+      label: "Compras",
+      icon: ShoppingBag,
+      href: "",
+      subItems: [
+        { label: "Compras", href: "/buy", icon: ShoppingBag },
+        { label: "Proveedores", href: "/suppliers", icon: Building },
+      ],
+    },
+    {
+      label: "Finanzas",
+      icon: HandCoins,
+      href: "",
+      subItems: [
+        { label: "Gastos", href: "/expenses", icon: HandCoins },      
+      ],
+    },              
+    {
+      label: "Reportes",
+      icon: Clipboard,
+      href: "",
+      subItems: [
+        { label: "Ventas", href: "/reports/sales", icon: CircleDollarSign },
+        { label: "Compras", href: "/reports/purchases", icon: CreditCard },
+      ],
+    },
+    {
+      label: "Administracion",
+      icon: MonitorDot,
+      href: "",
+      subItems: [
+        { label: "Usuarios", href: "/users", icon: User },                 
+      ],
+    },
+  ];
+
+  // Filtrar elementos del menú con base en el texto de búsqueda
+  const filteredMenuItems = menuItems
+    .map((item) => {
+      const filteredSubItems = item.subItems.filter((subItem) =>
+        subItem.label.toLowerCase().includes(filterText.toLowerCase())
+      );
+      if (
+        item.label.toLowerCase().includes(filterText.toLowerCase()) ||
+        filteredSubItems.length > 0
+      ) {
+        return { ...item, subItems: filteredSubItems };
+      }
+      return null;
+    })
+    .filter(Boolean);
 
   const sidebarClassNames = `fixed flex flex-col ${
     isSidebarCollapsed ? "w-0 md:w-16" : "w-72 md:w-64"
@@ -153,186 +247,93 @@ const Sidebar = () => {
 
       {/* LINKS */}
       <div className="flex-grow mt-4 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-400 scrollbar-track-gray-200">
-        {/* Dashboard */}
-        <SidebarLink
-          href="/dashboard"
-          icon={Layout}
-          label="Dashboard"
-          isCollapsed={isSidebarCollapsed}
-        />
+        {filteredMenuItems.map((item, index) => (
+          <div key={index}>
+            {/* Menú de nivel 1 */}
+            <div
+              className={`cursor-pointer flex items-center px-8 py-4 hover:bg-blue-100 gap-3 ${
+                isSidebarCollapsed ? "justify-center" : "justify-start"
+              }`}
+              onClick={
+                item.subItems.length > 0
+                  ? item.label === "Catálogos"
+                    ? toggleCatalog
+                    : item.label === "Inventario"
+                    ? toggleInventory
+                    : item.label === "Ventas"
+                    ? toggleSales
+                    : item.label === "Compras"
+                    ? togglePurchases
+                    : item.label === "Finanzas"
+                    ? toggleFinance
+                    : item.label === "Administracion"
+                    ? toggleManagement
+                    : toggleReports
+                  : undefined
+              }
+            >
+              <item.icon className="w-6 h-6 !text-gray-700" />
+              {!isSidebarCollapsed && (
+                <span className="font-medium text-gray-700">{item.label}</span>
+              )}
+              {!isSidebarCollapsed && item.subItems.length > 0 && (
+                <span>
+                  {
+                  item.label === "Catálogos" && isCatalogOpen ? (
+                    <ChevronUp />
+                  ) : item.label === "Inventario" && isInventoryOpen ? (
+                    <ChevronUp />
+                  ) : item.label === "Ventas" && isSalesOpen ? (
+                    <ChevronUp />
+                  ) : item.label === "Compras" && isPurchasesOpen ? (
+                    <ChevronUp />
+                  ) : item.label === "Administracion" && isManagementOpen ? (
+                    <ChevronUp />
+                  ) : item.label === "Finanzas" && isFinanceOpen ? (
+                    <ChevronUp />
+                  ) :item.label === "Reportes" && isReportsOpen ? (
+                    <ChevronUp />
+                  ) : (
+                    <ChevronDown />
+                  )}
+                </span>
+              )}
+            </div>
 
-        {/* Catálogos */}
-        <div>
-          <div
-            className="cursor-pointer flex items-center px-8 py-4 hover:bg-blue-100 gap-3"
-            onClick={toggleCatalog}
-          >
-            <Boxes className="w-6 h-6 !text-gray-700" />
-            {!isSidebarCollapsed && (
-              <span className="font-medium text-gray-700">Catálogos</span>
-            )}
-            {!isSidebarCollapsed && (
-              <span>{isCatalogOpen ? <ChevronUp /> : <ChevronDown />}</span>
+            {/* Menú de nivel 2 */}
+            {item.subItems.length > 0 && !isSidebarCollapsed && (
+              <div
+                className={`ml-8 ${
+                  item.label === "Catálogos" && isCatalogOpen
+                    ? "block"
+                    : item.label === "Inventario" && isInventoryOpen
+                    ? "block"
+                    : item.label === "Ventas" && isSalesOpen
+                    ? "block"
+                    : item.label === "Compras" && isPurchasesOpen
+                    ? "block"
+                    : item.label === "Finanzas" && isFinanceOpen
+                    ? "block"
+                    : item.label === "Administracion" && isManagementOpen
+                    ? "block"
+                    : item.label === "Reportes" && isReportsOpen
+                    ? "block"
+                    : "hidden"
+                }`}
+              >
+                {item.subItems.map((subItem, subIndex) => (
+                  <SidebarLink
+                    key={subIndex}
+                    href={subItem.href}
+                    icon={subItem.icon}
+                    label={subItem.label}
+                    isCollapsed={isSidebarCollapsed}
+                  />
+                ))}
+              </div>
             )}
           </div>
-          {isCatalogOpen && !isSidebarCollapsed && (
-            <div className="ml-8">
-              <SidebarLink href="/categories" icon={Boxes} label="Categorías" isCollapsed={isSidebarCollapsed} />
-              <SidebarLink href="/colors" icon={Boxes} label="Colores" isCollapsed={isSidebarCollapsed} />
-              <SidebarLink href="/vehicleStatus" icon={Boxes} label="Estatus de Vehiculo" isCollapsed={isSidebarCollapsed} />
-              <SidebarLink href="/makes" icon={Factory} label="Fabricantes" isCollapsed={isSidebarCollapsed} />
-              <SidebarLink href="/manufacturers" icon={Copyright} label="Marcas" isCollapsed={isSidebarCollapsed} />           
-              <SidebarLink href="/models" icon={Clipboard} label="Modelos" isCollapsed={isSidebarCollapsed} />
-              <SidebarLink href="/fuelTypes" icon={Boxes} label="Tipos de Combustible" isCollapsed={isSidebarCollapsed} />
-              <SidebarLink href="/engineTypes" icon={Boxes} label="Tipos de Motor" isCollapsed={isSidebarCollapsed} />
-              <SidebarLink href="/transmissions" icon={Boxes} label="Tipos de Transmision" isCollapsed={isSidebarCollapsed} />
-              <SidebarLink href="/vehicleTypes" icon={Boxes} label="Tipos de Vehiculo" isCollapsed={isSidebarCollapsed} />        
-            </div>
-          )}
-        </div>
-
-        {/* Inventario */}
-        <div>
-          <div
-            className="cursor-pointer flex items-center px-8 py-4 hover:bg-blue-100 gap-3"
-            onClick={toggleInventory}
-          >
-            <Archive className="w-6 h-6 !text-gray-700" />
-            {!isSidebarCollapsed && (
-              <span className="font-medium text-gray-700">Inventario</span>
-            )}
-            {!isSidebarCollapsed && (
-              <span>{isInventoryOpen ? <ChevronUp /> : <ChevronDown />}</span>
-            )}
-          </div>
-          {isInventoryOpen && !isSidebarCollapsed && (
-            <div className="ml-8">
-              <SidebarLink href="/inventory" icon={Archive} label="Inventario General" isCollapsed={isSidebarCollapsed} />
-              <SidebarLink href="/vehicles" icon={Car} label="Vehículos" isCollapsed={isSidebarCollapsed} />
-              <SidebarLink href="/products" icon={Clipboard} label="Productos" isCollapsed={isSidebarCollapsed} />
-              <SidebarLink href="/locations" icon={Map} label="Suc/Almacenes" isCollapsed={isSidebarCollapsed} />
-            </div>
-          )}
-        </div>
-
-        {/* Ventas */}
-        <div>
-          <div
-            className="cursor-pointer flex items-center px-8 py-4 hover:bg-blue-100 gap-3"
-            onClick={toggleSales}
-          >
-            <BadgeDollarSign className="w-6 h-6 !text-gray-700" />
-            {!isSidebarCollapsed && (
-              <span className="font-medium text-gray-700">Ventas</span>
-            )}
-            {!isSidebarCollapsed && (
-              <span>{isSalesOpen ? <ChevronUp /> : <ChevronDown />}</span>
-            )}
-          </div>
-          {isSalesOpen && !isSidebarCollapsed && (
-            <div className="ml-8">
-              <SidebarLink href="/sales" icon={BadgeDollarSign} label="Punto de Venta" isCollapsed={isSidebarCollapsed} />
-              <SidebarLink href="/customers" icon={SquareUser} label="Clientes" isCollapsed={isSidebarCollapsed} />
-            </div>
-          )}
-        </div>
-
-        {/* Compras */}
-        <div>
-          <div
-            className="cursor-pointer flex items-center px-8 py-4 hover:bg-blue-100 gap-3"
-            onClick={togglePurchases}
-          >
-            <ShoppingBag className="w-6 h-6 !text-gray-700" />
-            {!isSidebarCollapsed && (
-              <span className="font-medium text-gray-700">Compras</span>
-            )}
-            {!isSidebarCollapsed && (
-              <span>{isPurchasesOpen ? <ChevronUp /> : <ChevronDown />}</span>
-            )}
-          </div>
-          {isPurchasesOpen && !isSidebarCollapsed && (
-            <div className="ml-8">  
-              <SidebarLink href="/buy" icon={ShoppingBag} label="Comprar" isCollapsed={isSidebarCollapsed} />
-              <SidebarLink href="/suppliers" icon={Building} label="Proveedores" isCollapsed={isSidebarCollapsed} />
-            </div>
-          )}
-        </div>
-
-          {/* Finanzas */}
-          <div>
-          <div
-            className="cursor-pointer flex items-center px-8 py-4 hover:bg-blue-100 gap-3"
-            onClick={toggleFinance}
-          >
-            <HandCoins className="w-6 h-6 !text-gray-700" />
-            {!isSidebarCollapsed && (
-              <span className="font-medium text-gray-700">Finanzas</span>
-            )}
-            {!isSidebarCollapsed && (
-              <span>{isFinanceOpen ? <ChevronUp /> : <ChevronDown />}</span>
-            )}
-          </div>
-          {isFinanceOpen && !isSidebarCollapsed && (
-            <div className="ml-8">              
-              <SidebarLink href="/expenses" icon={HandCoins} label="Gastos" isCollapsed={isSidebarCollapsed} />             
-            </div>
-          )}
-        </div>
-    
-
-
-        {/* Reportes */}
-        <div>
-          <div
-            className="cursor-pointer flex items-center px-8 py-4 hover:bg-blue-100 gap-3"
-            onClick={toggleReports}
-          >
-            <Clipboard className="w-6 h-6 !text-gray-700" />
-            {!isSidebarCollapsed && (
-              <span className="font-medium text-gray-700">Reportes</span>
-            )}
-            {!isSidebarCollapsed && (
-              <span>{isReportsOpen ? <ChevronUp /> : <ChevronDown />}</span>
-            )}
-          </div>
-          {isReportsOpen && !isSidebarCollapsed && (
-            <div className="ml-8">
-              <SidebarLink href="/reports/sales" icon={CircleDollarSign} label="Ventas" isCollapsed={isSidebarCollapsed} />
-              <SidebarLink href="/reports/purchases" icon={CreditCard} label="Compras" isCollapsed={isSidebarCollapsed} />
-            </div>
-          )}
-        </div>
-
-        {/* ADMIN */}
-        <div>
-          <div
-            className="cursor-pointer flex items-center px-8 py-4 hover:bg-blue-100 gap-3"
-            onClick={toggleManagement}
-          >
-            <MonitorDot className="w-6 h-6 !text-gray-700" />
-            {!isSidebarCollapsed && (
-              <span className="font-medium text-gray-700">Administracion</span>
-            )}
-            {!isSidebarCollapsed && (
-              <span>{isManagementOpen ? <ChevronUp /> : <ChevronDown />}</span>
-            )}
-          </div>
-          {isManagementOpen && !isSidebarCollapsed && (
-            <div className="ml-8">                       
-              <SidebarLink href="/users" icon={User} label="Usuarios" isCollapsed={isSidebarCollapsed} />             
-            </div>
-          )}
-        </div>
-
-        {/* Dashboard */}
-        <SidebarLink
-          href="/settings"
-          icon={SlidersHorizontal}
-          label="Configuracion"
-          isCollapsed={isSidebarCollapsed}
-        />
-
+        ))}
       </div>
     </div>
   );
