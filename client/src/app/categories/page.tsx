@@ -5,7 +5,8 @@ import {
   useGetCategoriesQuery,
   useCreateCategoryMutation,
   useUpdateCategoryMutation,
-  useDeleteCategoryMutation } from "@/state/api";
+  useDeleteCategoryMutation
+} from "@/state/api";
 import { PlusCircleIcon, SearchIcon, PencilIcon, TrashIcon } from "lucide-react";
 import Header from "@/app/(components)/Header";
 import CreateCategoryModal from "./CreateCategoryModal";
@@ -18,8 +19,7 @@ const Categories = () => {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState<Category | null>(null);
 
-  const { data: categories, isLoading, isError } = useGetCategoriesQuery(searchTerm);
-
+  const { data: categories, isLoading, isError } = useGetCategoriesQuery("");
   const [createCategory] = useCreateCategoryMutation();
   const [updateCategory] = useUpdateCategoryMutation();
   const [deleteCategory] = useDeleteCategoryMutation();
@@ -41,6 +41,13 @@ const Categories = () => {
       await deleteCategory(categoryId);
     }
   };
+
+  // Filtrar y ordenar categorías
+  const filteredAndSortedCategories = categories
+    ?.filter((category) =>
+      category.name.toLowerCase().includes(searchTerm.toLowerCase())
+    )
+    .sort((a, b) => a.name.localeCompare(b.name)); // Ordenar alfabéticamente por 'name'
 
   if (isLoading) {
     return <div className="py-4">Loading...</div>;
@@ -82,7 +89,7 @@ const Categories = () => {
 
       {/* BODY CATEGORIES LIST */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-10 justify-between">
-        {categories.map((category) => (
+        {filteredAndSortedCategories?.map((category) => (
           <div
             key={category.categoryId}
             className="border shadow rounded-md p-4 max-w-full w-full mx-auto"
@@ -91,7 +98,7 @@ const Categories = () => {
               <h3 className="text-lg text-gray-900 font-semibold">
                 {category.name}
               </h3>
-              <p className="text-gray-800">Description: {category.description}</p>               
+              <p className="text-gray-800">Descripción: {category.description}</p>
               <div className="flex mt-4">
                 <button
                   className="text-blue-500 hover:text-blue-700 flex items-center mr-4"
@@ -119,8 +126,14 @@ const Categories = () => {
         isOpen={isCreateModalOpen}
         onClose={() => setIsCreateModalOpen(false)}
         onCreate={handleCreateCategory}
-        />
-       
+      />
+
+      <EditCategoryModal
+        isOpen={isEditModalOpen}
+        onClose={() => setIsEditModalOpen(false)}
+        onEdit={handleEditCategory}
+        selectedCategory={selectedCategory}
+      />
     </div>
   );
 };

@@ -1,4 +1,4 @@
-import React, { ChangeEvent, FormEvent, useState } from "react";
+import React, { ChangeEvent, FormEvent, useState, useEffect } from "react";
 import { v4 } from "uuid";
 import Header from "@/app/(components)/Header";
 
@@ -24,6 +24,13 @@ const CreateCategoryModal = ({
     name: "",
     description: "",
   });
+
+  // Resetea el formulario cuando el modal se abre
+  useEffect(() => {
+    if (isOpen) {
+      setFormData({ category_id: v4(), name: "", description: "" });
+    }
+  }, [isOpen]);
 
   const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -74,7 +81,7 @@ const CreateCategoryModal = ({
             Descripcion
           </label>
           <input
-            type="text" // Cambiar a 'text' en vez de 'description'
+            type="text"
             name="description"
             placeholder="Descripcion"
             onChange={handleChange}
@@ -91,7 +98,10 @@ const CreateCategoryModal = ({
             Crear
           </button>
           <button
-            onClick={onClose}
+            onClick={() => {
+              setFormData({ category_id: v4(), name: "", description: "" }); // Resetea el formulario al cerrar
+              onClose();
+            }}
             type="button"
             className="ml-2 px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-700"
           >

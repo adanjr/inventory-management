@@ -1,38 +1,42 @@
 import React, { ChangeEvent, FormEvent, useState, useEffect } from "react";
 import Header from "@/app/(components)/Header";
+import { Category } from "@/state/api";
 
 type CategoryFormData = {
-  category_id: string;
+  categoryId: string;
   name: string;
   description: string;
-  phone: string;
-  address: string;
-  postal_code: string;
-  city: string;
-  state: string;
-  country: string;
 };
 
 type EditCategoryModalProps = {
   isOpen: boolean;
   onClose: () => void;
-  categoryData: CategoryFormData;
-  onEdit: (formData: CategoryFormData) => void;
+  onEdit: (categoryId: string, formData: Partial<CategoryFormData>) => void;
+  selectedCategory: Category | null;
 };
 
 const EditCategoryModal = ({
   isOpen,
   onClose,
-  categoryData,
   onEdit,
+  selectedCategory,
 }: EditCategoryModalProps) => {
-  const [formData, setFormData] = useState<CategoryFormData>(categoryData);
+  const [formData, setFormData] = useState({
+    categoryId: selectedCategory?.categoryId || "",
+    name: selectedCategory?.name || "",
+    description: selectedCategory?.description || "",
+  });
 
   useEffect(() => {
-    if (categoryData) {
-      setFormData(categoryData); // Cuando los datos cambian, actualizamos el formulario
+    if (selectedCategory && isOpen) {
+      // Actualiza el formulario con los datos de la categoría seleccionada
+      setFormData({
+        categoryId: selectedCategory.categoryId,
+        name: selectedCategory.name,
+        description: selectedCategory.description,
+      });
     }
-  }, [categoryData]);
+  }, [selectedCategory, isOpen]);
 
   const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -44,7 +48,10 @@ const EditCategoryModal = ({
 
   const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    onEdit(formData);
+    onEdit(formData.categoryId, {
+      name: formData.name,
+      description: formData.description,
+    });
     onClose();
   };
 
@@ -75,23 +82,22 @@ const EditCategoryModal = ({
 
           {/* DESCRIPTION */}
           <label htmlFor="categoryDescription" className={labelCssStyles}>
-          Descripcion
+            Descripción
           </label>
           <input
-            type="description"
+            type="text"
             name="description"
-            placeholder="Descripcion"
+            placeholder="Descripción"
             onChange={handleChange}
             value={formData.description}
             className={inputCssStyles}
             required
           />
 
-
           {/* EDIT ACTIONS */}
           <button
             type="submit"
-            className="mt-4 px-4 py-2 bg-green-500 text-white rounded hover:bg-green-700"
+            className="mt-4 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-700"
           >
             Guardar Cambios
           </button>

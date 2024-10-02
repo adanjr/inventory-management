@@ -141,7 +141,7 @@ const Sidebar = () => {
       icon: BadgeDollarSign,
       href: "",
       subItems: [
-        { label: "Punto de Venta", href: "/sales", icon: BadgeDollarSign },
+        { label: "Punto de Venta", href: "/sales", icon: BadgeDollarSign },       
         { label: "Clientes", href: "/customers", icon: SquareUser },
       ],
     },
