@@ -18,22 +18,28 @@ const CreateVehicleStatusModal = ({
   onClose,
   onCreate,
 }: CreateVehicleStatusModalProps) => {
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<VehicleStatusFormData>({
     vehicleStatusId: v4(),
     name: "",
   });
 
   const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    setFormData({
-      ...formData,
+    setFormData((prev) => ({
+      ...prev,
       [name]: value,
-    });
+    }));
   };
 
   const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    // Validación simple para asegurarse de que el nombre no esté vacío
+    if (!formData.name.trim()) {
+      alert("El nombre del estado de vehículo es obligatorio.");
+      return;
+    }
     onCreate(formData);
+    setFormData({ vehicleStatusId: v4(), name: "" }); // Reiniciar el formulario después de enviar
     onClose();
   };
 
@@ -55,6 +61,7 @@ const CreateVehicleStatusModal = ({
           <input
             type="text"
             name="name"
+            id="vehicleStatusName" // Agregado para una mejor accesibilidad
             placeholder="Nombre"
             onChange={handleChange}
             value={formData.name}
@@ -63,19 +70,21 @@ const CreateVehicleStatusModal = ({
           />
 
           {/* CREATE ACTIONS */}
-          <button
-            type="submit"
-            className="mt-4 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-700"
-          >
-            Crear
-          </button>
-          <button
-            onClick={onClose}
-            type="button"
-            className="ml-2 px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-700"
-          >
-            Cancelar
-          </button>
+          <div className="flex justify-between">
+            <button
+              type="submit"
+              className="mt-4 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-700"
+            >
+              Crear
+            </button>
+            <button
+              onClick={onClose}
+              type="button"
+              className="mt-4 ml-2 px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-700"
+            >
+              Cancelar
+            </button>
+          </div>
         </form>
       </div>
     </div>

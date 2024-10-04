@@ -10,6 +10,7 @@ import {
 import { PlusCircleIcon, SearchIcon, PencilIcon, TrashIcon } from "lucide-react";
 import Header from "@/app/(components)/Header";
 import CreateColorModal from "./CreateColorModal";
+import EditColorModal from "./EditColorModal"; // Asumiendo que ya tienes el modal de edición
 import { Color } from "@/state/api";
 
 const Colors = () => {
@@ -41,6 +42,11 @@ const Colors = () => {
       await deleteColor(colorId);
     }
   };
+
+  // Ordenar los colores alfabéticamente por nombre
+  const sortedColors = colors?.slice().sort((a: Color, b: Color) =>
+    a.name.localeCompare(b.name)
+  );
 
   if (isLoading) {
     return <div className="py-4">Loading...</div>;
@@ -82,7 +88,7 @@ const Colors = () => {
 
       {/* BODY COLORS LIST */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-10 justify-between">
-        {colors.map((color) => (
+        {sortedColors.map((color) => (
           <div
             key={color.colorId}
             className="border shadow rounded-md p-4 max-w-full w-full mx-auto"
@@ -119,7 +125,15 @@ const Colors = () => {
         onClose={() => setIsCreateModalOpen(false)}
         onCreate={handleCreateColor}
       />
-      
+
+      {selectedColor && (
+        <EditColorModal
+          isOpen={isEditModalOpen}
+          onClose={() => setIsEditModalOpen(false)}
+          onEdit={handleEditColor}
+          color={selectedColor}
+        />
+      )}
     </div>
   );
 };

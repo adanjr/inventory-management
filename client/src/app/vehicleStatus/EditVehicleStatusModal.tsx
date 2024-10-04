@@ -10,22 +10,27 @@ type EditVehicleStatusModalProps = {
   isOpen: boolean;
   onClose: () => void;
   onEdit: (formData: VehicleStatusFormData) => void;
-  initialData: VehicleStatusFormData;
+  initialData: VehicleStatusFormData | null; // Permitir que initialData sea nulo
 };
 
 const EditVehicleStatusModal = ({ isOpen, onClose, onEdit, initialData }: EditVehicleStatusModalProps) => {
-  const [formData, setFormData] = useState<VehicleStatusFormData>(initialData);
+  const [formData, setFormData] = useState<VehicleStatusFormData>({
+    vehicleStatusId: "",
+    name: "",
+  });
 
   useEffect(() => {
-    setFormData(initialData);
+    if (initialData) {
+      setFormData(initialData); // Establece los datos iniciales en el formulario
+    }
   }, [initialData]);
 
   const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    setFormData({
-      ...formData,
+    setFormData((prev) => ({
+      ...prev,
       [name]: value,
-    });
+    }));
   };
 
   const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
@@ -45,33 +50,34 @@ const EditVehicleStatusModal = ({ isOpen, onClose, onEdit, initialData }: EditVe
       <div className="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
         <Header name="Editar Estado del Vehículo" />
         <form onSubmit={handleSubmit} className="mt-5">
-          {/* VEHICLE STATUS NAME */}
           <label htmlFor="vehicleStatusName" className={labelCssStyles}>
             Nombre de Estado del Vehículo
           </label>
           <input
             type="text"
             name="name"
+            id="vehicleStatusName" // Mejora de accesibilidad
             placeholder="Nombre"
             onChange={handleChange}
             value={formData.name}
             className={inputCssStyles}
             required
           />
-          {/* EDIT ACTIONS */}
-          <button
-            type="submit"
-            className="mt-4 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-700"
-          >
-            Editar
-          </button>
-          <button
-            onClick={onClose}
-            type="button"
-            className="ml-2 px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-700"
-          >
-            Cancelar
-          </button>
+          <div className="flex justify-between">
+            <button
+              type="submit"
+              className="mt-4 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-700"
+            >
+              Editar
+            </button>
+            <button
+              onClick={onClose}
+              type="button"
+              className="mt-4 ml-2 px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-700"
+            >
+              Cancelar
+            </button>
+          </div>
         </form>
       </div>
     </div>

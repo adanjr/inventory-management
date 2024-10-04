@@ -64,13 +64,17 @@ model Products {
   description        String?
   price              Float
   rating             Float?
-  stockQuantity      Int
-  category           Categories  @relation(fields: [categoryId], references: [categoryId])
-  categoryId         Int
-  manufacturer       Manufacturers  @relation(fields: [manufacturerId], references: [manufacturerId])
+  stockQuantity      Int  
+  categoryId         Int  
   manufacturerId     Int
+  locationId         Int  // Location of the product  
   mainImageUrl       String?      
-  additionalImages   String[]   
+  additionalImages   String[]
+
+  category           Categories  @relation(fields: [categoryId], references: [categoryId])
+  manufacturer       Manufacturers  @relation(fields: [manufacturerId], references: [manufacturerId])
+  location           Locations @relation(fields: [locationId], references: [locationId])  
+
   inventoryLocations InventoryLocations[]
   saleDetails        SaleDetails[]
   purchaseDetails    PurchaseDetails[]
@@ -93,51 +97,78 @@ model Manufacturers {
 }
 
 model Vehicles {
-  vehicleId        Int            @id @default(autoincrement())
-  vin              String?        @unique // Vehicle Identification Number (opcional para motocicletas)
-  internal_serial  String?        @unique
-  vehicleType      VehicleTypes   @relation(fields: [vehicleTypeId], references: [vehicleTypeId])
-  vehicleTypeId    Int            // Identifica si es un coche o una motocicleta
-  make             Makes          @relation(fields: [makeId], references: [makeId])
-  makeId           Int            // Marca del vehículo
-  model            Models         @relation(fields: [modelId], references: [modelId])
-  modelId          Int            // Modelo del vehículo
-  year             Int            // Año de fabricación
-  color            Colors         @relation(fields: [colorId], references: [colorId])
-  colorId          Int            // Color del vehículo
-  engineType       EngineTypes    @relation(fields: [engineTypeId], references: [engineTypeId])
-  engineTypeId     Int            // Tipo de motor
-  fuelType         FuelTypes?     @relation(fields: [fuelTypeId], references: [fuelTypeId])
-  fuelTypeId       Int?           // Solo aplica para vehículos que no sean completamente eléctricos
-  transmission     Transmissions  @relation(fields: [transmissionId], references: [transmissionId])
-  transmissionId   Int            // Transmisión
-  mileage          Float          // Kilometraje del vehículo
-  batteryCapacity  Float?         // Capacidad de la batería en kWh (opcional, solo para eléctricos)
-  range            Float?         // Autonomía del vehículo en km (solo para eléctricos)
-  wheelCount       Int            // Número de ruedas (4 para autos, 2 para motocicletas)
-  price            Float          // Precio de venta del vehículo
-  status           VehicleStatus  @relation(fields: [statusId], references: [statusId])
-  statusId         Int            // Estado del vehículo
-  stockNumber      String         @unique // Número de inventario interno
-  barcode          String?        @unique // Código de barras único (opcional, para inventario)
-  qrCode           String?        @unique // Código QR único (opcional, para inventario)
-  description      String?        // Descripción del vehículo (opcional)
-  mainImageUrl     String?      
-  additionalImages String[]  
-  lastAuditDate    DateTime?      // Fecha de la última auditoría de inventario
-  createdAt        DateTime?       @default(now())
-  updatedAt        DateTime?       @updatedAt
-  auditLogs        AuditLogs[]    // Relación con registros de auditoría
+  vehicleId             Int            @id @default(autoincrement())
+  vin                   String?        @unique // Vehicle Identification Number (opcional para motocicletas)
+  internal_serial       String?        @unique  
+  modelId               Int            // Modelo del vehículo
+  year                  Int            // Año de fabricación
+  colorId               Int            // Color del vehículo
+  mileage               Float          // Kilometraje del vehículo
+  price                 Float          // Precio de venta del vehículo
+  conditionId           Int            // Nuevo/Usado
+  availabilityStatusId  Int            // Disponible, Vendido, Fuera de inventario  
+  statusId              Int            // Estado del vehículo
+  locationId            Int            // Almacén, Sucursal
+  stockNumber           String         @unique // Número de inventario interno
+  barcode               String?        @unique // Código de barras único (opcional, para inventario)
+  qrCode                String?        @unique // Código QR único (opcional, para inventario)
+  description           String?        // Descripción del vehículo (opcional)
+  mainImageUrl          String?      
+  additionalImages      String[]
+  createdAt             DateTime?      @default(now())
+  updatedAt             DateTime?      @updatedAt
+  lastAuditDate         DateTime?      // Fecha de la última auditoría de inventario    
+  warrantyId            String
+
+  // Relaciones
+  status                VehicleStatus             @relation(fields: [statusId], references: [statusId])
+  model                 Models                    @relation(fields: [modelId], references: [modelId])
+  color                 Colors                    @relation(fields: [colorId], references: [colorId])
+  condition             VehicleCondition          @relation(fields: [conditionId], references: [conditionId]) 
+  availabilityStatus    VehicleAvailabilityStatus @relation(fields: [availabilityStatusId], references: [statusId]) 
+  location              Locations                 @relation(fields: [locationId], references: [locationId])
+  warranty              Warranty                  @relation(fields: [warrantyId], references: [warrantyId])
+    
+  auditLogs                 AuditLogs[]    // Relación con registros de auditoría
   vehicleInventoryLocations VehicleInventoryLocations[]  
-  saleDetail       SaleDetails[]
-  purchaseDetail   PurchaseDetails[]
-  movements        Movements[] 
+  saleDetail                SaleDetails[]
+  purchaseDetail            PurchaseDetails[]
+  movements                 Movements[] 
+}
+
+model Models {
+  modelId         Int      @id @default(autoincrement())
+  name            String   @unique   
+  makeId          Int      // Marca del vehículo 
+  year_start      String?   
+  year_end        String?
+  vehicleTypeId   Int            // Identifica si es un coche o una motocicleta
+  engineTypeId    Int      // Tipo de motor
+  fuelTypeId      Int?     // Solo aplica para vehículos que no sean completamente eléctricos
+  transmissionId  Int      // Transmisión
+  batteryCapacity Float?   // Capacidad de batería en kWh (para eléctricos)
+  range           Float?   // Autonomía del vehículo en km (solo para eléctricos)
+  wheelCount      Int      // Número de ruedas (4 para autos, 2 para motocicletas)
+  basePrice       Float    // Precio base del modelo
+  chargeTime      Float    // Horas de carga
+  motorWattage    Int?     // Potencia del motor, si aplica
+  weightCapacity  Float    // Capacidad de peso
+  speed           Float    // Velocidad máxima
+  batteryVoltage  Float    // Voltaje de la batería
+
+  make            Makes          @relation(fields: [makeId], references: [makeId])  
+  vehicleType     VehicleTypes              @relation(fields: [vehicleTypeId], references: [vehicleTypeId])  
+  engineType      EngineTypes    @relation(fields: [engineTypeId], references: [engineTypeId])
+  fuelType        FuelTypes?     @relation(fields: [fuelTypeId], references: [fuelTypeId])
+  transmission    Transmissions  @relation(fields: [transmissionId], references: [transmissionId])
+
+  vehicles        Vehicles[]
 }
 
 model VehicleTypes {
   vehicleTypeId Int         @id @default(autoincrement())
   name          String      @unique  // Ejemplo: "Automóvil", "Motocicleta"
-  vehicles      Vehicles[]
+  models        Models[]
 }
 
 model Makes {
@@ -147,21 +178,19 @@ model Makes {
   website  String?
   phone    String?
   mail     String?
-  vehicles Vehicles[]
   models   Models[]
 }
 
-model Models {
-  modelId            Int      @id @default(autoincrement())
-  name               String   @unique
-  make               Makes    @relation(fields: [makeId], references: [makeId])
-  makeId             Int      // Marca del vehículo
-  year_start         String?   
-  year_end           String?
-  type               String?
-  battery_capacity   Float?   // Capacidad de batería en kWh (para eléctricos)
-  electric_range     Float?   // Rango en km para vehículos eléctricos
-  vehicles   Vehicles[]
+model VehicleCondition {
+  conditionId Int        @id @default(autoincrement())
+  name        String     // e.g., "Nuevo" o "Usado"
+  vehicles    Vehicles[]
+}
+
+model VehicleAvailabilityStatus {
+  statusId    Int         @id @default(autoincrement())
+  name        String      // e.g., "Disponible", "Vendido", "Fuera de inventario"
+  vehicles    Vehicles[]
 }
 
 model Colors {
@@ -174,25 +203,33 @@ model EngineTypes {
   engineTypeId Int        @id @default(autoincrement())
   name         String     @unique
   description  String?    // Descripción opcional del tipo de motor
-  vehicles     Vehicles[]
+  models       Models[]
 }
 
 model FuelTypes {
   fuelTypeId Int        @id @default(autoincrement())
   name       String     @unique // Ejemplo: "Gasolina", "Diésel", "Eléctrico"
-  vehicles   Vehicles[]
+  models     Models[]
 }
 
 model Transmissions {
   transmissionId Int        @id @default(autoincrement())
   type           String     @unique  // Tipo de transmisión
-  vehicles       Vehicles[]
+  models       Models[]
 }
 
 model VehicleStatus {
   statusId Int        @id @default(autoincrement())
   name     String     @unique // Estado del vehículo
   vehicles Vehicles[]
+} 
+
+model Warranty {
+  warrantyId      String    @id @default(uuid())
+  durationMonths  Int
+  batteryDuration Int       // Duración de la batería en meses
+  description     String?
+  vehicle         Vehicles[]
 }
 
 model Sales {
@@ -233,8 +270,11 @@ model Locations {
   managerId         String?
   latitude          Float?      // Coordenada de latitud para geolocalización
   longitude         Float?      // Coordenada de longitud para geolocalización  
-  mainImageUrl     String?      
-  additionalImages String[]       
+  mainImageUrl      String?      
+  additionalImages  String[]
+
+  vehicles          Vehicles[]
+  products          Products[]    
   inventoryLocation InventoryLocations[]
   unitLocation      VehicleInventoryLocations[]
   movementFrom      Movements[] @relation("MovementFrom")

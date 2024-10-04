@@ -11,7 +11,7 @@ import {
 import { PlusCircleIcon, SearchIcon, PencilIcon, TrashIcon } from "lucide-react";
 import Header from "@/app/(components)/Header";
 import CreateVehicleStatusModal from "./CreateVehicleStatusModal";
- 
+import EditVehicleStatusModal from "./EditVehicleStatusModal"; // Asegúrate de tener este componente
 import { VehicleStatus } from "@/state/api";
 
 const VehicleStatuses = () => {
@@ -31,6 +31,13 @@ const VehicleStatuses = () => {
     setIsCreateModalOpen(false);
   };
 
+  const handleUpdateVehicleStatus = async (vehicleStatusData: VehicleStatus) => {
+    if (selectedVehicleStatus) {
+      await updateVehicleStatus({ ...selectedVehicleStatus, ...vehicleStatusData });
+      setIsEditModalOpen(false);
+      setSelectedVehicleStatus(null); // Limpiar la selección tras la edición
+    }
+  };
 
   const handleDeleteVehicleStatus = async (vehicleStatusId: string) => {
     if (vehicleStatusId) {
@@ -115,7 +122,12 @@ const VehicleStatuses = () => {
         onClose={() => setIsCreateModalOpen(false)}
         onCreate={handleCreateVehicleStatus}
       />
-    
+      <EditVehicleStatusModal
+        isOpen={isEditModalOpen}
+        onClose={() => setIsEditModalOpen(false)}
+        onEdit={handleUpdateVehicleStatus}
+        initialData={selectedVehicleStatus} // Cambiar 'vehicleStatus' por 'initialData'
+      />
     </div>
   );
 };
