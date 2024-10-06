@@ -4,7 +4,7 @@ import Header from "@/app/(components)/Header";
 import MapboxMap from "../(components)/MapboxMap";
 
 type LocationFormData = {
-  location_id: string;
+  locationId: string;
   name: string;
   type: string;
   address: string;
@@ -28,7 +28,7 @@ const CreateLocationModal = ({
   onCreate,
 }: CreateLocationModalProps) => {
   const [formData, setFormData] = useState({
-    location_id: v4(),
+    locationId: v4(),
     name: "",
     type: "",
     address: "",

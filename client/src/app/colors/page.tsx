@@ -88,7 +88,7 @@ const Colors = () => {
 
       {/* BODY COLORS LIST */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-10 justify-between">
-        {sortedColors.map((color) => (
+        {colors.map((color) => (
           <div
             key={color.colorId}
             className="border shadow rounded-md p-4 max-w-full w-full mx-auto"

@@ -7,12 +7,16 @@ import {
   useUpdateModelMutation,
   useDeleteModelMutation,
   useGetMakesQuery,
+  useGetVehicleTypesQuery,
+  useGetEngineTypesQuery,
+  useGetFuelTypesQuery,
+  useGetTransmissionsQuery,
   NewModel,
 } from "@/state/api";
 import { PlusCircleIcon, SearchIcon, PencilIcon, TrashIcon } from "lucide-react";
 import Header from "@/app/(components)/Header";
 import CreateModelModal from "./CreateModelModal";
- 
+import EditModelModal from "./EditModelModal";
 import { Model } from "@/state/api";
 
 const Models = () => {
@@ -23,32 +27,79 @@ const Models = () => {
 
   const { data: models, isLoading, isError } = useGetModelsQuery(searchTerm);
   const { data: makes = [] } = useGetMakesQuery();
+  const { data: vehicleTypes = [] } = useGetVehicleTypesQuery();
+  const { data: engineTypes = [] } = useGetEngineTypesQuery();
+  const { data: fuelTypes = [] } = useGetFuelTypesQuery();
+  const { data: transmissions = [] } = useGetTransmissionsQuery();
 
   const [createModel] = useCreateModelMutation();
   const [updateModel] = useUpdateModelMutation();
   const [deleteModel] = useDeleteModelMutation();
 
-  const handleCreateModel = async (newModelData: NewModel) => {
+  const handleCreateModel = async (newModelData: Model) => {
     try {
-      // Convierte los valores a los tipos correctos
+
+      console.log(newModelData);
       const modelData = {
         ...newModelData,
-        makeId: parseInt(newModelData.makeId as any), // Convertir makeId a número
-      battery_capacity: newModelData.battery_capacity
-        ? parseFloat(newModelData.battery_capacity.toString())
-        : undefined,
-      electric_range: newModelData.electric_range
-        ? parseFloat(newModelData.electric_range.toString())
-        : undefined,
+        makeId: newModelData.makeId, // makeId is already number type
+        vehicleTypeId: newModelData.vehicleTypeId,
+        engineTypeId: newModelData.engineTypeId,
+        transmissionId: newModelData.transmissionId,
+        fuelTypeId: newModelData.fuelTypeId,
+        batteryCapacity: newModelData.batteryCapacity
+          ? parseFloat(newModelData.batteryCapacity.toString())
+          : 0,
+        range: newModelData.range
+          ? parseFloat(newModelData.range.toString())
+          : 0,
+        basePrice: parseFloat(newModelData.basePrice.toString()),
+        chargeTime: parseFloat(newModelData.chargeTime.toString()),             
+        speed: parseFloat(newModelData.speed.toString()),
+        weightCapacity: parseFloat(newModelData.weightCapacity.toString()),
+        motorWattage: parseFloat((newModelData.motorWattage || 0).toString()),
+        wheelCount: parseFloat(newModelData.wheelCount.toString()),
+        batteryVoltage: parseFloat(newModelData.batteryVoltage.toString()),
       };
-       
+
       await createModel(modelData).unwrap();
       setIsCreateModalOpen(false);
     } catch (error) {
       console.error("Failed to create model:", error);
     }
   };
- 
+
+  const handleUpdateModel = async (
+    updatedModelData: Model,
+    updateModel: any,
+    setIsEditModalOpen: (isOpen: boolean) => void
+  ) => {
+    try {
+      const modelData = {
+        ...updatedModelData,
+        makeId: updatedModelData.makeId,
+        vehicleTypeId: updatedModelData.vehicleTypeId,
+        engineTypeId: updatedModelData.engineTypeId,
+        transmissionId: updatedModelData.transmissionId,
+        fuelTypeId: updatedModelData.fuelTypeId,
+        batteryCapacity: updatedModelData.batteryCapacity
+          ? parseFloat(updatedModelData.batteryCapacity.toString())
+          : 0,
+        range: updatedModelData.range
+          ? parseFloat(updatedModelData.range.toString())
+          : 0,
+        basePrice: parseFloat(updatedModelData.basePrice.toString()),
+        chargeTime: parseFloat(updatedModelData.chargeTime.toString()),
+        speed: parseFloat(updatedModelData.speed.toString()),
+        batteryVoltage: parseFloat(updatedModelData.batteryVoltage.toString()),
+      };
+  
+      await updateModel(modelData).unwrap();
+      setIsEditModalOpen(false);
+    } catch (error) {
+      console.error("Failed to update model:", error);
+    }
+  };
 
   const handleDeleteModel = async (modelId: string) => {
     if (modelId) {
@@ -109,14 +160,26 @@ const Models = () => {
               <h3 className="text-lg text-gray-900 font-semibold">
                 {model.name}
               </h3>
-              {model.makeId && (
-                <p className="text-gray-600">Fabricante: {model.make?.name}</p>
+              {model.make?.name && (
+                <p className="text-gray-600">Fabricante: {model.make.name}</p>
               )}
               {model.year_start && (
                 <p className="text-gray-600">Año Inicio: {model.year_start}</p>
               )}
               {model.year_end && (
                 <p className="text-gray-600">Año Fin: {model.year_end}</p>
+              )}
+              {model.vehicleType?.name && (
+                <p className="text-gray-600">Tipo de Vehículo: {model.vehicleType.name}</p>
+              )}
+              {model.engineType?.name && (
+                <p className="text-gray-600">Motor: {model.engineType.name}</p>
+              )}
+              {model.transmission?.type && (
+                <p className="text-gray-600">Transmisión: {model.transmission.type}</p>
+              )}
+              {model.fuelType?.name && (
+                <p className="text-gray-600">Combustible: {model.fuelType.name}</p>
               )}
               <div className="flex mt-4">
                 <button
@@ -146,9 +209,25 @@ const Models = () => {
         onClose={() => setIsCreateModalOpen(false)}
         onCreate={handleCreateModel}
         makes={makes}
+        vehicleTypes={vehicleTypes}
+        engineTypes={engineTypes}
+        fuelTypes={fuelTypes}
+        transmissions={transmissions}
+      />
+      <EditModelModal
+        isOpen={isEditModalOpen}
+        onClose={() => setIsEditModalOpen(false)}
+        initialData={selectedModel as Model}
+        makes={makes}
+        vehicleTypes={vehicleTypes}
+        engineTypes={engineTypes}
+        fuelTypes={fuelTypes}
+        transmissions={transmissions}
+        onEdit={async (updatedModelData: Model) => {
+          await handleUpdateModel(updatedModelData, updateModel, setIsEditModalOpen);
+        }}
       />
 
-       
     </div>
   );
 };

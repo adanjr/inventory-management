@@ -2,56 +2,61 @@
 
 import { useState } from "react";
 import {
-  useGetVehicleStatusesQuery,
-  useCreateVehicleStatusMutation,
-  useUpdateVehicleStatusMutation,
-  useDeleteVehicleStatusMutation,
-  NewVehicleStatus,
+  useGetVehicleAvailabilityStatusesQuery,
+  useCreateVehicleAvailabilityStatusMutation,
+  useUpdateVehicleAvailabilityStatusMutation,
+  useDeleteVehicleAvailabilityStatusMutation
 } from "@/state/api";
 import { PlusCircleIcon, SearchIcon, PencilIcon, TrashIcon } from "lucide-react";
 import Header from "@/app/(components)/Header";
-import CreateVehicleStatusModal from "./CreateVehicleStatusModal";
-import EditVehicleStatusModal from "./EditVehicleStatusModal"; // Asegúrate de tener este componente
-import { VehicleStatus } from "@/state/api";
+import CreateVehicleAvailabilityStatusModal from "./CreateVehicleAvailabilityStatusModal";
+import EditVehicleAvailabilityStatusModal from "./EditVehicleAvailabilityStatusModal";
+import { VehicleAvailabilityStatus } from "@/state/api";
 
-const VehicleStatuses = () => {
+const VehicleAvailabilityStatusPage = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-  const [selectedVehicleStatus, setSelectedVehicleStatus] = useState<VehicleStatus | null>(null);
+  const [selectedStatus, setSelectedStatus] = useState<VehicleAvailabilityStatus | null>(null);
 
-  const { data: vehicleStatuses, isLoading, isError } = useGetVehicleStatusesQuery(searchTerm);
+  const { data: vehicleAvailabilityStatuses, isLoading, isError } = useGetVehicleAvailabilityStatusesQuery("");
+  const [createVehicleAvailabilityStatus] = useCreateVehicleAvailabilityStatusMutation();
+  const [updateVehicleAvailabilityStatus] = useUpdateVehicleAvailabilityStatusMutation();
+  const [deleteVehicleAvailabilityStatus] = useDeleteVehicleAvailabilityStatusMutation();
 
-  const [createVehicleStatus] = useCreateVehicleStatusMutation();
-  const [updateVehicleStatus] = useUpdateVehicleStatusMutation();
-  const [deleteVehicleStatus] = useDeleteVehicleStatusMutation();
-
-  const handleCreateVehicleStatus = async (vehicleStatusData: NewVehicleStatus) => {
-    await createVehicleStatus(vehicleStatusData);
+  const handleCreateVehicleAvailabilityStatus = async (statusData: VehicleAvailabilityStatus) => {
+    await createVehicleAvailabilityStatus(statusData);
     setIsCreateModalOpen(false);
   };
 
-  const handleUpdateVehicleStatus = async (statusId: string, updatedData: Partial<VehicleStatus>) => {
-    if (selectedVehicleStatus) {
-      await updateVehicleStatus({ id: statusId, data: updatedData });
+  const handleEditVehicleAvailabilityStatus = async (statusId: string, updatedData: Partial<VehicleAvailabilityStatus>) => {
+    if (statusId) {
+      await updateVehicleAvailabilityStatus({ id: statusId, data: updatedData });
       setIsEditModalOpen(false);
     }
   };
 
-  const handleDeleteVehicleStatus = async (statusId: string) => {
+  const handleDeleteVehicleAvailabilityStatus = async (statusId: string) => {
     if (statusId) {
-      await deleteVehicleStatus(statusId);
+      await deleteVehicleAvailabilityStatus(statusId);
     }
   };
+
+  // Filtrar y ordenar estados de disponibilidad
+  const filteredAndSortedStatuses = vehicleAvailabilityStatuses
+    ?.filter((status) =>
+      status.name.toLowerCase().includes(searchTerm.toLowerCase())
+    )
+    .sort((a, b) => a.name.localeCompare(b.name)); // Ordenar alfabéticamente por 'name'
 
   if (isLoading) {
     return <div className="py-4">Loading...</div>;
   }
 
-  if (isError || !vehicleStatuses) {
+  if (isError || !vehicleAvailabilityStatuses) {
     return (
       <div className="text-center text-red-500 py-4">
-        Failed to fetch vehicle statuses
+        Failed to fetch vehicle availability statuses
       </div>
     );
   }
@@ -64,7 +69,7 @@ const VehicleStatuses = () => {
           <SearchIcon className="w-5 h-5 text-gray-500 m-2" />
           <input
             className="w-full py-2 px-4 rounded bg-white"
-            placeholder="Buscar estados de vehículo..."
+            placeholder="Buscar estados de disponibilidad de vehículos..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />
@@ -73,7 +78,7 @@ const VehicleStatuses = () => {
 
       {/* HEADER BAR */}
       <div className="flex justify-between items-center mb-6">
-        <Header name="Estados de Vehículo" />
+        <Header name="Estados de Disponibilidad de Vehículos" />
         <button
           className="flex items-center bg-blue-500 hover:bg-blue-700 text-gray-200 font-bold py-2 px-4 rounded"
           onClick={() => setIsCreateModalOpen(true)}
@@ -82,22 +87,22 @@ const VehicleStatuses = () => {
         </button>
       </div>
 
-      {/* BODY VEHICLE STATUS LIST */}
+      {/* BODY VEHICLE AVAILABILITY STATUS LIST */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-10 justify-between">
-        {vehicleStatuses.map((vehicleStatus) => (
+        {filteredAndSortedStatuses?.map((status) => (
           <div
-            key={vehicleStatus.statusId}
+            key={status.statusId}
             className="border shadow rounded-md p-4 max-w-full w-full mx-auto"
           >
             <div className="flex flex-col items-center">
               <h3 className="text-lg text-gray-900 font-semibold">
-                {vehicleStatus.name}
-              </h3>
+                {status.name}
+              </h3>             
               <div className="flex mt-4">
                 <button
                   className="text-blue-500 hover:text-blue-700 flex items-center mr-4"
                   onClick={() => {
-                    setSelectedVehicleStatus(vehicleStatus);
+                    setSelectedStatus(status);
                     setIsEditModalOpen(true);
                   }}
                 >
@@ -105,7 +110,7 @@ const VehicleStatuses = () => {
                 </button>
                 <button
                   className="text-red-500 hover:text-red-700 flex items-center"
-                  onClick={() => handleDeleteVehicleStatus(vehicleStatus.statusId)}
+                  onClick={() => handleDeleteVehicleAvailabilityStatus(status.statusId)}
                 >
                   <TrashIcon className="w-5 h-5 mr-2" /> Eliminar
                 </button>
@@ -116,19 +121,20 @@ const VehicleStatuses = () => {
       </div>
 
       {/* MODALS */}
-      <CreateVehicleStatusModal
+      <CreateVehicleAvailabilityStatusModal
         isOpen={isCreateModalOpen}
         onClose={() => setIsCreateModalOpen(false)}
-        onCreate={handleCreateVehicleStatus}
+        onCreate={handleCreateVehicleAvailabilityStatus}
       />
-      <EditVehicleStatusModal
+
+      <EditVehicleAvailabilityStatusModal
         isOpen={isEditModalOpen}
         onClose={() => setIsEditModalOpen(false)}
-        onEdit={handleUpdateVehicleStatus}
-        initialData={selectedVehicleStatus} // Cambiar 'vehicleStatus' por 'initialData'
+        onEdit={handleEditVehicleAvailabilityStatus}
+        selectedStatus={selectedStatus}
       />
     </div>
   );
 };
 
-export default VehicleStatuses;
+export default VehicleAvailabilityStatusPage;

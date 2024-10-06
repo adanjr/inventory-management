@@ -118,7 +118,7 @@ model Vehicles {
   createdAt             DateTime?      @default(now())
   updatedAt             DateTime?      @updatedAt
   lastAuditDate         DateTime?      // Fecha de la última auditoría de inventario    
-  warrantyId            String
+  warrantyId            Int
 
   // Relaciones
   status                VehicleStatus             @relation(fields: [statusId], references: [statusId])
@@ -225,7 +225,8 @@ model VehicleStatus {
 } 
 
 model Warranty {
-  warrantyId      String    @id @default(uuid())
+  warrantyId      Int       @id @default(autoincrement())
+  name            String    @default("Garantia")
   durationMonths  Int
   batteryDuration Int       // Duración de la batería en meses
   description     String?

@@ -1,49 +1,62 @@
 "use client";
 
 import { useState } from "react";
-import { 
-  useGetManufacturersQuery, 
-  useCreateManufacturerMutation, 
-  useUpdateManufacturerMutation, 
-  useDeleteManufacturerMutation } from "@/state/api";
+import {
+  useGetAuditTypesQuery,
+  useCreateAuditTypeMutation,
+  useUpdateAuditTypeMutation,
+  useDeleteAuditTypeMutation
+} from "@/state/api";
 import { PlusCircleIcon, SearchIcon, PencilIcon, TrashIcon } from "lucide-react";
 import Header from "@/app/(components)/Header";
-import CreateManufacturerModal from "./CreateManufacturerModal";
- 
-import { Manufacturer } from "@/state/api";
+import CreateAuditTypeModal from "./CreateAuditTypeModal";
+import EditAuditTypeModal from "./EditAuditTypeModal";
+import { AuditType } from "@/state/api";
 
-const Manufacturers = () => {
+const AuditTypes = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-  const [selectedManufacturer, setSelectedManufacturer] = useState<Manufacturer | null>(null);
+  const [selectedAuditType, setSelectedAuditType] = useState<AuditType | null>(null);
 
-  const { data: manufacturers, isLoading, isError } = useGetManufacturersQuery(searchTerm);
+  const { data: auditTypes, isLoading, isError } = useGetAuditTypesQuery("");
+  const [createAuditType] = useCreateAuditTypeMutation();
+  const [updateAuditType] = useUpdateAuditTypeMutation();
+  const [deleteAuditType] = useDeleteAuditTypeMutation();
 
-  const [createManufacturer] = useCreateManufacturerMutation();
-  const [updateManufacturer] = useUpdateManufacturerMutation();
-  const [deleteManufacturer] = useDeleteManufacturerMutation();
-
-  const handleCreateManufacturer = async (manufacturerData: Manufacturer) => {
-    await createManufacturer(manufacturerData);
+  const handleCreateAuditType = async (auditTypeData: AuditType) => {
+    await createAuditType(auditTypeData);
     setIsCreateModalOpen(false);
   };
- 
 
-  const handleDeleteManufacturer = async (manufacturerId: string) => {
-    if (manufacturerId) {
-      await deleteManufacturer(manufacturerId);
+  const handleEditAuditType = async (auditTypeId: string, updatedData: Partial<AuditType>) => {
+    if (auditTypeId) {
+      await updateAuditType({ id: auditTypeId, data: updatedData });
+      setIsEditModalOpen(false);
     }
   };
+
+  const handleDeleteAuditType = async (auditTypeId: string) => {
+    if (auditTypeId) {
+      await deleteAuditType(auditTypeId);
+    }
+  };
+
+  // Filtrar y ordenar tipos de auditoría
+  const filteredAndSortedAuditTypes = auditTypes
+    ?.filter((auditType) =>
+      auditType.name.toLowerCase().includes(searchTerm.toLowerCase())
+    )
+    .sort((a, b) => a.name.localeCompare(b.name)); // Ordenar alfabéticamente por 'name'
 
   if (isLoading) {
     return <div className="py-4">Loading...</div>;
   }
 
-  if (isError || !manufacturers) {
+  if (isError || !auditTypes) {
     return (
       <div className="text-center text-red-500 py-4">
-        Failed to fetch manufacturers
+        Failed to fetch audit types
       </div>
     );
   }
@@ -56,7 +69,7 @@ const Manufacturers = () => {
           <SearchIcon className="w-5 h-5 text-gray-500 m-2" />
           <input
             className="w-full py-2 px-4 rounded bg-white"
-            placeholder="Buscar Marcas..."
+            placeholder="Buscar tipos de auditoría..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />
@@ -65,38 +78,31 @@ const Manufacturers = () => {
 
       {/* HEADER BAR */}
       <div className="flex justify-between items-center mb-6">
-        <Header name="Marcas" />
+        <Header name="Tipos de Auditoría" />
         <button
           className="flex items-center bg-blue-500 hover:bg-blue-700 text-gray-200 font-bold py-2 px-4 rounded"
           onClick={() => setIsCreateModalOpen(true)}
         >
-          <PlusCircleIcon className="w-5 h-5 mr-2 !text-gray-200" /> Crear
-          Marcas
+          <PlusCircleIcon className="w-5 h-5 mr-2 !text-gray-200" /> Crear Tipo de Auditoría
         </button>
       </div>
 
-      {/* BODY MANUFACTURERS LIST */}
+      {/* BODY AUDIT TYPES LIST */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-10 justify-between">
-        {manufacturers.map((manufacturer) => (
+        {filteredAndSortedAuditTypes?.map((auditType) => (
           <div
-            key={manufacturer.manufacturerId}
+            key={auditType.auditTypeId}
             className="border shadow rounded-md p-4 max-w-full w-full mx-auto"
           >
             <div className="flex flex-col items-center">
               <h3 className="text-lg text-gray-900 font-semibold">
-                {manufacturer.name}
+                {auditType.name}
               </h3>
-              <p className="text-gray-800">Pais: {manufacturer.country}</p>
-              {manufacturer.contact_info && (
-                <div className="text-sm text-gray-600 mt-1">
-                  Contacto: {manufacturer.contact_info}
-                </div>
-              )}
               <div className="flex mt-4">
                 <button
                   className="text-blue-500 hover:text-blue-700 flex items-center mr-4"
                   onClick={() => {
-                    setSelectedManufacturer(manufacturer);
+                    setSelectedAuditType(auditType);
                     setIsEditModalOpen(true);
                   }}
                 >
@@ -104,7 +110,7 @@ const Manufacturers = () => {
                 </button>
                 <button
                   className="text-red-500 hover:text-red-700 flex items-center"
-                  onClick={() => handleDeleteManufacturer(manufacturer.manufacturerId)}
+                  onClick={() => handleDeleteAuditType(auditType.auditTypeId)}
                 >
                   <TrashIcon className="w-5 h-5 mr-2" /> Eliminar
                 </button>
@@ -115,14 +121,20 @@ const Manufacturers = () => {
       </div>
 
       {/* MODALS */}
-      <CreateManufacturerModal
+      <CreateAuditTypeModal
         isOpen={isCreateModalOpen}
         onClose={() => setIsCreateModalOpen(false)}
-        onCreate={handleCreateManufacturer}
+        onCreate={handleCreateAuditType}
       />
-       
+
+      <EditAuditTypeModal
+        isOpen={isEditModalOpen}
+        onClose={() => setIsEditModalOpen(false)}
+        onEdit={handleEditAuditType}
+        selectedAuditType={selectedAuditType}
+      />
     </div>
   );
 };
 
-export default Manufacturers;
+export default AuditTypes;

@@ -14,7 +14,11 @@ export const getModels = async (req: Request, res: Response): Promise<void> => {
         },
       },
       include: {
-        make: true,  // Incluir la marca relacionada
+        make: true,              // Incluir la marca relacionada
+        vehicleType: true,        // Incluir el tipo de vehículo
+        engineType: true,         // Incluir el tipo de motor
+        fuelType: true,           // Incluir el tipo de combustible (si aplica)
+        transmission: true,       // Incluir la transmisión
       },
     });
     res.json(models);
@@ -26,21 +30,52 @@ export const getModels = async (req: Request, res: Response): Promise<void> => {
 // Crear un nuevo modelo
 export const createModel = async (req: Request, res: Response): Promise<void> => {
   try {
-    const { name, makeId, year_start, year_end, type, battery_capacity, electric_range } = req.body;
+    const {
+      name,
+      makeId,
+      year_start,
+      year_end,
+      vehicleTypeId,
+      engineTypeId,
+      fuelTypeId,
+      transmissionId,
+      batteryCapacity,
+      range,
+      wheelCount,
+      basePrice,
+      chargeTime,
+      motorWattage,
+      weightCapacity,
+      speed,
+      batteryVoltage,
+    } = req.body;
+
+    console.log(req.body);
+
     const model = await prisma.models.create({
       data: {
         name,
         makeId,
         year_start,
         year_end,
-        type,
-        battery_capacity,
-        electric_range,
+        vehicleTypeId,
+        engineTypeId,
+        fuelTypeId,
+        transmissionId,
+        batteryCapacity,
+        range,
+        wheelCount,
+        basePrice,
+        chargeTime,
+        motorWattage,
+        weightCapacity,
+        speed,
+        batteryVoltage,
       },
     });
     res.status(201).json(model);
   } catch (error) {
-    res.status(500).json({ message: "Error creating model" + error });
+    res.status(500).json({ message: "Error creating model: " + error });
   }
 };
 
@@ -51,8 +86,12 @@ export const getModelById = async (req: Request, res: Response): Promise<void> =
     const model = await prisma.models.findUnique({
       where: { modelId: Number(id) },
       include: {
-        make: true,  // Incluir la marca relacionada
-        vehicles: true, // Incluir vehículos relacionados si lo necesitas
+        make: true,              // Incluir la marca relacionada
+        vehicleType: true,        // Incluir el tipo de vehículo
+        engineType: true,         // Incluir el tipo de motor
+        fuelType: true,           // Incluir el tipo de combustible (si aplica)
+        transmission: true,       // Incluir la transmisión
+        vehicles: true,           // Incluir los vehículos relacionados
       },
     });
     if (!model) {
@@ -61,7 +100,7 @@ export const getModelById = async (req: Request, res: Response): Promise<void> =
       res.json(model);
     }
   } catch (error) {
-    res.status(500).json({ message: "Error retrieving model" });
+    res.status(500).json({ message: "Error retrieving model: " + error });
   }
 };
 
@@ -69,7 +108,26 @@ export const getModelById = async (req: Request, res: Response): Promise<void> =
 export const updateModel = async (req: Request, res: Response): Promise<void> => {
   try {
     const { id } = req.params;
-    const { name, makeId, year_start, year_end, type, battery_capacity, electric_range } = req.body;
+    const {
+      name,
+      makeId,
+      year_start,
+      year_end,
+      vehicleTypeId,
+      engineTypeId,
+      fuelTypeId,
+      transmissionId,
+      batteryCapacity,
+      range,
+      wheelCount,
+      basePrice,
+      chargeTime,
+      motorWattage,
+      weightCapacity,
+      speed,
+      batteryVoltage,
+    } = req.body;
+
     const model = await prisma.models.update({
       where: { modelId: Number(id) },
       data: {
@@ -77,14 +135,24 @@ export const updateModel = async (req: Request, res: Response): Promise<void> =>
         makeId,
         year_start,
         year_end,
-        type,
-        battery_capacity,
-        electric_range,
+        vehicleTypeId,
+        engineTypeId,
+        fuelTypeId,
+        transmissionId,
+        batteryCapacity,
+        range,
+        wheelCount,
+        basePrice,
+        chargeTime,
+        motorWattage,
+        weightCapacity,
+        speed,
+        batteryVoltage,
       },
     });
     res.json(model);
   } catch (error) {
-    res.status(500).json({ message: "Error updating model" });
+    res.status(500).json({ message: "Error updating model: " + error });
   }
 };
 
@@ -97,6 +165,6 @@ export const deleteModel = async (req: Request, res: Response): Promise<void> =>
     });
     res.status(204).send();
   } catch (error) {
-    res.status(500).json({ message: "Error deleting model" });
+    res.status(500).json({ message: "Error deleting model: " + error });
   }
 };

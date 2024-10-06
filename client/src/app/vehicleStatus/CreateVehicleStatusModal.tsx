@@ -3,7 +3,7 @@ import { v4 } from "uuid";
 import Header from "@/app/(components)/Header";
 
 type VehicleStatusFormData = {
-  vehicleStatusId: string;
+  statusId: string;
   name: string;
 };
 
@@ -19,7 +19,7 @@ const CreateVehicleStatusModal = ({
   onCreate,
 }: CreateVehicleStatusModalProps) => {
   const [formData, setFormData] = useState<VehicleStatusFormData>({
-    vehicleStatusId: v4(),
+    statusId: v4(),
     name: "",
   });
 
@@ -39,7 +39,7 @@ const CreateVehicleStatusModal = ({
       return;
     }
     onCreate(formData);
-    setFormData({ vehicleStatusId: v4(), name: "" }); // Reiniciar el formulario después de enviar
+    setFormData({ statusId: v4(), name: "" }); // Reiniciar el formulario después de enviar
     onClose();
   };
 

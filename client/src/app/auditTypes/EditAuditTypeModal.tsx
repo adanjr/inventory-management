@@ -1,31 +1,42 @@
-import React, { ChangeEvent, FormEvent, useState } from "react";
-import { v4 } from "uuid";
+import React, { ChangeEvent, FormEvent, useState, useEffect } from "react";
 import Header from "@/app/(components)/Header";
+import { AuditType } from "@/state/api";
 
-type ManufacturerFormData = {
-  manufacturerId: string;
+type AuditTypeFormData = {
+  auditTypeId: string;
   name: string;
-  country: string;
-  contact_info: string;
+ 
 };
 
-type CreateManufacturerModalProps = {
+type EditAuditTypeModalProps = {
   isOpen: boolean;
   onClose: () => void;
-  onCreate: (formData: ManufacturerFormData) => void;
+  onEdit: (auditTypeId: string, formData: Partial<AuditTypeFormData>) => void;
+  selectedAuditType: AuditType | null;
 };
 
-const CreateManufacturerModal = ({
+const EditAuditTypeModal = ({
   isOpen,
   onClose,
-  onCreate,
-}: CreateManufacturerModalProps) => {
+  onEdit,
+  selectedAuditType,
+}: EditAuditTypeModalProps) => {
   const [formData, setFormData] = useState({
-    manufacturerId: v4(),
-    name: "",
-    country: "",
-    contact_info: "",
+    auditTypeId: selectedAuditType?.auditTypeId || "",
+    name: selectedAuditType?.name || "",
+    
   });
+
+  useEffect(() => {
+    if (selectedAuditType && isOpen) {
+      // Actualiza el formulario con los datos del tipo de auditoría seleccionado
+      setFormData({
+        auditTypeId: selectedAuditType.auditTypeId,
+        name: selectedAuditType.name,
+         
+      });
+    }
+  }, [selectedAuditType, isOpen]);
 
   const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -37,7 +48,10 @@ const CreateManufacturerModal = ({
 
   const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    onCreate(formData);
+    onEdit(formData.auditTypeId, {
+      name: formData.name,
+    
+    });
     onClose();
   };
 
@@ -50,11 +64,11 @@ const CreateManufacturerModal = ({
   return (
     <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-20">
       <div className="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
-        <Header name="Crear Nueva Marca" />
+        <Header name="Editar Tipo de Auditoría" />
         <form onSubmit={handleSubmit} className="mt-5">
-          {/* MANUFACTURER NAME */}
-          <label htmlFor="manufacturerName" className={labelCssStyles}>
-            Nombre de Marca
+          {/* AUDIT TYPE NAME */}
+          <label htmlFor="auditTypeName" className={labelCssStyles}>
+            Nombre de Tipo de Auditoría
           </label>
           <input
             type="text"
@@ -66,46 +80,19 @@ const CreateManufacturerModal = ({
             required
           />
 
-          {/* COUNTRY */}
-          <label htmlFor="manufacturerCountry" className={labelCssStyles}>
-            Pais
-          </label>
-          <input
-            type="text"
-            name="country"
-            placeholder="Pais"
-            onChange={handleChange}
-            value={formData.country}
-            className={inputCssStyles}
-            required
-          />
-
-          {/* CONTACT INFO */}
-          <label htmlFor="contactInfo" className={labelCssStyles}>
-            Info de Contacto
-          </label>
-          <input
-            type="text"
-            name="contact_info"
-            placeholder="Info de Contacto"
-            onChange={handleChange}
-            value={formData.contact_info}
-            className={inputCssStyles}
-          />
-
-          {/* CREATE ACTIONS */}
+          {/* EDIT ACTIONS */}
           <button
             type="submit"
             className="mt-4 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-700"
           >
-            Crear
+            Guardar Cambios
           </button>
           <button
             onClick={onClose}
             type="button"
             className="ml-2 px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-700"
           >
-            Cancel
+            Cancelar
           </button>
         </form>
       </div>
@@ -113,4 +100,4 @@ const CreateManufacturerModal = ({
   );
 };
 
-export default CreateManufacturerModal;
+export default EditAuditTypeModal;

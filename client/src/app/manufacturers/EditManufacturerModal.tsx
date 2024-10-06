@@ -19,7 +19,7 @@ const EditManufacturerModal = ({ isOpen, onClose, manufacturerId }: EditManufact
 
   useEffect(() => {
     if (manufacturerId && manufacturers) {
-      const manufacturer = manufacturers.find((m) => m.manufacturer_id === manufacturerId);
+      const manufacturer = manufacturers.find((m) => m.manufacturerId === manufacturerId);
       if (manufacturer) {
         setFormData({
           name: manufacturer.name,

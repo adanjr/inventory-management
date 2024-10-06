@@ -1,8 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { 
   useCreateVehicleMutation,
+  useGetVehicleByIdQuery, // Import the query for fetching vehicle data
   useGetWarrantiesQuery,
   useGetMakesQuery,
   useGetModelsQuery,
@@ -12,11 +13,12 @@ import {
   useGetVehicleAvailabilityStatusesQuery,
   useGetLocationsQuery,
 } from "@/state/api";
-import { useRouter } from "next/navigation";
+import { useRouter } from 'next/navigation';
 
-const CreateVehicle = () => {
+const EditVehicle = ({ params }: { params: { id: string } }) => {
   const router = useRouter();
-  const [createVehicle] = useCreateVehicleMutation();
+  const id = params.id;
+  const { data: vehicle, isLoading: vehicleLoading } = useGetVehicleByIdQuery(id); // Fetch vehicle data
 
   const { data: makes, isLoading: makesLoading } = useGetMakesQuery();
   const { data: models, isLoading: modelsLoading } = useGetModelsQuery();
@@ -26,7 +28,8 @@ const CreateVehicle = () => {
   const { data: vehicleAvailabilityStatuses, isLoading: vehicleAvailabilityStatusesLoading } = useGetVehicleAvailabilityStatusesQuery();   
   const { data: warranties, isLoading: warrantiesLoading } = useGetWarrantiesQuery(); 
   const { data: locations, isLoading: locationsLoading } = useGetLocationsQuery();  
-  
+  const [updateVehicle] = useCreateVehicleMutation(); // Update mutation
+
   const [formData, setFormData] = useState({
     vin: "",
     internal_serial: "",    
@@ -47,12 +50,35 @@ const CreateVehicle = () => {
     description: "",
   });
 
+  useEffect(() => {
+    if (vehicle) {
+      setFormData({
+        vin: vehicle.vin!,
+        internal_serial: vehicle.internal_serial!,
+        makeId: vehicle.makeId,
+        modelId: vehicle.modelId,
+        year: vehicle.year,
+        colorId: vehicle.colorId,
+        availabilityStatusId: vehicle.availabilityStatusId,
+        conditionId: vehicle.conditionId,
+        statusId: vehicle.statusId,
+        warrantyId: vehicle.warrantyId,
+        locationId: vehicle.locationId,
+        mileage: vehicle.mileage,
+        price: vehicle.price,
+        stockNumber: vehicle.stockNumber,
+        barcode: vehicle.barcode!,
+        qrCode: vehicle.qrCode!,
+        description: vehicle.description!,
+      });
+    }
+  }, [vehicle]);
+
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
   
-    // Convierte a número si el campo es un ID
+    // Convert to number if the field is an ID
     const isIdField = [     
-      "makeId",
       "modelId",
       "colorId",
       "availabilityStatusId",
@@ -60,22 +86,26 @@ const CreateVehicle = () => {
       "statusId",     
       "locationId",
       "warrantyId",
-      "mileage",  // Si también quieres que sea un número       
+      "mileage",  // If you want it to be a number       
       "price",
       "year",
     ].includes(name);
   
     setFormData((prev) => ({
       ...prev,
-      [name]: isIdField ? parseInt(value) : value, // Mantener como cadena, la conversión se hará al enviar
+      [name]: isIdField ? parseInt(value) : value,
     }));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    await createVehicle(formData);
-    router.push("/vehicles"); // Redirige a la lista de vehículos después de crear uno nuevo
+    await updateVehicle(formData); // Use updateVehicle instead of createVehicle
+    router.push("/vehicles"); // Redirect to vehicle list after updating
   };
+
+  if (vehicleLoading) {
+    return <p>Cargando vehículo...</p>; // Loading message
+  }
 
   const handleBack = () => {
     router.push("/vehicles"); // Redirigir a la lista de vehículos
@@ -83,9 +113,11 @@ const CreateVehicle = () => {
 
   return (
     <div className="mx-auto p-6 max-w-6xl bg-white shadow-md rounded-lg">
-      <h2 className="text-3xl font-bold mb-6 text-center">Agregar Nuevo Vehículo</h2>
+      <h2 className="text-3xl font-bold mb-6 text-center">Editar Vehículo</h2>
+      
       <form onSubmit={handleSubmit}>
         <div className="grid grid-cols-1 gap-6 sm:grid-cols-4">
+          {/* Form fields */}
           <div>
             <label className="block text-gray-700 font-semibold">VIN</label>
             <input
@@ -95,7 +127,8 @@ const CreateVehicle = () => {
               onChange={handleInputChange}
               className="w-full border border-gray-200 rounded-lg px-4 py-2 focus:outline-none focus:border-gray-500 focus:ring-2 focus:ring-gray-200"
             />
-          </div>
+          </div>           
+          
           <div>
             <label className="block text-gray-700 font-semibold">Número de Serie Interno</label>
             <input
@@ -330,7 +363,7 @@ const CreateVehicle = () => {
         <div className="flex justify-between mt-6">
           <button 
             type="submit" 
-            className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-green-600 transition-colors"
+            className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors"
           >
             Guardar Vehículo
           </button>
@@ -347,4 +380,4 @@ const CreateVehicle = () => {
   );
 };
 
-export default CreateVehicle;
+export default EditVehicle;

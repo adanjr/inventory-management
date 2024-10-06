@@ -16,25 +16,33 @@ export const getVehicles = async (req: Request, res: Response): Promise<void> =>
         ],
       },
       include: {
-        make: true,       // Asegúrate de que el make esté siempre incluido
-        model: true,      // Asegúrate de que el model esté siempre incluido
+        model: {
+          include: {
+            make: true, // Incluir la relación con Make
+          },
+        },
         color: true,
-        engineType: true,
-        fuelType: true,
-        transmission: true,
+        condition: true,
+        availabilityStatus: true,
         status: true,
-        vehicleType: true,
+        location: true,
+        warranty: true,
       },
     });
 
-    const vehiclesWithMakeName = vehicles.map(vehicle => ({
+    const vehiclesWithDetails = vehicles.map(vehicle => ({
       ...vehicle,
-      makeName: vehicle.make?.name || 'N/A',  // Crear makeName a partir del campo make
-      modelName: vehicle.model?.name || 'N/A', // Crear modelName a partir del campo model
-      // Puedes hacer lo mismo para otros campos si es necesario
+      modelName: vehicle.model?.name || 'N/A',
+      makeName: vehicle.model?.make?.name || 'N/A', // Obtener el nombre del fabricante
+      colorName: vehicle.color?.name || 'N/A',
+      condition: vehicle.condition?.name || 'N/A',
+      availabilityStatus: vehicle.availabilityStatus?.name || 'N/A',
+      statusName: vehicle.status?.name || 'N/A',
+      locationName: vehicle.location?.name || 'N/A',
+      warrantyInfo: vehicle.warranty?.description || 'N/A',
     }));
-    
-    res.json(vehiclesWithMakeName);
+
+    res.json(vehiclesWithDetails);
   } catch (error) {
     res.status(500).json({ message: "Error retrieving vehicles" });
   }
@@ -42,61 +50,50 @@ export const getVehicles = async (req: Request, res: Response): Promise<void> =>
 
 // Crear un nuevo vehículo
 export const createVehicle = async (req: Request, res: Response): Promise<void> => {
-  try {  
-    console.log("Datos recibidos en el POST:", req.body);
+  try {
     const {
       vin,
       internal_serial,
-      vehicleTypeId,
-      makeId,
       modelId,
       year,
       colorId,
-      engineTypeId,
-      fuelTypeId,
-      transmissionId,       
       mileage,
-      batteryCapacity,
-      range,
-      wheelCount,
       price,
+      conditionId,
+      availabilityStatusId,
       statusId,
+      locationId,
       stockNumber,
       barcode,
       qrCode,
-      description,     
-    } = req.body;
+      description,
+      warrantyId,
+    } = req.body;     
 
     const vehicle = await prisma.vehicles.create({
       data: {
         vin,
         internal_serial,
-        vehicleTypeId,
-        makeId,
         modelId,
         year,
         colorId,
-        engineTypeId,
-        fuelTypeId,
-        transmissionId,        
         mileage,
-        batteryCapacity,
-        range,
-        wheelCount,
         price,
+        conditionId,
+        availabilityStatusId,
         statusId,
-        stockNumber,      
-        description,       
+        locationId,
+        stockNumber,
+        barcode,
+        qrCode,
+        description,
+        warrantyId,
       },
     });
 
     res.status(201).json(vehicle);
   } catch (error) {
-    if (error instanceof Error) {
-      res.status(500).json({ message: "Error creating vehicle: " + error.message });
-    } else {
-      res.status(500).json({ message: "Unknown error" });
-    }
+    res.status(500).json({ message: "Error creating vehicle" });
   }
 };
 
@@ -107,14 +104,13 @@ export const getVehicleById = async (req: Request, res: Response): Promise<void>
     const vehicle = await prisma.vehicles.findUnique({
       where: { vehicleId: Number(id) },
       include: {
-        make: true,
         model: true,
         color: true,
-        engineType: true,
-        fuelType: true,
-        transmission: true,
+        condition: true,
+        availabilityStatus: true,
         status: true,
-        vehicleType: true,
+        location: true,
+        warranty: true,
       },
     });
     if (!vehicle) {
@@ -134,24 +130,20 @@ export const updateVehicle = async (req: Request, res: Response): Promise<void> 
     const {
       vin,
       internal_serial,
-      vehicleTypeId,
-      makeId,
       modelId,
       year,
       colorId,
-      engineTypeId,
-      fuelTypeId,
-      transmissionId,
       mileage,
-      batteryCapacity,
-      range,
-      wheelCount,
       price,
+      conditionId,
+      availabilityStatusId,
       statusId,
+      locationId,
       stockNumber,
       barcode,
       qrCode,
-      description,     
+      description,
+      warrantyId,
     } = req.body;
 
     const vehicle = await prisma.vehicles.update({
@@ -159,24 +151,20 @@ export const updateVehicle = async (req: Request, res: Response): Promise<void> 
       data: {
         vin,
         internal_serial,
-        vehicleTypeId,
-        makeId,
         modelId,
         year,
         colorId,
-        engineTypeId,
-        fuelTypeId,
-        transmissionId,
         mileage,
-        batteryCapacity,
-        range,
-        wheelCount,
         price,
+        conditionId,
+        availabilityStatusId,
         statusId,
+        locationId,
         stockNumber,
         barcode,
         qrCode,
-        description,    
+        description,
+        warrantyId,
       },
     });
     res.json(vehicle);

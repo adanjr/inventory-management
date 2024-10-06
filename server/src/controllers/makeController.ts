@@ -45,8 +45,7 @@ export const getMakeById = async (req: Request, res: Response): Promise<void> =>
     const { id } = req.params;
     const make = await prisma.makes.findUnique({
       where: { makeId: Number(id) },
-      include: {
-        vehicles: true,  // Opción para incluir vehículos relacionados, si lo necesitas
+      include: {        
         models: true,    // Opción para incluir modelos relacionados
       },
     });

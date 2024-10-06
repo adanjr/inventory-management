@@ -23,6 +23,14 @@ import fuelTypeRoutes from "./routes/fuelTypeRoutes"; // Rutas para FuelTypes
 import transmissionRoutes from "./routes/transmissionRoutes"; // Rutas para Transmissions
 import vehicleStatusRoutes from "./routes/vehicleStatusRoutes"; // Rutas para VehicleStatus
 import vehicleRoutes from "./routes/vehicleRoutes"; // Rutas para Vehicles
+import auditLogsRoutes from "./routes/auditLogsRoutes";
+import auditTypesRoutes from "./routes/auditTypesRoutes";
+import inventoryLocationsRoutes from "./routes/inventoryLocationsRoutes";
+import movementsRoutes from "./routes/movementsRoutes";
+import vehicleConditionsRoutes from "./routes/vehicleConditionsRoutes";
+import vehicleInventoryLocationsRoutes from "./routes/vehicleInventoryLocationsRoutes";
+import warrantyRoutes from "./routes/warrantyRoutes";
+import vehicleAvailabilityStatusRoutes from "./routes/vehicleAvailabilityStatusRoutes";
 
 /* CONFIGURATIONS */
 dotenv.config();
@@ -54,6 +62,14 @@ app.use("/fuel-types", fuelTypeRoutes); // http://localhost:8000/fuel-types
 app.use("/transmissions", transmissionRoutes); // http://localhost:8000/transmissions
 app.use("/vehicle-status", vehicleStatusRoutes); // http://localhost:8000/vehicle-status
 app.use("/vehicles", vehicleRoutes); // http://localhost:8000/vehicles
+app.use("/audit-logs", auditLogsRoutes); // http://localhost:8000/audit-logs
+app.use("/audit-types", auditTypesRoutes); // http://localhost:8000/audit-types
+app.use("/inventory-locations", inventoryLocationsRoutes); // http://localhost:8000/inventory-locations
+app.use("/movements", movementsRoutes); // http://localhost:8000/movements
+app.use("/vehicle-availability-status", vehicleAvailabilityStatusRoutes); // http://localhost:8000/vehicle-availability-status
+app.use("/vehicle-conditions", vehicleConditionsRoutes); // http://localhost:8000/vehicle-conditions
+app.use("/vehicle-inventory-locations", vehicleInventoryLocationsRoutes); // http://localhost:8000/vehicle-inventory-locations
+app.use("/warranties", warrantyRoutes); // http://localhost:8000/warranties
 
 /* SERVER */
 const port = Number(process.env.PORT) || 3001;

@@ -1,7 +1,9 @@
 import React, { ChangeEvent, FormEvent, useState } from "react";
 import { v4 } from "uuid";
 import Header from "@/app/(components)/Header";
-import { useGetCategoriesQuery } from "@/state/api"; 
+import { useGetCategoriesQuery,
+        useGetManufacturersQuery,
+         useGetLocationsQuery } from "@/state/api"; 
 
 type ProductFormData = {
   name: string;
@@ -11,6 +13,7 @@ type ProductFormData = {
   rating: number;
   categoryId: string;
   manufacturerId: string;
+  locationId: string;
   isSerialized: boolean;  
 };
 
@@ -26,6 +29,8 @@ const CreateProductModal = ({
   onCreate,
 }: CreateProductModalProps) => {
   const { data: categories = [], isLoading: isCategoriesLoading } = useGetCategoriesQuery(); // Fetch categories
+  const { data: locations = [], isLoading: isLocationsLoading } = useGetLocationsQuery(); // Fetch categories
+  const { data: manufacturers = [], isLoading: isManufacturersLoading } = useGetManufacturersQuery(); // Fetch categories
 
   const [formData, setFormData] = useState({
     productId: v4(),
@@ -36,6 +41,7 @@ const CreateProductModal = ({
     rating: 0,
     categoryId: "",
     manufacturerId: "",
+    locationId: "",
     isSerialized: false,
   });
 
@@ -105,17 +111,59 @@ const CreateProductModal = ({
 
           {/* DESCRIPTION */}
           <label htmlFor="description" className={labelCssStyles}>
-            Nombre de Producto
+            Descripcion
           </label>
           <input
             type="text"
             name="description"
             placeholder="Descripcion"
             onChange={handleChange}
-            value={formData.name}
+            value={formData.description}
             className={inputCssStyles}
             required
           />
+
+          {/* LOCATION SELECTION */}
+          <label htmlFor="location" className={labelCssStyles}>
+            Categoría
+          </label>
+          <select
+            name="locationId"
+            value={formData.locationId}
+            onChange={handleChange}
+            className={inputCssStyles}
+            required
+          >
+            <option value="" disabled>
+              {isLocationsLoading ? "Cargando ubicaciones..." : "Selecciona una ubicacion"}
+            </option>
+            {locations.map((location) => (
+              <option key={location.locationId} value={location.locationId}>
+                {location.name}
+              </option>
+            ))}
+          </select>
+
+          {/* MANUFACTURER SELECTION */}
+          <label htmlFor="manufacturer" className={labelCssStyles}>
+            Marca
+          </label>
+          <select
+            name="manufacturerId"
+            value={formData.manufacturerId}
+            onChange={handleChange}
+            className={inputCssStyles}
+            required
+          >
+            <option value="" disabled>
+              {isManufacturersLoading ? "Cargando Marcas..." : "Selecciona una marca"}
+            </option>
+            {manufacturers.map((manufacturer) => (
+              <option key={manufacturer.manufacturerId} value={manufacturer.manufacturerId}>
+                {manufacturer.name}
+              </option>
+            ))}
+          </select>
 
           {/* PRICE */}
           <label htmlFor="productPrice" className={labelCssStyles}>

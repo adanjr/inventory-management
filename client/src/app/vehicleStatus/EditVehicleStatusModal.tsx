@@ -2,20 +2,20 @@ import React, { ChangeEvent, FormEvent, useState, useEffect } from "react";
 import Header from "@/app/(components)/Header";
 
 type VehicleStatusFormData = {
-  vehicleStatusId: string;
+  statusId: string;
   name: string;
 };
 
 type EditVehicleStatusModalProps = {
   isOpen: boolean;
   onClose: () => void;
-  onEdit: (formData: VehicleStatusFormData) => void;
+  onEdit: (statusId: string, formData: Partial<VehicleStatusFormData>) => void;
   initialData: VehicleStatusFormData | null; // Permitir que initialData sea nulo
 };
 
 const EditVehicleStatusModal = ({ isOpen, onClose, onEdit, initialData }: EditVehicleStatusModalProps) => {
   const [formData, setFormData] = useState<VehicleStatusFormData>({
-    vehicleStatusId: "",
+    statusId: "",
     name: "",
   });
 
@@ -35,7 +35,9 @@ const EditVehicleStatusModal = ({ isOpen, onClose, onEdit, initialData }: EditVe
 
   const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    onEdit(formData);
+    onEdit(formData.statusId, {
+      name: formData.name,     
+    });
     onClose();
   };
 

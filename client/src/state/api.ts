@@ -80,36 +80,79 @@ export interface UpdatedMake {
 export interface Model {
   modelId: string;
   name: string;
-  makeId: string;
+  makeId: number;
   make?: {
-    name: string; 
+    name: string;
   };
   year_start?: string;
   year_end?: string;
-  type?: string;
-  battery_capacity?: number;
-  electric_range?: number;
+  vehicleTypeId: number;
+  vehicleType?: {
+    name: string;
+  };
+  engineTypeId: number;
+  engineType?: {
+    name: string;
+  };
+  fuelTypeId: number;
+  fuelType?: {
+    name: string;
+  };
+  transmissionId: number;
+  transmission?: {
+    type: string;
+  };
+  batteryCapacity: number;
+  range: number;
+  wheelCount: number;
+  basePrice: number;
+  chargeTime: number;
+  motorWattage: number;
+  weightCapacity: number;
+  speed: number;
+  batteryVoltage: number;
 }
 
 export interface NewModel {
   name: string;
-  makeId: number;               
+  makeId: number;
   year_start?: string;
   year_end?: string;
-  type?: string;
-  battery_capacity?: number;
-  electric_range?: number;
+  vehicleTypeId: number;
+  engineTypeId: number;
+  fuelTypeId: number;
+  transmissionId: number;
+  batteryCapacity: number;
+  range: number;
+  wheelCount: number;
+  basePrice: number;
+  chargeTime: number;
+  motorWattage: number;
+  weightCapacity: number;
+  speed: number;
+  batteryVoltage: number;
 }
 
 export interface UpdatedModel {
   name?: string;
-  makeId?: string;
+  makeId?: number;
   year_start?: string;
   year_end?: string;
-  type?: string;
-  battery_capacity?: number;
-  electric_range?: number;
+  vehicleTypeId: number;
+  engineTypeId: number;
+  fuelTypeId: number;
+  transmissionId: number;
+  batteryCapacity: number;
+  range: number;
+  wheelCount: number;
+  basePrice: number;
+  chargeTime: number;
+  motorWattage: number;
+  weightCapacity: number;
+  speed: number;
+  batteryVoltage: number;
 }
+
 
 export interface Color {
   colorId: string;
@@ -180,86 +223,83 @@ export interface UpdatedVehicleStatus {
 }
 
 export interface Vehicle {
-  vehicleId: string;
+  vehicleId: number; // Cambié a number para que coincida con el modelo
   vin?: string;
   internal_serial?: string;
-  vehicleTypeId: string;
-  makeId: string;
-  makeName: string;
-  modelId: string;
-  modelName: string;
-  make: { name: string } | null; // Asegúrate de que puede ser nulo
-  model: { name: string };
+  makeId: number;
+  modelId: number; // Cambiado de string a number
   year: number;
-  colorId: string;
-  engineTypeId: string;
-  fuelTypeId?: string;
-  transmissionId: string;
+  colorId: number; // Cambiado de string a number
   mileage: number;
-  batteryCapacity?: number;
-  range?: number;
-  wheelCount: number;
   price: number;
-  statusId: string;
+  conditionId: number; // Añadido para condición (nuevo/usado)
+  availabilityStatusId: number; // Añadido para estado de disponibilidad
+  statusId: number; // Cambiado de string a number
+  locationId: number; // Añadido para ubicación
   stockNumber: string;
   barcode?: string;
   qrCode?: string;
   description?: string;
   mainImageUrl?: string;
   additionalImages?: string[];
-  lastAuditDate?: string;
+  createdAt?: Date; // Añadido para la fecha de creación
+  updatedAt?: Date; // Añadido para la fecha de actualización
+  lastAuditDate?: Date; // Cambiado de string a Date
+  warrantyId: number; // Cambiado a string según el modelo
+
+  // Relaciones
+  model: { name: string }; // Aquí puedes incluir otros detalles del modelo si es necesario
+  make: { name: string };
+  color: { name: string }; // Asumiendo que color es un objeto similar
+  condition: { name: string }; // Asumiendo que condición es un objeto similar
+  availabilityStatus: { name: string }; // Asumiendo que estado de disponibilidad es un objeto similar
+  status: { name: string }; // Asumiendo que estado es un objeto similar
+  location: { name: string }; // Asumiendo que ubicación es un objeto similar
+  warranty: { name: string }; // Asumiendo que garantía es un objeto similar
 }
 
 export interface NewVehicle {
   vin?: string;
   internal_serial?: string;
-  vehicleTypeId: number;
-  makeId: number;
-  modelId: number;
+  modelId: number; // Cambiado a number
   year: number;
-  colorId: number;
-  engineTypeId: number;
-  fuelTypeId?: number;
-  transmissionId: number;
-  statusId: number;
+  colorId: number; // Cambiado a number
   mileage: number;
-  batteryCapacity?: number;
-  range?: number;
-  wheelCount: number;
   price: number;
+  conditionId: number; // Añadido
+  availabilityStatusId: number; // Añadido
+  statusId: number; // Cambiado a number
+  locationId: number; // Añadido
   stockNumber: string;
   barcode?: string;
   qrCode?: string;
   description?: string;
   mainImageUrl?: string;
   additionalImages?: string[];
-  lastAuditDate?: string;
+  lastAuditDate?: Date; // Cambiado a Date
+  warrantyId: number; // Cambiado a string según el modelo
 }
 
 export interface UpdatedVehicle {
   vin?: string;
   internal_serial?: string;
-  vehicleTypeId?: string;
-  makeId?: string;
-  modelId?: string;
+  modelId?: number; // Cambiado a number
   year?: number;
-  colorId?: string;
-  engineTypeId?: string;
-  fuelTypeId?: string;
-  transmissionId?: string;
+  colorId?: number; // Cambiado a number
   mileage?: number;
-  batteryCapacity?: number;
-  range?: number;
-  wheelCount?: number;
   price?: number;
-  statusId?: string;
+  conditionId?: number; // Añadido
+  availabilityStatusId?: number; // Añadido
+  statusId?: number; // Cambiado a number
+  locationId?: number; // Añadido
   stockNumber?: string;
   barcode?: string;
   qrCode?: string;
   description?: string;
   mainImageUrl?: string;
   additionalImages?: string[];
-  lastAuditDate?: string;
+  lastAuditDate?: Date; // Cambiado a Date
+  warrantyId?: number; // Cambiado a string según el modelo
 }
 
 export interface SalesSummary {
@@ -304,7 +344,7 @@ export interface User {
 }
 
 export interface Manufacturer {
-  manufacturer_id: string;
+  manufacturerId: string;
   name: string;
   country: string;
   contact_info?: string;
@@ -406,8 +446,70 @@ export interface UpdatedCategory {
   description?: string;
 }
 
+export interface AuditType {
+  auditTypeId: string;
+  name: string;   
+}
+
+export interface NewAuditType {
+  name: string;
+}
+
+export interface UpdatedAuditType {
+  name?: string;  
+}
+
+export interface Warranty {
+  warrantyId: string;  // ID de la garantía, que es un UUID
+  name: string;
+  durationMonths: number;  // Duración de la garantía en meses
+  batteryDuration: number;  // Duración de la batería en meses
+  description?: string;  // Descripción opcional de la garantía
+}
+
+export interface NewWarranty {
+  name?: string;
+  durationMonths: number;  // Duración de la garantía en meses
+  batteryDuration: number;  // Duración de la batería en meses
+  description?: string;  // Descripción opcional de la garantía
+}
+
+export interface UpdatedWarranty {
+  name?: string;
+  durationMonths?: number;  // Duración de la garantía en meses (opcional)
+  batteryDuration?: number;  // Duración de la batería en meses (opcional)
+  description?: string;  // Descripción opcional de la garantía
+}
+
+export interface VehicleCondition {
+  conditionId: string;  // ID de la condición del vehículo
+  name: string;         // Nombre de la condición (e.g., "Nuevo" o "Usado")
+}
+
+export interface NewVehicleCondition {
+  name: string;         // Nombre de la condición a crear
+}
+
+export interface UpdatedVehicleCondition {
+  name?: string;       // Nombre de la condición a actualizar (opcional)
+}
+
+export interface VehicleAvailabilityStatus {
+  statusId: string;    // ID del estado de disponibilidad
+  name: string;        // Nombre del estado (e.g., "Disponible", "Vendido", "Fuera de inventario")
+}
+
+export interface NewVehicleAvailabilityStatus {
+  name: string;        // Nombre del estado de disponibilidad a crear
+}
+
+export interface UpdatedVehicleAvailabilityStatus {
+  name?: string;      // Nombre del estado de disponibilidad a actualizar (opcional)
+}
+
+
 export interface Location {
-  location_id: string;
+  locationId: string;
   name: string;
   type: string;  
   address?: string;
@@ -510,6 +612,10 @@ export const api = createApi({
     "VehicleStatus",
     "Vehicles",
     "Sales",
+    "AuditTypes",
+    "Warranties",
+    "VehicleConditions",
+    "VehicleAvailabilityStatus",
   ],
   endpoints: (build) => ({
     getDashboardMetrics: build.query<DashboardMetrics, void>({
@@ -667,6 +773,126 @@ export const api = createApi({
       }),
       invalidatesTags: ["Categories"],
     }),  
+    getAuditTypes: build.query<AuditType[], string | void>({
+      query: (search) => ({
+        url: "/audit-types",
+        params: search ? { search } : {},
+      }),
+      providesTags: ["AuditTypes"],
+    }),
+    createAuditType: build.mutation<AuditType, NewAuditType>({
+      query: (newAuditType) => ({
+        url: "/audit-types",
+        method: "POST",
+        body: newAuditType,
+      }),
+      invalidatesTags: ["AuditTypes"],
+    }),
+    updateAuditType: build.mutation<AuditType, { id: string; data: UpdatedAuditType }>({
+      query: ({ id, data }) => ({
+        url: `/audit-types/${id}`,
+        method: "PUT",
+        body: data,
+      }),
+      invalidatesTags: ["AuditTypes"],
+    }),
+    deleteAuditType: build.mutation<void, string>({
+      query: (id) => ({
+        url: `/audit-types/${id}`,
+        method: "DELETE",
+      }),
+      invalidatesTags: ["AuditTypes"],
+    }),
+    getWarranties: build.query<Warranty[], string | void>({
+      query: (search) => ({
+        url: "/warranties",
+        params: search ? { search } : {},
+      }),
+      providesTags: ["Warranties"],
+    }),
+    createWarranty: build.mutation<Warranty, NewWarranty>({
+      query: (newWarranty) => ({
+        url: "/warranties",
+        method: "POST",
+        body: newWarranty,
+      }),
+      invalidatesTags: ["Warranties"],
+    }),
+    updateWarranty: build.mutation<Warranty, { id: string; data: UpdatedWarranty }>({
+      query: ({ id, data }) => ({
+        url: `/warranties/${id}`,
+        method: "PUT",
+        body: data,
+      }),
+      invalidatesTags: ["Warranties"],
+    }),
+    deleteWarranty: build.mutation<void, string>({
+      query: (id) => ({
+        url: `/warranties/${id}`,
+        method: "DELETE",
+      }),
+      invalidatesTags: ["Warranties"],
+    }),
+    getVehicleConditions: build.query<VehicleCondition[], string | void>({
+      query: (search) => ({
+        url: "/vehicle-conditions",
+        params: search ? { search } : {},
+      }),
+      providesTags: ["VehicleConditions"],
+    }),
+    createVehicleCondition: build.mutation<VehicleCondition, NewVehicleCondition>({
+      query: (newVehicleCondition) => ({
+        url: "/vehicle-conditions",
+        method: "POST",
+        body: newVehicleCondition,
+      }),
+      invalidatesTags: ["VehicleConditions"],
+    }),
+    updateVehicleCondition: build.mutation<VehicleCondition, { id: string; data: UpdatedVehicleCondition }>({
+      query: ({ id, data }) => ({
+        url: `/vehicle-conditions/${id}`,
+        method: "PUT",
+        body: data,
+      }),
+      invalidatesTags: ["VehicleConditions"],
+    }),
+    deleteVehicleCondition: build.mutation<void, string>({
+      query: (id) => ({
+        url: `/vehicle-conditions/${id}`,
+        method: "DELETE",
+      }),
+      invalidatesTags: ["VehicleConditions"],
+    }),
+    getVehicleAvailabilityStatuses: build.query<VehicleAvailabilityStatus[], string | void>({
+      query: (search) => ({
+        url: "/vehicle-availability-status",
+        params: search ? { search } : {},
+      }),
+      providesTags: ["VehicleAvailabilityStatus"],
+    }),
+    createVehicleAvailabilityStatus: build.mutation<VehicleAvailabilityStatus, NewVehicleAvailabilityStatus>({
+      query: (newVehicleAvailabilityStatus) => ({
+        url: "/vehicle-availability-status",
+        method: "POST",
+        body: newVehicleAvailabilityStatus,
+      }),
+      invalidatesTags: ["VehicleAvailabilityStatus"],
+    }),
+    updateVehicleAvailabilityStatus: build.mutation<VehicleAvailabilityStatus, { id: string; data: UpdatedVehicleAvailabilityStatus }>({
+      query: ({ id, data }) => ({
+        url: `/vehicle-availability-status/${id}`,
+        method: "PUT",
+        body: data,
+      }),
+      invalidatesTags: ["VehicleAvailabilityStatus"],
+    }),
+    deleteVehicleAvailabilityStatus: build.mutation<void, string>({
+      query: (id) => ({
+        url: `/vehicle-availability-status/${id}`,
+        method: "DELETE",
+      }),
+      invalidatesTags: ["VehicleAvailabilityStatus"],
+    }),    
     getLocations: build.query<Location[], string | void>({
       query: (search) => ({
         url: "/locations",
@@ -960,6 +1186,12 @@ export const api = createApi({
       }),
       providesTags: ["Vehicles"],
     }),
+    getVehicleById: build.query<Vehicle, string>({
+      query: (id) => ({
+        url: `/vehicles/${id}`,
+      }),
+      providesTags: (result, error, id) => [{ type: "Vehicles", id }],
+    }),
     createVehicle: build.mutation<Vehicle, NewVehicle>({
       query: (newVehicle) => ({
         url: "/vehicles",
@@ -1009,6 +1241,27 @@ export const {
   useCreateCategoryMutation,
   useUpdateCategoryMutation,
   useDeleteCategoryMutation,
+
+  useGetAuditTypesQuery,
+  useCreateAuditTypeMutation,
+  useUpdateAuditTypeMutation,
+  useDeleteAuditTypeMutation,
+
+  useGetWarrantiesQuery,
+  useCreateWarrantyMutation,
+  useUpdateWarrantyMutation,
+  useDeleteWarrantyMutation,
+
+  useGetVehicleConditionsQuery,
+  useCreateVehicleConditionMutation,
+  useUpdateVehicleConditionMutation,
+  useDeleteVehicleConditionMutation,
+
+  useGetVehicleAvailabilityStatusesQuery,
+  useCreateVehicleAvailabilityStatusMutation,
+  useUpdateVehicleAvailabilityStatusMutation,
+  useDeleteVehicleAvailabilityStatusMutation,
+
   useGetLocationsQuery,
   useCreateLocationMutation,
   useUpdateLocationMutation,
@@ -1063,6 +1316,7 @@ export const {
  
    // Vehicles
    useGetVehiclesQuery,
+   useGetVehicleByIdQuery,
    useCreateVehicleMutation,
    useUpdateVehicleMutation,
    useDeleteVehicleMutation,
