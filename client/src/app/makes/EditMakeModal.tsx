@@ -5,6 +5,10 @@ import { Make } from "@/state/api";
 type MakeFormData = {
   makeId: string;
   name: string;
+  country: string;
+  website: string;
+  phone: string;
+  mail: string;
 };
 
 type EditMakeModalProps = {
@@ -23,6 +27,10 @@ const EditMakeModal = ({
   const [formData, setFormData] = useState({
     makeId: selectedMake?.makeId || "",
     name: selectedMake?.name || "",
+    country: selectedMake?.country || "",
+    website: selectedMake?.website || "",
+    phone: selectedMake?.phone || "",
+    mail: selectedMake?.mail || "",
   });
 
   useEffect(() => {
@@ -30,7 +38,11 @@ const EditMakeModal = ({
       // Actualiza el formulario con los datos de la Fabricante seleccionada
       setFormData({
         makeId: selectedMake.makeId,
-        name: selectedMake.name,      
+        name: selectedMake.name, 
+        country: selectedMake.country,   
+        website: selectedMake.website,   
+        phone: selectedMake.phone,   
+        mail: selectedMake.mail, 
       });
     }
   }, [selectedMake, isOpen]);
@@ -46,7 +58,11 @@ const EditMakeModal = ({
   const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     onEdit(formData.makeId, {
-      name: formData.name,    
+      name: formData.name,   
+      country: formData.country,    
+      website: formData.website,    
+      phone: formData.phone,    
+      mail: formData.mail,     
     });
     onClose();
   };
@@ -74,6 +90,57 @@ const EditMakeModal = ({
             value={formData.name}
             className={inputCssStyles}
             required
+          />
+          {/* COUNTRY */}
+          <label htmlFor="country" className={labelCssStyles}>
+            País
+          </label>
+          <input
+            type="text"
+            name="country"
+            placeholder="País"
+            onChange={handleChange}
+            value={formData.country}
+            className={inputCssStyles}
+          />
+
+          {/* WEBSITE */}
+          <label htmlFor="website" className={labelCssStyles}>
+            Sitio Web
+          </label>
+          <input
+            type="text"
+            name="website"
+            placeholder="Sitio Web"
+            onChange={handleChange}
+            value={formData.website}
+            className={inputCssStyles}
+          />
+
+          {/* PHONE */}
+          <label htmlFor="phone" className={labelCssStyles}>
+            Teléfono
+          </label>
+          <input
+            type="text"
+            name="phone"
+            placeholder="Teléfono"
+            onChange={handleChange}
+            value={formData.phone}
+            className={inputCssStyles}
+          />
+
+          {/* EMAIL */}
+          <label htmlFor="mail" className={labelCssStyles}>
+            Correo Electrónico
+          </label>
+          <input
+            type="email"
+            name="mail"
+            placeholder="Correo Electrónico"
+            onChange={handleChange}
+            value={formData.mail}
+            className={inputCssStyles}
           />
           
           {/* EDIT ACTIONS */}

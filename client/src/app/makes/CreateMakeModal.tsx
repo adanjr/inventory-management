@@ -5,10 +5,10 @@ import Header from "@/app/(components)/Header";
 type MakeFormData = {
   makeId: string;
   name: string;
-  country?: string;
-  website?: string;
-  phone?: string;
-  mail?: string;
+  country: string;
+  website: string;
+  phone: string;
+  mail: string;
 };
 
 type CreateMakeModalProps = {

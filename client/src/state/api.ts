@@ -55,10 +55,10 @@ export interface UpdatedVehicleType {
 export interface Make {
   makeId: string;
   name: string;
-  country?: string;
-  website?: string;
-  phone?: string;
-  mail?: string;
+  country: string;
+  website: string;
+  phone: string;
+  mail: string;
 }
 
 export interface NewMake {
