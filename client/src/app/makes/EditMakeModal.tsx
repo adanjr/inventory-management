@@ -1,5 +1,6 @@
 import React, { ChangeEvent, FormEvent, useState, useEffect } from "react";
 import Header from "@/app/(components)/Header";
+import { Make } from "@/state/api";
 
 type MakeFormData = {
   makeId: string;
@@ -9,16 +10,30 @@ type MakeFormData = {
 type EditMakeModalProps = {
   isOpen: boolean;
   onClose: () => void;
-  onEdit: (formData: MakeFormData) => void;
-  initialData: MakeFormData;
+  onEdit: (makeId: string, formData: Partial<MakeFormData>) => void;
+  selectedMake: Make | null;
 };
 
-const EditMakeModal = ({ isOpen, onClose, onEdit, initialData }: EditMakeModalProps) => {
-  const [formData, setFormData] = useState<MakeFormData>(initialData);
+const EditMakeModal = ({
+  isOpen,
+  onClose,
+  onEdit,
+  selectedMake,
+}: EditMakeModalProps) => {
+  const [formData, setFormData] = useState({
+    makeId: selectedMake?.makeId || "",
+    name: selectedMake?.name || "",
+  });
 
   useEffect(() => {
-    setFormData(initialData);
-  }, [initialData]);
+    if (selectedMake && isOpen) {
+      // Actualiza el formulario con los datos de la Fabricante seleccionada
+      setFormData({
+        makeId: selectedMake.makeId,
+        name: selectedMake.name,      
+      });
+    }
+  }, [selectedMake, isOpen]);
 
   const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -30,7 +45,9 @@ const EditMakeModal = ({ isOpen, onClose, onEdit, initialData }: EditMakeModalPr
 
   const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    onEdit(formData);
+    onEdit(formData.makeId, {
+      name: formData.name,    
+    });
     onClose();
   };
 
@@ -58,12 +75,13 @@ const EditMakeModal = ({ isOpen, onClose, onEdit, initialData }: EditMakeModalPr
             className={inputCssStyles}
             required
           />
+          
           {/* EDIT ACTIONS */}
           <button
             type="submit"
             className="mt-4 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-700"
           >
-            Editar
+            Guardar Cambios
           </button>
           <button
             onClick={onClose}

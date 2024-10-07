@@ -10,7 +10,7 @@ import {
 import { PlusCircleIcon, SearchIcon, PencilIcon, TrashIcon } from "lucide-react";
 import Header from "@/app/(components)/Header";
 import CreateMakeModal from "./CreateMakeModal";
- 
+import EditMakeModal from "./EditMakeModal";
 import { Make } from "@/state/api";
 
 const Makes = () => {
@@ -20,7 +20,6 @@ const Makes = () => {
   const [selectedMake, setSelectedMake] = useState<Make | null>(null);
 
   const { data: makes, isLoading, isError } = useGetMakesQuery(searchTerm);
-
   const [createMake] = useCreateMakeMutation();
   const [updateMake] = useUpdateMakeMutation();
   const [deleteMake] = useDeleteMakeMutation();
@@ -30,6 +29,12 @@ const Makes = () => {
     setIsCreateModalOpen(false);
   };
 
+  const handleEditMake = async (makeId: string, updatedData: Partial<Make>) => {
+    if (makeId) {
+      await updateMake({ id: makeId, data: updatedData });
+      setIsEditModalOpen(false);
+    }
+  };
    
   const handleDeleteMake = async (makeId: string) => {
     if (makeId) {
@@ -89,6 +94,15 @@ const Makes = () => {
               {make.country && (
                 <p className="text-gray-600">Country: {make.country}</p>
               )}
+              {make.website && (
+                <p className="text-gray-600">Web Site: {make.website}</p>
+              )}
+              {make.mail && (
+                <p className="text-gray-600">Email: {make.mail}</p>
+              )}
+              {make.phone && (
+                <p className="text-gray-600">Telefono: {make.phone}</p>
+              )}
               <div className="flex mt-4">
                 <button
                   className="text-blue-500 hover:text-blue-700 flex items-center mr-4"
@@ -116,6 +130,13 @@ const Makes = () => {
         isOpen={isCreateModalOpen}
         onClose={() => setIsCreateModalOpen(false)}
         onCreate={handleCreateMake}
+      />
+      
+      <EditMakeModal
+        isOpen={isEditModalOpen}
+        onClose={() => setIsEditModalOpen(false)}
+        onEdit={handleEditMake}
+        selectedMake={selectedMake}
       />
       
     </div>
