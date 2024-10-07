@@ -218,10 +218,10 @@ const Sidebar = () => {
         }`}
       >
         <Image
-          src="https://s3-inventorymanagement.s3.us-east-2.amazonaws.com/logo.png"
+          src="https://s3-yaiiinventory.s3.us-east-2.amazonaws.com/yaii+logo.png"
           alt="yaii-logo"
-          width={27}
-          height={27}
+          width={50}
+          height={50}
           className="rounded w-8"
         />
         <h1
@@ -229,7 +229,7 @@ const Sidebar = () => {
             isSidebarCollapsed ? "hidden" : "block"
           } font-extrabold text-2xl`}
         >
-          YAII/ERP
+          ERP
         </h1>
 
         <button
