@@ -68,7 +68,7 @@ export const createVehicle = async (req: Request, res: Response): Promise<void> 
       qrCode,
       description,
       warrantyId,
-    } = req.body;     
+    } = req.body;    
 
     const vehicle = await prisma.vehicles.create({
       data: {
@@ -93,7 +93,7 @@ export const createVehicle = async (req: Request, res: Response): Promise<void> 
 
     res.status(201).json(vehicle);
   } catch (error) {
-    res.status(500).json({ message: "Error creating vehicle" });
+    res.status(500).json({ message: "Error creating vehicle: " + error });
   }
 };
 

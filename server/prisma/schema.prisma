@@ -110,8 +110,8 @@ model Vehicles {
   statusId              Int            // Estado del vehículo
   locationId            Int            // Almacén, Sucursal
   stockNumber           String         @unique // Número de inventario interno
-  barcode               String?        @unique // Código de barras único (opcional, para inventario)
-  qrCode                String?        @unique // Código QR único (opcional, para inventario)
+  barcode               String?        // Código de barras único (opcional, para inventario)
+  qrCode                String?        // Código QR único (opcional, para inventario)
   description           String?        // Descripción del vehículo (opcional)
   mainImageUrl          String?      
   additionalImages      String[]
