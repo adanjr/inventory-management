@@ -156,6 +156,9 @@ model Models {
   speed           Float    // Velocidad máxima
   batteryVoltage  Float    // Voltaje de la batería
 
+  mainImageUrl      String?      
+  additionalImages  String[]
+  
   make            Makes          @relation(fields: [makeId], references: [makeId])  
   vehicleType     VehicleTypes              @relation(fields: [vehicleTypeId], references: [vehicleTypeId])  
   engineType      EngineTypes    @relation(fields: [engineTypeId], references: [engineTypeId])

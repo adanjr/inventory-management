@@ -15,6 +15,7 @@ import {
 } from "@/state/api";
 import { PlusCircleIcon, SearchIcon, PencilIcon, TrashIcon } from "lucide-react";
 import Header from "@/app/(components)/Header";
+import Image from "next/image";
 import CreateModelModal from "./CreateModelModal";
 import EditModelModal from "./EditModelModal";
 import { Model } from "@/state/api";
@@ -156,7 +157,14 @@ const Models = () => {
             key={model.modelId}
             className="border shadow rounded-md p-4 max-w-full w-full mx-auto"
           >
-            <div className="flex flex-col items-center">
+            <div className="flex flex-col items-center">            
+              <Image
+                  src="https://s3-yaiiinventory.s3.us-east-2.amazonaws.com/AJ2000.jpg"
+                  alt={model.name}
+                  width={150}
+                  height={150}
+                  className="mb-3 rounded-2xl w-36 h-36"
+                /> 
               <h3 className="text-lg text-gray-900 font-semibold">
                 {model.name}
               </h3>
