@@ -71,7 +71,7 @@ app.use("/vehicle-availability-status", vehicleAvailabilityStatusRoutes); // htt
 app.use("/vehicle-conditions", vehicleConditionsRoutes); // http://localhost:8000/vehicle-conditions
 app.use("/vehicle-inventory-locations", vehicleInventoryLocationsRoutes); // http://localhost:8000/vehicle-inventory-locations
 app.use("/warranties", warrantyRoutes); // http://localhost:8000/warranties
-app.use("/batteryWarranties", batteryWarrantyRoutes); // http://localhost:8000/batteryWarranties
+app.use("/battery-warranties", batteryWarrantyRoutes); // http://localhost:8000/battery-warranties
 
 /* SERVER */
 const port = Number(process.env.PORT) || 3001;

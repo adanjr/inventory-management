@@ -856,14 +856,14 @@ export const api = createApi({
     }),
     getBatteryWarranties: build.query<BatteryWarranty[], string | void>({
       query: (search) => ({
-        url: "/batteryWarranties",
+        url: "/battery-warranties",
         params: search ? { search } : {},
       }),
       providesTags: ["BatteryWarranties"],
     }),
     createBatteryWarranty: build.mutation<BatteryWarranty, NewBatteryWarranty>({
       query: (newBatteryWarranty) => ({
-        url: "/batteryWarranties",
+        url: "/battery-warranties",
         method: "POST",
         body: newBatteryWarranty,
       }),
@@ -871,7 +871,7 @@ export const api = createApi({
     }),
     updateBatteryWarranty: build.mutation<BatteryWarranty, { id: string; data: UpdatedBatteryWarranty }>({
       query: ({ id, data }) => ({
-        url: `/batteryWarranties/${id}`,
+        url: `/battery-warranties/${id}`,
         method: "PUT",
         body: data,
       }),
@@ -879,7 +879,7 @@ export const api = createApi({
     }),
     deleteBatteryWarranty: build.mutation<void, string>({
       query: (id) => ({
-        url: `/batteryWarranties/${id}`,
+        url: `/battery-warranties/${id}`,
         method: "DELETE",
       }),
       invalidatesTags: ["BatteryWarranties"],
