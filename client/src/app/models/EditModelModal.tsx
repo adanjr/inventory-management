@@ -82,7 +82,7 @@ const EditModelModal = ({
   return (
     <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-20">
       <div className="relative top-20 mx-auto p-5 border w-full max-w-4xl h-auto shadow-lg rounded-md bg-white">
-        <Header name="Crear Nuevo Modelo" />
+        <Header name="Editar Modelo" />
         <form onSubmit={handleSubmit} className="mt-5 grid grid-cols-1 md:grid-cols-4 gap-4">
           {/* MODEL NAME */}
           <div className="col-span-1">
