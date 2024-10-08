@@ -1,43 +1,43 @@
 import React, { ChangeEvent, FormEvent, useState, useEffect } from "react";
 import Header from "@/app/(components)/Header";
 
-type WarrantyFormData = {
-  warrantyId: string;
+type BatteryWarrantyFormData = {
+  batteryWarrantyId: string;
   name?: string;
   durationMonths: number;  
   description?: string;
 };
 
-type EditWarrantyModalProps = {
+type EditBatteryWarrantyModalProps = {
   isOpen: boolean;
   onClose: () => void;
-  onEdit: (warrantyId: string, formData: Partial<WarrantyFormData>) => void;
-  selectedWarranty: WarrantyFormData | null;
+  onEdit: (batteryWarrantyId: string, formData: Partial<BatteryWarrantyFormData>) => void;
+  selectedBatteryWarranty: BatteryWarrantyFormData | null;
 };
 
-const EditWarrantyModal = ({
+const EditBatteryWarrantyModal = ({
   isOpen,
   onClose,
   onEdit,
-  selectedWarranty,
-}: EditWarrantyModalProps) => {
+  selectedBatteryWarranty,
+}: EditBatteryWarrantyModalProps) => {
   const [formData, setFormData] = useState({
-    warrantyId: selectedWarranty?.warrantyId || "",
-    name: selectedWarranty?.name || "",
-    durationMonths: selectedWarranty?.durationMonths || 0,    
-    description: selectedWarranty?.description || "",
+    batteryWarrantyId: selectedBatteryWarranty?.batteryWarrantyId || "",
+    name: selectedBatteryWarranty?.name || "",
+    durationMonths: selectedBatteryWarranty?.durationMonths || 0,    
+    description: selectedBatteryWarranty?.description || "",
   });
 
   useEffect(() => {
-    if (selectedWarranty && isOpen) {
+    if (selectedBatteryWarranty && isOpen) {
       setFormData({
-        warrantyId: selectedWarranty.warrantyId,
-        name: selectedWarranty.name || "",
-        durationMonths: selectedWarranty.durationMonths,        
-        description: selectedWarranty.description || "",
+        batteryWarrantyId: selectedBatteryWarranty.batteryWarrantyId,
+        name: selectedBatteryWarranty.name || "",
+        durationMonths: selectedBatteryWarranty.durationMonths,        
+        description: selectedBatteryWarranty.description || "",
       });
     }
-  }, [selectedWarranty, isOpen]);
+  }, [selectedBatteryWarranty, isOpen]);
 
   const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -49,7 +49,7 @@ const EditWarrantyModal = ({
 
   const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    onEdit(formData.warrantyId, {
+    onEdit(formData.batteryWarrantyId, {
       name: formData.name,
       durationMonths: formData.durationMonths,      
       description: formData.description,
@@ -130,4 +130,4 @@ const EditWarrantyModal = ({
   );
 };
 
-export default EditWarrantyModal;
+export default EditBatteryWarrantyModal;

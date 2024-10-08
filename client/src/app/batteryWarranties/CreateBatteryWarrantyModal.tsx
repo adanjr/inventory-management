@@ -2,26 +2,26 @@ import React, { ChangeEvent, FormEvent, useState } from "react";
 import { v4 } from "uuid";
 import Header from "@/app/(components)/Header";
 
-type WarrantyFormData = {
-  warrantyId: string;
+type BatteryWarrantyFormData = {
+  batteryWarrantyId: string;
   name: string;
   durationMonths: number;
   description: string;
 };
 
-type CreateWarrantyModalProps = {
+type CreateBatteryWarrantyModalProps = {
   isOpen: boolean;
   onClose: () => void;
-  onCreate: (formData: WarrantyFormData) => void;
+  onCreate: (formData: BatteryWarrantyFormData) => void;
 };
 
-const CreateWarrantyModal = ({
+const CreateBatteryWarrantyModal = ({
   isOpen,
   onClose,
   onCreate,
-}: CreateWarrantyModalProps) => {
+}: CreateBatteryWarrantyModalProps) => {
   const [formData, setFormData] = useState({
-    warrantyId: v4(),
+    batteryWarrantyId: v4(),
     name: "",
     durationMonths: 0,
     description: "",
@@ -37,13 +37,13 @@ const CreateWarrantyModal = ({
 
   const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    const newWarranty: WarrantyFormData = {
-      warrantyId: formData.warrantyId,
+    const newBatteryWarranty: BatteryWarrantyFormData = {
+      batteryWarrantyId: formData.batteryWarrantyId,
       name: formData.name,
       durationMonths: formData.durationMonths,      
       description: formData.description,
     };
-    onCreate(newWarranty);
+    onCreate(newBatteryWarranty);
     onClose();
   };
 
@@ -111,7 +111,7 @@ const CreateWarrantyModal = ({
           <button
             onClick={() => {
               setFormData({
-                warrantyId: v4(),
+                batteryWarrantyId: v4(),
                 name:"",
                 durationMonths: 0,                
                 description: "",
@@ -129,4 +129,4 @@ const CreateWarrantyModal = ({
   );
 };
 
-export default CreateWarrantyModal;
+export default CreateBatteryWarrantyModal;
