@@ -27,6 +27,7 @@ export const getVehicles = async (req: Request, res: Response): Promise<void> =>
         status: true,
         location: true,
         warranty: true,
+        batteryWarranty : true,
       },
     });
 
@@ -40,6 +41,7 @@ export const getVehicles = async (req: Request, res: Response): Promise<void> =>
       statusName: vehicle.status?.name || 'N/A',
       locationName: vehicle.location?.name || 'N/A',
       warrantyInfo: vehicle.warranty?.description || 'N/A',
+      batteryWarrantyInfo: vehicle.batteryWarranty?.description || 'N/A',
     }));
 
     res.json(vehiclesWithDetails);
@@ -68,6 +70,7 @@ export const createVehicle = async (req: Request, res: Response): Promise<void> 
       qrCode,
       description,
       warrantyId,
+      batteryWarrantyId,
     } = req.body;    
 
     const vehicle = await prisma.vehicles.create({
@@ -88,6 +91,7 @@ export const createVehicle = async (req: Request, res: Response): Promise<void> 
         qrCode,
         description,
         warrantyId,
+        batteryWarrantyId,
       },
     });
 
@@ -111,6 +115,7 @@ export const getVehicleById = async (req: Request, res: Response): Promise<void>
         status: true,
         location: true,
         warranty: true,
+        batteryWarranty: true,
       },
     });
     if (!vehicle) {
@@ -144,6 +149,7 @@ export const updateVehicle = async (req: Request, res: Response): Promise<void> 
       qrCode,
       description,
       warrantyId,
+      batteryWarrantyId,
     } = req.body;
 
     const vehicle = await prisma.vehicles.update({
@@ -165,6 +171,7 @@ export const updateVehicle = async (req: Request, res: Response): Promise<void> 
         qrCode,
         description,
         warrantyId,
+        batteryWarrantyId,
       },
     });
     res.json(vehicle);

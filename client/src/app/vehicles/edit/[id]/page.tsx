@@ -5,6 +5,7 @@ import {
   useCreateVehicleMutation,
   useGetVehicleByIdQuery, // Import the query for fetching vehicle data
   useGetWarrantiesQuery,
+  useGetBatteryWarrantiesQuery,
   useGetMakesQuery,
   useGetModelsQuery,
   useGetColorsQuery,  
@@ -27,6 +28,7 @@ const EditVehicle = ({ params }: { params: { id: string } }) => {
   const { data: vehicleConditions, isLoading: vehicleConditionsLoading } = useGetVehicleConditionsQuery();
   const { data: vehicleAvailabilityStatuses, isLoading: vehicleAvailabilityStatusesLoading } = useGetVehicleAvailabilityStatusesQuery();   
   const { data: warranties, isLoading: warrantiesLoading } = useGetWarrantiesQuery(); 
+  const { data: batteryWarranties, isLoading: batteryWarrantiesLoading } = useGetBatteryWarrantiesQuery(); 
   const { data: locations, isLoading: locationsLoading } = useGetLocationsQuery();  
   const [updateVehicle] = useCreateVehicleMutation(); // Update mutation
 
@@ -41,6 +43,7 @@ const EditVehicle = ({ params }: { params: { id: string } }) => {
     conditionId: 0,
     statusId: 0,
     warrantyId: 0,
+    batteryWarrantyId: 0,
     locationId: 0,
     mileage: 0,             
     price: 0,
@@ -63,6 +66,7 @@ const EditVehicle = ({ params }: { params: { id: string } }) => {
         conditionId: vehicle.conditionId,
         statusId: vehicle.statusId,
         warrantyId: vehicle.warrantyId,
+        batteryWarrantyId: vehicle.batteryWarrantyId,
         locationId: vehicle.locationId,
         mileage: vehicle.mileage,
         price: vehicle.price,
@@ -86,6 +90,7 @@ const EditVehicle = ({ params }: { params: { id: string } }) => {
       "statusId",     
       "locationId",
       "warrantyId",
+      "batteryWarrantyId",
       "mileage",  // If you want it to be a number       
       "price",
       "year",
@@ -307,7 +312,7 @@ const EditVehicle = ({ params }: { params: { id: string } }) => {
           </div>
 
           <div>
-            <label className="block text-gray-700 font-semibold">Garantia</label>
+            <label className="block text-gray-700 font-semibold">Garantía de Vehículo</label>
             {warrantiesLoading ? (
               <p>Cargando...</p>
             ) : (
@@ -317,10 +322,31 @@ const EditVehicle = ({ params }: { params: { id: string } }) => {
                 onChange={handleInputChange}
                 className="w-full border border-gray-200 rounded-lg px-4 py-2 focus:outline-none focus:border-gray-500 focus:ring-2 focus:ring-gray-200"
               >
-                <option value="">Seleccione Garantia</option>
+                <option value="">Seleccione Garantía de Vehículo</option>
                 {warranties?.map((warranty: any) => (
                   <option key={warranty.warrantyId} value={warranty.warrantyId}>
                     {warranty.name}
+                  </option>
+                ))}
+              </select>
+            )}
+          </div>
+
+          <div>
+            <label className="block text-gray-700 font-semibold">Garantía de Batería</label>
+            {batteryWarrantiesLoading ? (
+              <p>Cargando...</p>
+            ) : (
+              <select
+                name="batteryWarrantyId"
+                value={formData.batteryWarrantyId}
+                onChange={handleInputChange}
+                className="w-full border border-gray-200 rounded-lg px-4 py-2 focus:outline-none focus:border-gray-500 focus:ring-2 focus:ring-gray-200"
+              >
+                <option value="">Seleccione Garantía de Batería</option>
+                {batteryWarranties?.map((batteryWarranty: any) => (
+                  <option key={batteryWarranty.batteryWarrantyId} value={batteryWarranty.batteryWarrantyId}>
+                    {batteryWarranty.name}
                   </option>
                 ))}
               </select>

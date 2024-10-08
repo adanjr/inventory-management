@@ -1,27 +1,42 @@
-import React, { ChangeEvent, FormEvent, useState } from "react";
-import { v4 } from "uuid";
+import React, { ChangeEvent, FormEvent, useState, useEffect } from "react";
 import Header from "@/app/(components)/Header";
+import { FuelType } from "@/state/api";
 
 type FuelTypeFormData = {
   fuelTypeId: string;
   name: string;
+  
 };
 
-type CreateFuelTypeModalProps = {
+type EditFuelTypeModalProps = {
   isOpen: boolean;
   onClose: () => void;
-  onCreate: (formData: FuelTypeFormData) => void;
+  onEdit: (fuelTypeId: string, formData: Partial<FuelTypeFormData>) => void;
+  selectedFuelType: FuelType | null;
 };
 
-const CreateFuelTypeModal = ({
+const EditFuelTypeModal = ({
   isOpen,
   onClose,
-  onCreate,
-}: CreateFuelTypeModalProps) => {
-  const [formData, setFormData] = useState({
-    fuelTypeId: v4(),
-    name: "",
+  onEdit,
+  selectedFuelType,
+}: EditFuelTypeModalProps) => {
+  const [formData, setFormData] = useState<FuelTypeFormData>({
+    fuelTypeId: selectedFuelType?.fuelTypeId || "",
+    name: selectedFuelType?.name || "",
+    
   });
+
+  useEffect(() => {
+    if (selectedFuelType && isOpen) {
+      // Actualiza el formulario con los datos de el tipo de carga seleccionada
+      setFormData({
+        fuelTypeId: selectedFuelType.fuelTypeId,
+        name: selectedFuelType.name,
+      
+      });
+    }
+  }, [selectedFuelType, isOpen]);
 
   const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -33,7 +48,10 @@ const CreateFuelTypeModal = ({
 
   const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    onCreate(formData);
+    onEdit(formData.fuelTypeId, {
+      name: formData.name,
+     
+    });
     onClose();
   };
 
@@ -46,10 +64,10 @@ const CreateFuelTypeModal = ({
   return (
     <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-20">
       <div className="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
-        <Header name="Crear Nuevo Tipo de Carga" />
+        <Header name="Editar Tipo de Carga" />
         <form onSubmit={handleSubmit} className="mt-5">
           {/* FUEL TYPE NAME */}
-          <label htmlFor="fuelTypeName" className={labelCssStyles}>
+          <label htmlFor="name" className={labelCssStyles}>
             Nombre de Tipo de Carga
           </label>
           <input
@@ -62,12 +80,14 @@ const CreateFuelTypeModal = ({
             required
           />
 
-          {/* CREATE ACTIONS */}
+         
+
+          {/* EDIT ACTIONS */}
           <button
             type="submit"
             className="mt-4 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-700"
           >
-            Crear
+            Guardar Cambios
           </button>
           <button
             onClick={onClose}
@@ -82,4 +102,4 @@ const CreateFuelTypeModal = ({
   );
 };
 
-export default CreateFuelTypeModal;
+export default EditFuelTypeModal;

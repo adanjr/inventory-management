@@ -187,7 +187,7 @@ const Models = () => {
                 <p className="text-gray-600">Transmisión: {model.transmission.type}</p>
               )}
               {model.fuelType?.name && (
-                <p className="text-gray-600">Combustible: {model.fuelType.name}</p>
+                <p className="text-gray-600">Tipo de Carga: {model.fuelType.name}</p>
               )}
               <div className="flex mt-4">
                 <button

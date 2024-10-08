@@ -4,6 +4,7 @@ import { useState } from "react";
 import { 
   useCreateVehicleMutation,
   useGetWarrantiesQuery,
+  useGetBatteryWarrantiesQuery,
   useGetMakesQuery,
   useGetModelsQuery,
   useGetColorsQuery,  
@@ -25,6 +26,7 @@ const CreateVehicle = () => {
   const { data: vehicleConditions, isLoading: vehicleConditionsLoading } = useGetVehicleConditionsQuery();
   const { data: vehicleAvailabilityStatuses, isLoading: vehicleAvailabilityStatusesLoading } = useGetVehicleAvailabilityStatusesQuery();   
   const { data: warranties, isLoading: warrantiesLoading } = useGetWarrantiesQuery(); 
+  const { data: batteryWarranties, isLoading: batteryWarrantiesLoading } = useGetBatteryWarrantiesQuery(); 
   const { data: locations, isLoading: locationsLoading } = useGetLocationsQuery();  
   
   const [formData, setFormData] = useState({
@@ -38,6 +40,7 @@ const CreateVehicle = () => {
     conditionId: 0,
     statusId: 0,
     warrantyId: 0,
+    batteryWarrantyId: 0,
     locationId: 0,
     mileage: 0,             
     price: 0,
@@ -60,6 +63,7 @@ const CreateVehicle = () => {
       "statusId",     
       "locationId",
       "warrantyId",
+      "batteryWarrantyId",
       "mileage",  // Si también quieres que sea un número       
       "price",
       "year",
@@ -274,7 +278,7 @@ const CreateVehicle = () => {
           </div>
 
           <div>
-            <label className="block text-gray-700 font-semibold">Garantia</label>
+            <label className="block text-gray-700 font-semibold">Garantía de Vehículo</label>
             {warrantiesLoading ? (
               <p>Cargando...</p>
             ) : (
@@ -284,10 +288,31 @@ const CreateVehicle = () => {
                 onChange={handleInputChange}
                 className="w-full border border-gray-200 rounded-lg px-4 py-2 focus:outline-none focus:border-gray-500 focus:ring-2 focus:ring-gray-200"
               >
-                <option value="">Seleccione Garantia</option>
+                <option value="">Seleccione Garantía de Vehículo</option>
                 {warranties?.map((warranty: any) => (
                   <option key={warranty.warrantyId} value={warranty.warrantyId}>
                     {warranty.name}
+                  </option>
+                ))}
+              </select>
+            )}
+          </div>
+
+          <div>
+            <label className="block text-gray-700 font-semibold">Garantía de Batería</label>
+            {batteryWarrantiesLoading ? (
+              <p>Cargando...</p>
+            ) : (
+              <select
+                name="batteryWarrantyId"
+                value={formData.batteryWarrantyId}
+                onChange={handleInputChange}
+                className="w-full border border-gray-200 rounded-lg px-4 py-2 focus:outline-none focus:border-gray-500 focus:ring-2 focus:ring-gray-200"
+              >
+                <option value="">Seleccione Garantía de Batería</option>
+                {batteryWarranties?.map((batteryWarranty: any) => (
+                  <option key={batteryWarranty.batteryWarrantyId} value={batteryWarranty.batteryWarrantyId}>
+                    {batteryWarranty.name}
                   </option>
                 ))}
               </select>
@@ -330,7 +355,7 @@ const CreateVehicle = () => {
         <div className="flex justify-between mt-6">
           <button 
             type="submit" 
-            className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-green-600 transition-colors"
+            className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors"
           >
             Guardar Vehículo
           </button>

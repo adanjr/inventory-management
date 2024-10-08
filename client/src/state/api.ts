@@ -246,6 +246,7 @@ export interface Vehicle {
   updatedAt?: Date; // Añadido para la fecha de actualización
   lastAuditDate?: Date; // Cambiado de string a Date
   warrantyId: number; // Cambiado a string según el modelo
+  batteryWarrantyId: number; // Cambiado a string según el modelo
 
   // Relaciones
   model: { name: string }; // Aquí puedes incluir otros detalles del modelo si es necesario
@@ -256,6 +257,7 @@ export interface Vehicle {
   status: { name: string }; // Asumiendo que estado es un objeto similar
   location: { name: string }; // Asumiendo que ubicación es un objeto similar
   warranty: { name: string }; // Asumiendo que garantía es un objeto similar
+  batteryWarranty: { name: string }; // Asumiendo que garantía es un objeto similar
 }
 
 export interface NewVehicle {
@@ -278,6 +280,7 @@ export interface NewVehicle {
   additionalImages?: string[];
   lastAuditDate?: Date; // Cambiado a Date
   warrantyId: number; // Cambiado a string según el modelo
+  batteryWarrantyId: number;
 }
 
 export interface UpdatedVehicle {
@@ -300,6 +303,7 @@ export interface UpdatedVehicle {
   additionalImages?: string[];
   lastAuditDate?: Date; // Cambiado a Date
   warrantyId?: number; // Cambiado a string según el modelo
+  batteryWarrantyId?: number;
 }
 
 export interface SalesSummary {
@@ -462,22 +466,38 @@ export interface UpdatedAuditType {
 export interface Warranty {
   warrantyId: string;  // ID de la garantía, que es un UUID
   name: string;
-  durationMonths: number;  // Duración de la garantía en meses
-  batteryDuration: number;  // Duración de la batería en meses
+  durationMonths: number;  // Duración de la garantía en meses   
   description?: string;  // Descripción opcional de la garantía
 }
 
 export interface NewWarranty {
   name?: string;
-  durationMonths: number;  // Duración de la garantía en meses
-  batteryDuration: number;  // Duración de la batería en meses
+  durationMonths: number;  // Duración de la garantía en meses   
   description?: string;  // Descripción opcional de la garantía
 }
 
 export interface UpdatedWarranty {
   name?: string;
-  durationMonths?: number;  // Duración de la garantía en meses (opcional)
-  batteryDuration?: number;  // Duración de la batería en meses (opcional)
+  durationMonths?: number;  // Duración de la garantía en meses (opcional)   
+  description?: string;  // Descripción opcional de la garantía
+}
+
+export interface BatteryWarranty {
+  batteryWarrantyId: string;  // ID de la garantía, que es un UUID
+  name: string;
+  durationMonths: number;  // Duración de la garantía en meses   
+  description?: string;  // Descripción opcional de la garantía
+}
+
+export interface NewBatteryWarranty {
+  name?: string;
+  durationMonths: number;  // Duración de la garantía en meses   
+  description?: string;  // Descripción opcional de la garantía
+}
+
+export interface UpdatedBatteryWarranty {
+  name?: string;
+  durationMonths?: number;  // Duración de la garantía en meses (opcional)   
   description?: string;  // Descripción opcional de la garantía
 }
 
@@ -616,6 +636,7 @@ export const api = createApi({
     "Warranties",
     "VehicleConditions",
     "VehicleAvailabilityStatus",
+    "BatteryWarranties",
   ],
   endpoints: (build) => ({
     getDashboardMetrics: build.query<DashboardMetrics, void>({
@@ -832,6 +853,36 @@ export const api = createApi({
         method: "DELETE",
       }),
       invalidatesTags: ["Warranties"],
+    }),
+    getBatteryWarranties: build.query<BatteryWarranty[], string | void>({
+      query: (search) => ({
+        url: "/batteryWarranties",
+        params: search ? { search } : {},
+      }),
+      providesTags: ["BatteryWarranties"],
+    }),
+    createBatteryWarranty: build.mutation<BatteryWarranty, NewBatteryWarranty>({
+      query: (newBatteryWarranty) => ({
+        url: "/batteryWarranties",
+        method: "POST",
+        body: newBatteryWarranty,
+      }),
+      invalidatesTags: ["BatteryWarranties"],
+    }),
+    updateBatteryWarranty: build.mutation<BatteryWarranty, { id: string; data: UpdatedBatteryWarranty }>({
+      query: ({ id, data }) => ({
+        url: `/batteryWarranties/${id}`,
+        method: "PUT",
+        body: data,
+      }),
+      invalidatesTags: ["BatteryWarranties"],
+    }),
+    deleteBatteryWarranty: build.mutation<void, string>({
+      query: (id) => ({
+        url: `/batteryWarranties/${id}`,
+        method: "DELETE",
+      }),
+      invalidatesTags: ["BatteryWarranties"],
     }),
     getVehicleConditions: build.query<VehicleCondition[], string | void>({
       query: (search) => ({
@@ -1251,6 +1302,11 @@ export const {
   useCreateWarrantyMutation,
   useUpdateWarrantyMutation,
   useDeleteWarrantyMutation,
+
+  useGetBatteryWarrantiesQuery,
+  useCreateBatteryWarrantyMutation,
+  useUpdateBatteryWarrantyMutation,
+  useDeleteBatteryWarrantyMutation,
 
   useGetVehicleConditionsQuery,
   useCreateVehicleConditionMutation,

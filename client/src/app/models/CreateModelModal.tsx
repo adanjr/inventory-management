@@ -226,7 +226,7 @@ const CreateModelModal = ({
           {/* FUEL TYPE */}
           <div className="col-span-1">
             <label htmlFor="fuelTypeId" className={labelCssStyles}>
-              Tipo de Combustible
+              Tipo de Carga
             </label>
             <select
               name="fuelTypeId"
@@ -235,7 +235,7 @@ const CreateModelModal = ({
               className={inputCssStyles}
               required
             >
-              <option value="">Selecciona un tipo de combustible</option>
+              <option value="">Selecciona un tipo de carga</option>
               {fuelTypes.map((fuel) => (
                 <option key={fuel.fuelTypeId} value={fuel.fuelTypeId}>
                   {fuel.name}
@@ -283,12 +283,12 @@ const CreateModelModal = ({
           {/* ELECTRIC RANGE */}
           <div className="col-span-1">
             <label htmlFor="range" className={labelCssStyles}>
-              Rango Eléctrico (km)
+                 Autonomía (km)
             </label>
             <input
               type="number"
               name="range"
-              placeholder="Rango Eléctrico"
+              placeholder="Autonomía"
               onChange={handleChange}
               value={formData.range}
               className={inputCssStyles}

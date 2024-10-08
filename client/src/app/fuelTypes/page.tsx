@@ -10,6 +10,7 @@ import {
 import { PlusCircleIcon, SearchIcon, PencilIcon, TrashIcon } from "lucide-react";
 import Header from "@/app/(components)/Header";
 import CreateFuelTypeModal from "./CreateFuelTypeModal";
+import EditFuelTypeModal from "./EditFuelTypeModal";
 import { FuelType } from "@/state/api";
 
 const FuelTypes = () => {
@@ -62,7 +63,7 @@ const FuelTypes = () => {
           <SearchIcon className="w-5 h-5 text-gray-500 m-2" />
           <input
             className="w-full py-2 px-4 rounded bg-white"
-            placeholder="Buscar tipos de combustible..."
+            placeholder="Buscar tipos de carga..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />
@@ -71,7 +72,7 @@ const FuelTypes = () => {
 
       {/* HEADER BAR */}
       <div className="flex justify-between items-center mb-6">
-        <Header name="Tipos de Combustible" />
+        <Header name="Tipos de Carga" />
         <button
           className="flex items-center bg-blue-500 hover:bg-blue-700 text-gray-200 font-bold py-2 px-4 rounded"
           onClick={() => setIsCreateModalOpen(true)}
@@ -118,6 +119,13 @@ const FuelTypes = () => {
         isOpen={isCreateModalOpen}
         onClose={() => setIsCreateModalOpen(false)}
         onCreate={handleCreateFuelType}
+      />
+
+      <EditFuelTypeModal
+        isOpen={isEditModalOpen}
+        onClose={() => setIsEditModalOpen(false)}
+        onEdit={handleEditFuelType}
+        selectedFuelType={selectedFuelType}
       />
       
     </div>

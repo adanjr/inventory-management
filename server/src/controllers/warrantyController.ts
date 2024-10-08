@@ -20,13 +20,12 @@ export const getWarranties = async (req: Request, res: Response): Promise<void> 
 // Crear una nueva garantía
 export const createWarranty = async (req: Request, res: Response): Promise<void> => {
   try {
-    const { name, durationMonths, batteryDuration, description } = req.body;
+    const { name, durationMonths, description } = req.body;
 
     const warranty = await prisma.warranty.create({
       data: {
         name,
-        durationMonths,
-        batteryDuration,
+        durationMonths,       
         description,
       },
     });
@@ -66,14 +65,13 @@ export const getWarrantyById = async (req: Request, res: Response): Promise<void
 export const updateWarranty = async (req: Request, res: Response): Promise<void> => {
   try {
     const { id } = req.params;
-    const { name, durationMonths, batteryDuration, description } = req.body;
+    const { name, durationMonths, description } = req.body;
 
     const warranty = await prisma.warranty.update({
       where: { warrantyId: Number(id) },
       data: {
         name,
-        durationMonths,
-        batteryDuration,
+        durationMonths,       
         description,
       },
     });

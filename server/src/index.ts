@@ -30,6 +30,7 @@ import movementsRoutes from "./routes/movementsRoutes";
 import vehicleConditionsRoutes from "./routes/vehicleConditionsRoutes";
 import vehicleInventoryLocationsRoutes from "./routes/vehicleInventoryLocationsRoutes";
 import warrantyRoutes from "./routes/warrantyRoutes";
+import batteryWarrantyRoutes from "./routes/batteryWarrantyRoutes";
 import vehicleAvailabilityStatusRoutes from "./routes/vehicleAvailabilityStatusRoutes";
 
 /* CONFIGURATIONS */
@@ -70,6 +71,7 @@ app.use("/vehicle-availability-status", vehicleAvailabilityStatusRoutes); // htt
 app.use("/vehicle-conditions", vehicleConditionsRoutes); // http://localhost:8000/vehicle-conditions
 app.use("/vehicle-inventory-locations", vehicleInventoryLocationsRoutes); // http://localhost:8000/vehicle-inventory-locations
 app.use("/warranties", warrantyRoutes); // http://localhost:8000/warranties
+app.use("/batteryWarranties", batteryWarrantyRoutes); // http://localhost:8000/batteryWarranties
 
 /* SERVER */
 const port = Number(process.env.PORT) || 3001;
