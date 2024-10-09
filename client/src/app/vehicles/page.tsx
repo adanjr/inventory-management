@@ -64,17 +64,18 @@ const Vehicles = () => {
 
   const handleDelete = async () => {
     const selectedVehicleId = rowSelectionModel[0];
-
+  
     if (window.confirm("¿Estás seguro de que deseas eliminar este vehículo?")) {
       try {
-        await deleteVehicle(selectedVehicleId).unwrap();
+        // Convertir el ID seleccionado a cadena antes de pasarlo a la mutación
+        await deleteVehicle(String(selectedVehicleId)).unwrap();
         alert("Vehículo eliminado con éxito.");
       } catch (error) {
         console.error("Error eliminando el vehículo:", error);
         alert("Hubo un error al intentar eliminar el vehículo.");
       }
     }
-  };
+  };  
 
   return (
     <div className="mx-auto pb-5 w-full">
