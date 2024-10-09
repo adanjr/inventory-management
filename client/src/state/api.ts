@@ -618,6 +618,24 @@ export interface UpdatedSaleDetail {
   subtotal?: number;
 }
 
+export interface VehicleCountByLocation {
+  locationId: number;
+  count: number;
+  locationName: string;
+}
+
+export interface GroupedVehicleData {
+  modelName: string;
+  colorName: string;
+  availabilityStatus: string;
+  count: number;
+}
+
+// Define la respuesta del endpoint agrupado
+export interface GetGroupedVehiclesResponse {
+  groupedData: GroupedVehicleData[];
+}
+
 export const api = createApi({
   baseQuery: fetchBaseQuery({ baseUrl: process.env.NEXT_PUBLIC_API_BASE_URL }),
   reducerPath: "api",
@@ -637,6 +655,7 @@ export const api = createApi({
     "VehicleConditions",
     "VehicleAvailabilityStatus",
     "BatteryWarranties",
+    "Inventory",
   ],
   endpoints: (build) => ({
     getDashboardMetrics: build.query<DashboardMetrics, void>({
@@ -1266,6 +1285,18 @@ export const api = createApi({
       }),
       invalidatesTags: ["Vehicles"],
     }),
+    getVehiclesCountByLocation: build.query<VehicleCountByLocation[], void>({
+      query: () => ({
+        url: "/inventory/counts",
+      }),
+      providesTags: ["Inventory"],
+    }),
+    getGroupedVehicles: build.query<GetGroupedVehiclesResponse, number | null>({
+      query: (locationId) => ({
+        url: '/inventory/count-by-model-color-status',
+        params: locationId ? { locationId } : {},
+      }),
+    }),
   }),
 });
 
@@ -1376,5 +1407,8 @@ export const {
    useCreateVehicleMutation,
    useUpdateVehicleMutation,
    useDeleteVehicleMutation,
- 
+
+   //INVENTARIO
+   useGetVehiclesCountByLocationQuery,
+   useGetGroupedVehiclesQuery,
 } = api;

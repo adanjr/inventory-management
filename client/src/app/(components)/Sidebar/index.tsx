@@ -14,7 +14,8 @@ import {
   CreditCard,
   Building,
   Factory,
-  FileBox,
+  FileBox, 
+  FileText,
   FolderTree,
   Layout,
   LucideIcon,
@@ -121,6 +122,7 @@ const Sidebar = () => {
       href: "",
       subItems: [
         { label: "Inventario General", href: "/inventory", icon: Archive },
+        { label: "Inventario Detalle", href: "/inventoryByBranch", icon: FileText },
         { label: "Vehículos", href: "/vehicles", icon: Car },
         { label: "Productos", href: "/products", icon: Package },
         { label: "Modelos", href: "/models", icon: FileBox },

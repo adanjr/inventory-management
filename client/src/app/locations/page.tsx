@@ -94,13 +94,6 @@ const Locations = () => {
               </div>
             )}
 
-            {/* Mapa fijo que muestra la ubicación */}
-            {location.latitude && location.longitude && (
-              <div className="mt-4 w-full h-48">
-                <span>Mapa</span>
-              </div>
-            )}
-
             <div className="flex mt-4">
               <button
                 className="text-blue-500 hover:text-blue-700 flex items-center mr-4"

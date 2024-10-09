@@ -16,7 +16,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="es-MX">
       <body className={inter.className}>
         <DashboardWrapper>{children}</DashboardWrapper>
       </body>

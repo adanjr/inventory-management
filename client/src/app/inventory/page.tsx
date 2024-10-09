@@ -1,59 +1,49 @@
 "use client";
 
-import { useGetProductsQuery } from "@/state/api";
-import Header from "@/app/(components)/Header";
+import { useState, useEffect } from "react";
+import { useRouter } from 'next/navigation';
+import { useGetVehiclesCountByLocationQuery } from "@/state/api"; // Asegúrate de que esta consulta existe
 import { DataGrid, GridColDef } from "@mui/x-data-grid";
+import Header from "@/app/(components)/Header";
 
 const columns: GridColDef[] = [
-  { field: "productId", headerName: "ID", width: 90 },
-  { field: "name", headerName: "Nombre de Producto", width: 200 },
-  {
-    field: "price",
-    headerName: "Precio",
-    width: 110,
-    type: "number",
-    valueGetter: (value, row) => `$${row.price}`,
-  },
-  {
-    field: "rating",
-    headerName: "Rating",
-    width: 110,
-    type: "number",
-    valueGetter: (value, row) => (row.rating ? row.rating : "N/A"),
-  },
-  {
-    field: "stockQuantity",
-    headerName: "Cantidad en Stock",
-    width: 150,
-    type: "number",
-  },
+  { field: "locationName", headerName: "Ubicación", width: 200 },
+  { field: "vehicleCount", headerName: "Total de Vehículos", width: 150 },
 ];
 
 const Inventory = () => {
-  const { data: products, isError, isLoading } = useGetProductsQuery();
+  const router = useRouter();
+  const { data: vehicleCounts, isError, isLoading } = useGetVehiclesCountByLocationQuery();
 
-  if (isLoading) {
-    return <div className="py-4">Cargando...</div>;
-  }
+  if (isLoading) return <div>Cargando...</div>;
+  if (isError || !vehicleCounts) return <div>Fallo al cargar el conteo de vehículos por ubicación</div>;
 
-  if (isError || !products) {
-    return (
-      <div className="text-center text-red-500 py-4">
-        Failed to fetch products
-      </div>
-    );
-  }
+  // Transformar los datos para que se adapten al DataGrid
+  const rows = vehicleCounts.map(location => ({
+    id: location.locationId, // Asigna un ID único para cada fila
+    locationName: location.locationName,
+    vehicleCount: location.count,
+  }));
 
   return (
-    <div className="flex flex-col">
-      <Header name="Inventario" />
-      <DataGrid
-        rows={products}
-        columns={columns}
-        getRowId={(row) => row.productId}
-        checkboxSelection
-        className="bg-white shadow rounded-lg border border-gray-200 mt-5 !text-gray-700"
-      />
+    <div className="mx-auto pb-5 w-full">
+      {/* Header */}
+      <div className="mb-6 flex flex-col">
+        <div className="flex justify-between items-center">
+          <Header name="Inventario General de Vehículos por Ubicación" />
+        </div>
+      </div>
+
+      {/* Inventory DataGrid */}
+      <div className="w-full">
+        <DataGrid
+          rows={rows}
+          columns={columns}
+          getRowId={(row) => row.id}
+          className="bg-white shadow rounded-lg border border-gray-200 mt-5 !text-gray-700"
+          autoHeight // Ajusta la altura automáticamente
+        />
+      </div>
     </div>
   );
 };

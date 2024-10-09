@@ -186,11 +186,6 @@ const CreateLocationModal = ({
             className={inputCssStyles}
           />
 
-          <MapboxMap onLocationSelect={handleLocationSelect} />
-
-          <input type="hidden" name="latitude" value={formData.latitude} />
-          <input type="hidden" name="longitude" value={formData.longitude} />
-
           {/* CREATE ACTIONS */}
           <button
             type="submit"

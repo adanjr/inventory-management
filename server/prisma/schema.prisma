@@ -315,14 +315,10 @@ model VehicleInventoryLocations {
 }
 
 model Movements {
-  movementId      Int         @id @default(autoincrement())
-  product         Products?   @relation(fields: [productId], references: [productId])
+  movementId      Int         @id @default(autoincrement())  
   productId       Int?   
-  vehicles        Vehicles?   @relation(fields: [vehicleId], references: [vehicleId])
-  vehicleId       Int?       
-  fromLocation    Locations   @relation("MovementFrom", fields: [fromLocationId], references: [locationId])
-  fromLocationId  Int       
-  toLocation      Locations   @relation("MovementTo", fields: [toLocationId], references: [locationId])
+  vehicleId       Int?         
+  fromLocationId  Int         
   toLocationId    Int  
   quantity        Int?        // Solo para productos sin número de serie
   movementType    String      // "entry", "exit", "transfer"
@@ -330,6 +326,11 @@ model Movements {
   status          String      // Estado del movimiento (completed, in transit)
   notes           String?
   lastUpdatedAt   DateTime    @updatedAt
+
+  product         Products?   @relation(fields: [productId], references: [productId])
+  vehicles        Vehicles?   @relation(fields: [vehicleId], references: [vehicleId])
+  fromLocation    Locations   @relation("MovementFrom", fields: [fromLocationId], references: [locationId])
+  toLocation      Locations   @relation("MovementTo", fields: [toLocationId], references: [locationId])
 }
 
 model Customers {

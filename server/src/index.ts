@@ -32,6 +32,7 @@ import vehicleInventoryLocationsRoutes from "./routes/vehicleInventoryLocationsR
 import warrantyRoutes from "./routes/warrantyRoutes";
 import batteryWarrantyRoutes from "./routes/batteryWarrantyRoutes";
 import vehicleAvailabilityStatusRoutes from "./routes/vehicleAvailabilityStatusRoutes";
+import inventoryRoutes from './routes/inventoryRoutes';
 
 /* CONFIGURATIONS */
 dotenv.config();
@@ -72,6 +73,7 @@ app.use("/vehicle-conditions", vehicleConditionsRoutes); // http://localhost:800
 app.use("/vehicle-inventory-locations", vehicleInventoryLocationsRoutes); // http://localhost:8000/vehicle-inventory-locations
 app.use("/warranties", warrantyRoutes); // http://localhost:8000/warranties
 app.use("/battery-warranties", batteryWarrantyRoutes); // http://localhost:8000/battery-warranties
+app.use("/inventory", inventoryRoutes);
 
 /* SERVER */
 const port = Number(process.env.PORT) || 3001;
