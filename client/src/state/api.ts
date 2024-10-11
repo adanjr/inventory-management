@@ -77,11 +77,43 @@ export interface UpdatedMake {
   mail?: string;
 }
 
+export interface Family {
+  familyId: string;
+  name: string;
+  description: string;
+  makeId: number;
+  make?: {
+    name: string;
+  };
+  year_start?: string;
+  year_end?: string;  
+}
+
+export interface NewFamily {
+  name: string;
+  description: string;
+  makeId: number;
+  year_start?: string;
+  year_end?: string;   
+}
+
+export interface UpdatedFamily {
+  name?: string;
+  description?: string;
+  makeId?: number;
+  year_start?: string;
+  year_end?: string;   
+}
+
 export interface Model {
   modelId: string;
   name: string;
   makeId: number;
   make?: {
+    name: string;
+  };
+  familyId: number;
+  family?: {
     name: string;
   };
   year_start?: string;
@@ -116,6 +148,7 @@ export interface Model {
 export interface NewModel {
   name: string;
   makeId: number;
+  familyId: number;
   year_start?: string;
   year_end?: string;
   vehicleTypeId: number;
@@ -136,6 +169,7 @@ export interface NewModel {
 export interface UpdatedModel {
   name?: string;
   makeId?: number;
+  familyId?: number;
   year_start?: string;
   year_end?: string;
   vehicleTypeId: number;
@@ -227,6 +261,7 @@ export interface Vehicle {
   vin?: string;
   internal_serial?: string;
   makeId: number;
+  familyId: number;
   modelId: number; // Cambiado de string a number
   year: number;
   colorId: number; // Cambiado de string a number
@@ -286,6 +321,7 @@ export interface NewVehicle {
 export interface UpdatedVehicle {
   vin?: string;
   internal_serial?: string;
+  familyId: number;
   modelId?: number; // Cambiado a number
   year?: number;
   colorId?: number; // Cambiado a number
@@ -643,6 +679,7 @@ export const api = createApi({
     "VehicleTypes",
     "Makes",
     "Models",
+    "Families",
     "Colors",
     "EngineTypes",
     "FuelTypes",
@@ -1056,11 +1093,49 @@ export const api = createApi({
       invalidatesTags: ["Makes"],
     }),
 
+     // Families
+     getFamilies: build.query<Family[], { search?: string; makeId?: number }>({
+      query: ({ search, makeId }) => ({
+        url: "/families",
+        params: {
+          ...(search ? { search } : {}), // Si hay una búsqueda, incluirla en los parámetros
+          ...(makeId ? { makeId } : {}), // Si hay un makeId, incluirlo en los parámetros
+        },
+      }),
+      providesTags: ["Families"],
+    }),
+    createFamily: build.mutation<Family, NewFamily>({
+      query: (newFamily) => ({
+        url: "/families",
+        method: "POST",
+        body: newFamily,
+      }),
+      invalidatesTags: ["Families"],
+    }),
+    updateFamily: build.mutation<Family, { id: string; data: UpdatedFamily }>({
+      query: ({ id, data }) => ({
+        url: `/families/${id}`,
+        method: "PUT",
+        body: data,
+      }),
+      invalidatesTags: ["Families"],
+    }),
+    deleteFamily: build.mutation<void, string>({
+      query: (id) => ({
+        url: `/families/${id}`,
+        method: "DELETE",
+      }),
+      invalidatesTags: ["Families"],
+    }),
+
     // Models
-    getModels: build.query<Model[], string | void>({
-      query: (search) => ({
+    getModels: build.query<Model[], { search?: string; familyId?: number } | void>({
+      query: ({ search, familyId } = {}) => ({
         url: "/models",
-        params: search ? { search } : {},
+        params: {
+          ...(search ? { search } : {}),
+          ...(familyId ? { familyId } : {}),
+        },
       }),
       providesTags: ["Models"],
     }),
@@ -1364,6 +1439,12 @@ export const {
    useCreateMakeMutation,
    useUpdateMakeMutation,
    useDeleteMakeMutation,
+
+    // Families
+    useGetFamiliesQuery,
+    useCreateFamilyMutation,
+    useUpdateFamilyMutation,
+    useDeleteFamilyMutation,
  
    // Models
    useGetModelsQuery,

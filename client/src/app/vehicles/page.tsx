@@ -21,6 +21,7 @@ const columns: GridColDef[] = [
   { field: "internal_serial", headerName: "Serial", width: 150 },
   { field: "stockNumber", headerName: "Stock Number", width: 150 },
   { field: "makeName", headerName: "Fabricante", width: 100 },
+  { field: "familyName", headerName: "Familia", width: 100 },
   { field: "modelName", headerName: "Modelo", width: 100 },
   { field: "colorName", headerName: "Color", width: 100 },
   { field: "year", headerName: "Año", width: 40 },
@@ -29,8 +30,7 @@ const columns: GridColDef[] = [
     headerName: "Precio",
     width: 100,
     type: "number",
-    valueFormatter: (params) => {
-      console.log('Price value:', params); // Verifica el valor de `price`
+    valueFormatter: (params) => {       
       return formatCurrency(params); // Usa la función para formatear la moneda
     },
   },
@@ -71,8 +71,7 @@ const Vehicles = () => {
         await deleteVehicle(String(selectedVehicleId)).unwrap();
         alert("Vehículo eliminado con éxito.");
       } catch (error) {
-        console.error("Error eliminando el vehículo:", error);
-        alert("Hubo un error al intentar eliminar el vehículo.");
+        console.error("Error eliminando el vehículo:", error);         
       }
     }
   };  

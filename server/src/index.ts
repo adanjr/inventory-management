@@ -33,6 +33,7 @@ import warrantyRoutes from "./routes/warrantyRoutes";
 import batteryWarrantyRoutes from "./routes/batteryWarrantyRoutes";
 import vehicleAvailabilityStatusRoutes from "./routes/vehicleAvailabilityStatusRoutes";
 import inventoryRoutes from './routes/inventoryRoutes';
+import familyRoutes from "./routes/familyRoutes";
 
 /* CONFIGURATIONS */
 dotenv.config();
@@ -57,6 +58,7 @@ app.use("/categories", categoryRoutes); // http://localhost:8000/categories
 app.use("/locations", locationRoutes); // http://localhost:8000/locations
 app.use("/vehicle-types", vehicleTypeRoutes); // http://localhost:8000/vehicle-types
 app.use("/makes", makeRoutes); // http://localhost:8000/makes
+app.use("/families", familyRoutes); // http://localhost:8000/families
 app.use("/models", modelRoutes); // http://localhost:8000/models
 app.use("/colors", colorRoutes); // http://localhost:8000/colors
 app.use("/engine-types", engineTypeRoutes); // http://localhost:8000/engine-types

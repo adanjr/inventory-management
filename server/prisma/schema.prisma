@@ -60,6 +60,7 @@ model RolePermission {
 
 model Products {
   productId          Int      @id @default(autoincrement())
+  productCode        String?
   name               String
   description        String?
   price              Float
@@ -68,8 +69,10 @@ model Products {
   categoryId         Int  
   manufacturerId     Int
   locationId         Int  // Location of the product  
+  barcode            String?        // Código de barras único (opcional, para inventario)
   mainImageUrl       String?      
   additionalImages   String[]
+  reorderQuantity    Int?
 
   category           Categories  @relation(fields: [categoryId], references: [categoryId])
   manufacturer       Manufacturers  @relation(fields: [manufacturerId], references: [manufacturerId])
@@ -141,7 +144,8 @@ model Vehicles {
 model Models {
   modelId         Int      @id @default(autoincrement())
   name            String   @unique   
-  makeId          Int      // Marca del vehículo 
+  makeId          Int      // Marca del vehículo
+  familyId        Int? 
   year_start      String?   
   year_end        String?
   vehicleTypeId   Int            // Identifica si es un coche o una motocicleta
@@ -157,17 +161,31 @@ model Models {
   weightCapacity  Float    // Capacidad de peso
   speed           Float    // Velocidad máxima
   batteryVoltage  Float    // Voltaje de la batería
+  rating          Float?
 
   mainImageUrl      String?      
   additionalImages  String[]
   
-  make            Makes          @relation(fields: [makeId], references: [makeId])  
-  vehicleType     VehicleTypes              @relation(fields: [vehicleTypeId], references: [vehicleTypeId])  
-  engineType      EngineTypes    @relation(fields: [engineTypeId], references: [engineTypeId])
-  fuelType        FuelTypes?     @relation(fields: [fuelTypeId], references: [fuelTypeId])
-  transmission    Transmissions  @relation(fields: [transmissionId], references: [transmissionId])
+  make            Makes           @relation(fields: [makeId], references: [makeId]) 
+  family          Families?        @relation(fields: [familyId], references: [familyId])   
+  vehicleType     VehicleTypes    @relation(fields: [vehicleTypeId], references: [vehicleTypeId])  
+  engineType      EngineTypes     @relation(fields: [engineTypeId], references: [engineTypeId])
+  fuelType        FuelTypes?      @relation(fields: [fuelTypeId], references: [fuelTypeId])
+  transmission    Transmissions   @relation(fields: [transmissionId], references: [transmissionId])
 
   vehicles        Vehicles[]
+}
+
+model Families {
+  familyId        Int       @id @default(autoincrement())
+  name            String   
+  description     String       
+  year_start      String?   
+  year_end        String?
+  makeId          Int      
+  make            Makes     @relation(fields: [makeId], references: [makeId])  
+   
+  models          Models[]
 }
 
 model VehicleTypes {
@@ -183,6 +201,7 @@ model Makes {
   website  String?
   phone    String?
   mail     String?
+  families   Families[]
   models   Models[]
 }
 
@@ -296,12 +315,16 @@ model Locations {
 
 model InventoryLocations {
   inventoryLocationId Int       @id @default(autoincrement())
-  product             Products? @relation(fields: [productId], references: [productId])
   productId           Int?      
-  location            Locations @relation(fields: [locationId], references: [locationId])
   locationId          Int   
   quantity_in_stock   Int?
+  minimumStockLevel   Int?
+  maximumStockLevel   Int?
+  reorderPoint        Int?
   last_updated_at     DateTime @updatedAt
+
+  product             Products? @relation(fields: [productId], references: [productId])
+  location            Locations @relation(fields: [locationId], references: [locationId])
 }
 
 model VehicleInventoryLocations {
@@ -366,25 +389,28 @@ model Suppliers {
 model Purchases {
   purchaseId      Int        @id @default(autoincrement())  
   timestamp       DateTime
-  quantity        Int
-  unitCost        Float
-  totalCost       Float
-  supplier        Suppliers? @relation(fields: [supplierId], references: [supplierId])
+  totalCost       Float  
   supplierId      Int?
+
+  supplier        Suppliers? @relation(fields: [supplierId], references: [supplierId])
+
   purchaseDetails PurchaseDetails[]
 }
 
 model PurchaseDetails {
-  purchaseDetailId  Int         @id @default(autoincrement())
-  purchase          Purchases   @relation(fields: [purchaseId], references: [purchaseId])
-  purchaseId        Int       
-  product           Products    @relation(fields: [productId], references: [productId])
-  productId         Int
-  vehicles          Vehicles?   @relation(fields: [vehicleId], references: [vehicleId])
+  purchaseDetailId  Int         @id @default(autoincrement())  
+  purchaseId        Int         
+  productId         Int  
   vehicleId         Int?        
   quantity          Int        // Para productos sin número de serie
   unitPrice         Float
   subtotal          Float
+  expectedDate      DateTime?
+  actualDate        DateTime?
+
+  purchase          Purchases   @relation(fields: [purchaseId], references: [purchaseId])
+  product           Products    @relation(fields: [productId], references: [productId])
+  vehicles          Vehicles?   @relation(fields: [vehicleId], references: [vehicleId])
 }
 
 model AuditLogs {
@@ -440,7 +466,3 @@ model ExpenseByCategory {
   date                DateTime
   expenseSummary      ExpenseSummary @relation(fields: [expenseSummaryId], references: [expenseSummaryId])
 }
-
-
-
-

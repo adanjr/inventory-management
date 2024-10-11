@@ -2,11 +2,12 @@
 
 import { useEffect, useState } from "react";
 import { 
-  useCreateVehicleMutation,
-  useGetVehicleByIdQuery, // Import the query for fetching vehicle data
+  useUpdateVehicleMutation,
+  useGetVehicleByIdQuery, 
   useGetWarrantiesQuery,
   useGetBatteryWarrantiesQuery,
   useGetMakesQuery,
+  useGetFamiliesQuery,
   useGetModelsQuery,
   useGetColorsQuery,  
   useGetVehicleStatusesQuery,
@@ -21,8 +22,17 @@ const EditVehicle = ({ params }: { params: { id: string } }) => {
   const id = params.id;
   const { data: vehicle, isLoading: vehicleLoading } = useGetVehicleByIdQuery(id); // Fetch vehicle data
 
-  const { data: makes, isLoading: makesLoading } = useGetMakesQuery();
-  const { data: models, isLoading: modelsLoading } = useGetModelsQuery();
+  const [selectedMakeId, setSelectedMakeId] = useState<number | null>(null);
+  const [selectedFamilyId, setSelectedFamilyId] = useState<number | null>(null);
+  const [selectedModelId, setSelectedModelId] = useState<number | null>(null);
+
+  const { data: makes = [], isLoading: makesLoading } = useGetMakesQuery();  
+  const { data: families = [], isLoading: familiesLoading } = useGetFamiliesQuery({
+    makeId: selectedMakeId ?? undefined,  
+  });
+  const { data: models = [], isLoading: modelsLoading } = useGetModelsQuery({
+    familyId: selectedFamilyId ?? undefined, 
+  });
   const { data: colors, isLoading: colorsLoading } = useGetColorsQuery();
   const { data: vehicleStatuses, isLoading: vehicleStatusesLoading } = useGetVehicleStatusesQuery();
   const { data: vehicleConditions, isLoading: vehicleConditionsLoading } = useGetVehicleConditionsQuery();
@@ -30,12 +40,13 @@ const EditVehicle = ({ params }: { params: { id: string } }) => {
   const { data: warranties, isLoading: warrantiesLoading } = useGetWarrantiesQuery(); 
   const { data: batteryWarranties, isLoading: batteryWarrantiesLoading } = useGetBatteryWarrantiesQuery(); 
   const { data: locations, isLoading: locationsLoading } = useGetLocationsQuery();  
-  const [updateVehicle] = useCreateVehicleMutation(); // Update mutation
+  const [updateVehicle] = useUpdateVehicleMutation(); // Update mutation
 
   const [formData, setFormData] = useState({
     vin: "",
     internal_serial: "",    
     makeId: 0,
+    familyId: 0,
     modelId: 0,
     year: 2024,
     colorId: 0,    
@@ -59,6 +70,7 @@ const EditVehicle = ({ params }: { params: { id: string } }) => {
         vin: vehicle.vin!,
         internal_serial: vehicle.internal_serial!,
         makeId: vehicle.makeId,
+        familyId: vehicle.familyId,
         modelId: vehicle.modelId,
         year: vehicle.year,
         colorId: vehicle.colorId,
@@ -75,8 +87,38 @@ const EditVehicle = ({ params }: { params: { id: string } }) => {
         qrCode: vehicle.qrCode!,
         description: vehicle.description!,
       });
+
+      setSelectedMakeId(vehicle.makeId);
+      setSelectedFamilyId(vehicle.familyId); // Para también seleccionar la familia
+      setSelectedModelId(vehicle.modelId); // Selecciona el modelo
     }
   }, [vehicle]);
+
+  const handleMakeChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
+    const makeId = Number(event.target.value);
+    setSelectedMakeId(makeId);
+    setSelectedFamilyId(null); // Reset family selection when make changes
+    setSelectedModelId(null);
+  
+    // Actualizar el formData
+    setFormData((prevFormData) => ({
+      ...prevFormData,
+      makeId,  // Actualiza el makeId en formData
+      familyId: 0,  // Reinicia el familyId
+      modelId: 0,
+    }));
+  };
+  
+  const handleFamilyChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
+    const familyId = Number(event.target.value);
+    setSelectedFamilyId(familyId);
+  
+    // Actualizar el formData
+    setFormData((prevFormData) => ({
+      ...prevFormData,
+      familyId,  // Actualiza el familyId en formData
+    }));
+  };  
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -104,7 +146,7 @@ const EditVehicle = ({ params }: { params: { id: string } }) => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    await updateVehicle(formData); // Use updateVehicle instead of createVehicle
+    await updateVehicle({ id: id, data: formData });   
     router.push("/vehicles"); // Redirect to vehicle list after updating
   };
 
@@ -122,17 +164,7 @@ const EditVehicle = ({ params }: { params: { id: string } }) => {
       
       <form onSubmit={handleSubmit}>
         <div className="grid grid-cols-1 gap-6 sm:grid-cols-4">
-          {/* Form fields */}
-          <div>
-            <label className="block text-gray-700 font-semibold">VIN</label>
-            <input
-              type="text"
-              name="vin"
-              value={formData.vin}
-              onChange={handleInputChange}
-              className="w-full border border-gray-200 rounded-lg px-4 py-2 focus:outline-none focus:border-gray-500 focus:ring-2 focus:ring-gray-200"
-            />
-          </div>           
+          {/* Form fields */}                 
           
           <div>
             <label className="block text-gray-700 font-semibold">Número de Serie Interno</label>
@@ -153,7 +185,7 @@ const EditVehicle = ({ params }: { params: { id: string } }) => {
               <select
                 name="makeId"
                 value={formData.makeId}
-                onChange={handleInputChange}
+                onChange={handleMakeChange}
                 className="w-full border border-gray-200 rounded-lg px-4 py-2 focus:outline-none focus:border-gray-500 focus:ring-2 focus:ring-gray-200"
               >
                 <option value="">Seleccione un fabricante</option>
@@ -165,6 +197,28 @@ const EditVehicle = ({ params }: { params: { id: string } }) => {
               </select>
             )}
           </div>
+
+          <div>
+            <label className="block text-gray-700 font-semibold">Familia</label>
+            {familiesLoading ? (
+              <p>Cargando...</p>
+            ) : (
+              <select
+                name="familyId"
+                value={formData.familyId}
+                onChange={handleFamilyChange}
+                className="w-full border border-gray-200 rounded-lg px-4 py-2 focus:outline-none focus:border-gray-500 focus:ring-2 focus:ring-gray-200"
+              >
+                <option value="">Seleccione un fabricante</option>
+                {families?.map((make: any) => (
+                  <option key={make.familyId} value={make.familyId}>
+                    {make.name}
+                  </option>
+                ))}
+              </select>
+            )}
+          </div>
+
           <div>
             <label className="block text-gray-700 font-semibold">Modelo</label>
             {modelsLoading ? (
@@ -185,6 +239,18 @@ const EditVehicle = ({ params }: { params: { id: string } }) => {
               </select> 
             )}
           </div>
+
+          <div>
+            <label className="block text-gray-700 font-semibold">VIN</label>
+            <input
+              type="text"
+              name="vin"
+              value={formData.vin}
+              onChange={handleInputChange}
+              className="w-full border border-gray-200 rounded-lg px-4 py-2 focus:outline-none focus:border-gray-500 focus:ring-2 focus:ring-gray-200"
+            />
+          </div>  
+
           <div>
             <label className="block text-gray-700 font-semibold">Año</label>
             <input
@@ -194,7 +260,8 @@ const EditVehicle = ({ params }: { params: { id: string } }) => {
               onChange={handleInputChange}
               className="w-full border border-gray-200 rounded-lg px-4 py-2 focus:outline-none focus:border-gray-500 focus:ring-2 focus:ring-gray-200"
             />
-          </div>
+          </div>            
+
           <div>
             <label className="block text-gray-700 font-semibold">Color</label>
             {colorsLoading ? (

@@ -1,10 +1,14 @@
 import React, { ChangeEvent, FormEvent, useState, useEffect } from "react";
 import Header from "@/app/(components)/Header";
+import { useGetMakesQuery,
+         useGetFamiliesQuery,
+         Model } from "@/state/api";
 
 type ModelFormData = {
   modelId: string;
   name: string;
   makeId: number;
+  familyId: number;
   year_start?: string;
   year_end?: string;
   vehicleTypeId: number;
@@ -25,9 +29,8 @@ type ModelFormData = {
 type EditModelModalProps = {
   isOpen: boolean;
   onClose: () => void;
-  onEdit: (formData: ModelFormData) => void;
-  initialData: ModelFormData | null;
-  makes: { makeId: string; name: string }[];
+  onEdit: (modelId: string, formData: Partial<ModelFormData>) => void;
+  selectedModel: Model | null;     
   vehicleTypes: { vehicleTypeId: string; name: string }[];
   engineTypes: { engineTypeId: string; name: string }[];
   fuelTypes: { fuelTypeId: string; name: string }[];
@@ -38,18 +41,106 @@ const EditModelModal = ({
   isOpen,
   onClose,
   onEdit,
-  initialData,
-  makes,
   vehicleTypes,
   engineTypes,
   fuelTypes,
   transmissions,
+  selectedModel,
 }: EditModelModalProps) => {
-  const [formData, setFormData] = useState<ModelFormData | null>(initialData);
+   const [formData, setFormData] = useState({
+    modelId: selectedModel?.modelId || "",
+    name: selectedModel?.name || "",     
+    makeId: selectedModel?.makeId || 0,
+    familyId: selectedModel?.familyId || 0,
+    year_start: selectedModel?.year_start || "",     
+    year_end: selectedModel?.year_end || "",     
+    vehicleTypeId: selectedModel?.vehicleTypeId || 0,
+    engineTypeId:selectedModel?.engineTypeId || 0,
+    fuelTypeId: selectedModel?.fuelTypeId || 0,
+    transmissionId: selectedModel?.transmissionId || 0,
+    batteryCapacity: selectedModel?.batteryCapacity || 0,
+    range: selectedModel?.range || 0,
+    wheelCount: selectedModel?.wheelCount || 0,
+    basePrice:selectedModel?.basePrice || 0,
+    chargeTime:selectedModel?.chargeTime || 0,
+    motorWattage: selectedModel?.motorWattage || 0,
+    weightCapacity: selectedModel?.weightCapacity || 0,
+    speed: selectedModel?.speed || 0,
+    batteryVoltage: selectedModel?.batteryVoltage || 0,
+  });
 
   useEffect(() => {
-    setFormData(initialData);
-  }, [initialData]);
+    if (selectedModel && isOpen) {
+      // Actualiza el formulario con los datos de la categoría seleccionada
+      setFormData({
+        modelId: selectedModel?.modelId || "",
+        name: selectedModel?.name || "",
+        makeId: selectedModel?.makeId || 0,
+        familyId: selectedModel?.familyId || 0,
+        year_start: selectedModel?.year_start || "",     
+        year_end: selectedModel?.year_end || "",     
+        vehicleTypeId: selectedModel?.vehicleTypeId || 0,
+        engineTypeId:selectedModel?.engineTypeId || 0,
+        fuelTypeId: selectedModel?.fuelTypeId || 0,
+        transmissionId: selectedModel?.transmissionId || 0,
+        batteryCapacity: selectedModel?.batteryCapacity || 0,
+        range: selectedModel?.range || 0,
+        wheelCount: selectedModel?.wheelCount || 0,
+        basePrice:selectedModel?.basePrice || 0,
+        chargeTime:selectedModel?.chargeTime || 0,
+        motorWattage: selectedModel?.motorWattage || 0,
+        weightCapacity: selectedModel?.weightCapacity || 0,
+        speed: selectedModel?.speed || 0,
+        batteryVoltage: selectedModel?.batteryVoltage || 0,
+      });
+    }
+  }, [selectedModel, isOpen]);
+
+  const [selectedMakeId, setSelectedMakeId] = useState<number | null>(null);
+  const [selectedFamilyId, setSelectedFamilyId] = useState<number | null>(null);
+
+  const { data: makes = [] } = useGetMakesQuery();
+  const { data: families = [] } = useGetFamiliesQuery({
+    makeId: selectedMakeId ?? undefined, // Cambia a undefined si es null
+  });
+  
+  const handleMakeChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
+    const makeId = Number(event.target.value);
+    setSelectedMakeId(makeId);
+    setSelectedFamilyId(null); // Reset family selection when make changes
+  
+    // Actualizar el formData
+    setFormData((prevFormData) => ({
+      ...prevFormData,
+      makeId,  // Actualiza el makeId en formData
+      familyId: 0,  // Reinicia el familyId
+    }));
+  };
+  
+  const handleFamilyChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
+    const familyId = Number(event.target.value);
+    setSelectedFamilyId(familyId);
+  
+    // Actualizar el formData
+    setFormData((prevFormData) => ({
+      ...prevFormData,
+      familyId,  // Actualiza el familyId en formData
+    }));
+  };
+
+  useEffect(() => {
+    if (makes.length > 0) {
+      // Set the first make as default
+      setSelectedMakeId(Number(makes[0].makeId));
+    }
+  }, [makes]);
+
+  useEffect(() => {
+    if (families.length > 0) {
+      // Set the first family as default based on the selected make
+      setSelectedFamilyId(Number(families[0].familyId));
+    }
+  }, [families]);
 
   const handleChange = (e: ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     if (!formData) return;
@@ -64,11 +155,30 @@ const EditModelModal = ({
 
   const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    if (formData) {
-      onEdit(formData);
-    }
+     
+     onEdit(formData.modelId, {
+      name: formData.name,
+      makeId: formData?.makeId ,
+      familyId: formData?.familyId ,
+      year_start: formData?.year_start ,     
+      year_end: formData?.year_end ,     
+      vehicleTypeId: formData?.vehicleTypeId ,
+      engineTypeId:formData?.engineTypeId ,
+      fuelTypeId: formData?.fuelTypeId ,
+      transmissionId: formData?.transmissionId ,
+      batteryCapacity: formData?.batteryCapacity ,
+      range: formData?.range ,
+      wheelCount: formData?.wheelCount ,
+      basePrice:formData?.basePrice ,
+      chargeTime:formData?.chargeTime ,
+      motorWattage: formData?.motorWattage ,
+      weightCapacity: formData?.weightCapacity ,
+      speed: formData?.speed  ,
+      batteryVoltage: formData?.batteryVoltage,
+    });
     onClose();
   };
+ 
 
   const handleClose = () => {
     onClose();
@@ -107,7 +217,7 @@ const EditModelModal = ({
             </label>
             <select
               name="makeId"
-              onChange={handleChange}
+              onChange={handleMakeChange}
               value={formData.makeId}
               className={inputCssStyles}
               required
@@ -116,6 +226,48 @@ const EditModelModal = ({
               {makes.map((make) => (
                 <option key={make.makeId} value={make.makeId}>
                   {make.name}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          {/* FAMILY SELECTION */}
+          <div className="col-span-1">
+            <label htmlFor="familyId" className={labelCssStyles}>
+              Familia
+            </label>
+            <select
+              name="familyId"
+              onChange={handleFamilyChange}
+              value={formData.familyId}
+              className={inputCssStyles}
+              required
+            >
+              <option value="">Selecciona una familia</option>
+              {families.map((family) => (
+                <option key={family.familyId} value={family.familyId}>
+                  {family.name}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          {/* VEHICLE TYPE */}
+          <div className="col-span-1">
+            <label htmlFor="vehicleTypeId" className={labelCssStyles}>
+              Tipo de Vehículo
+            </label>
+            <select
+              name="vehicleTypeId"
+              onChange={handleChange}
+              value={formData.vehicleTypeId}
+              className={inputCssStyles}
+              required
+            >
+              <option value="">Selecciona un tipo</option>
+              {vehicleTypes.map((type) => (
+                <option key={type.vehicleTypeId} value={type.vehicleTypeId}>
+                  {type.name}
                 </option>
               ))}
             </select>
@@ -149,28 +301,7 @@ const EditModelModal = ({
               value={formData.year_end}
               className={inputCssStyles}
             />
-          </div>
-
-          {/* VEHICLE TYPE */}
-          <div className="col-span-1">
-            <label htmlFor="vehicleTypeId" className={labelCssStyles}>
-              Tipo de Vehículo
-            </label>
-            <select
-              name="vehicleTypeId"
-              onChange={handleChange}
-              value={formData.vehicleTypeId}
-              className={inputCssStyles}
-              required
-            >
-              <option value="">Selecciona un tipo</option>
-              {vehicleTypes.map((type) => (
-                <option key={type.vehicleTypeId} value={type.vehicleTypeId}>
-                  {type.name}
-                </option>
-              ))}
-            </select>
-          </div>
+          </div>          
 
           {/* ENGINE TYPE */}
           <div className="col-span-1">

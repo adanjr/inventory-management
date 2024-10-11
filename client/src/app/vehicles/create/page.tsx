@@ -1,11 +1,12 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { 
   useCreateVehicleMutation,
   useGetWarrantiesQuery,
   useGetBatteryWarrantiesQuery,
   useGetMakesQuery,
+  useGetFamiliesQuery,
   useGetModelsQuery,
   useGetColorsQuery,  
   useGetVehicleStatusesQuery,
@@ -19,8 +20,17 @@ const CreateVehicle = () => {
   const router = useRouter();
   const [createVehicle] = useCreateVehicleMutation();
 
-  const { data: makes, isLoading: makesLoading } = useGetMakesQuery();
-  const { data: models, isLoading: modelsLoading } = useGetModelsQuery();
+  const [selectedMakeId, setSelectedMakeId] = useState<number | null>(null);
+  const [selectedFamilyId, setSelectedFamilyId] = useState<number | null>(null);
+  const [selectedModelId, setSelectedModelId] = useState<number | null>(null);
+
+  const { data: makes = [], isLoading: makesLoading } = useGetMakesQuery();  
+  const { data: families = [], isLoading: familiesLoading } = useGetFamiliesQuery({
+    makeId: selectedMakeId ?? undefined, // Cambia a undefined si es null
+  });
+  const { data: models = [], isLoading: modelsLoading } = useGetModelsQuery({
+    familyId: selectedFamilyId ?? undefined, // Cambia a undefined si es null
+  });
   const { data: colors, isLoading: colorsLoading } = useGetColorsQuery();
   const { data: vehicleStatuses, isLoading: vehicleStatusesLoading } = useGetVehicleStatusesQuery();
   const { data: vehicleConditions, isLoading: vehicleConditionsLoading } = useGetVehicleConditionsQuery();
@@ -33,6 +43,7 @@ const CreateVehicle = () => {
     vin: "",
     internal_serial: "",    
     makeId: 0,
+    familyId: 0,
     modelId: 0,
     year: 2024,
     colorId: 0,    
@@ -49,6 +60,63 @@ const CreateVehicle = () => {
     qrCode: "",
     description: "",
   });
+
+  const handleMakeChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
+    const makeId = Number(event.target.value);
+    setSelectedMakeId(makeId);
+    setSelectedFamilyId(null); // Reset family selection when make changes
+    setSelectedModelId(null);
+  
+    // Actualizar el formData
+    setFormData((prevFormData) => ({
+      ...prevFormData,
+      makeId,  // Actualiza el makeId en formData
+      familyId: 0,  // Reinicia el familyId
+      modelId: 0,
+    }));
+  };
+
+  const handleModelChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
+    const modelId = Number(event.target.value);
+    setSelectedModelId(modelId);
+  
+    // Actualizar el formData
+    setFormData((prevFormData) => ({
+      ...prevFormData,
+      modelId,  // Actualiza el modelId en formData
+    }));
+  };
+  
+  const handleFamilyChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
+    const familyId = Number(event.target.value);
+    setSelectedFamilyId(familyId);
+  
+    // Actualizar el formData
+    setFormData((prevFormData) => ({
+      ...prevFormData,
+      familyId,  // Actualiza el familyId en formData
+    }));
+  };
+
+  useEffect(() => {
+    if (makes.length > 0) {
+      // Set the first make as default
+      setSelectedMakeId(Number(makes[0].makeId));
+    }
+  }, [makes]);
+
+  useEffect(() => {
+    if (families.length > 0) {
+      // Set the first family as default based on the selected make
+      setSelectedFamilyId(Number(families[0].familyId));
+    }
+  }, [families]);
+
+  useEffect(() => {
+    if (models.length > 0) {      
+      setSelectedModelId(Number(models[0].modelId));
+    }
+  }, [families]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -89,17 +157,7 @@ const CreateVehicle = () => {
     <div className="mx-auto p-6 max-w-6xl bg-white shadow-md rounded-lg">
       <h2 className="text-3xl font-bold mb-6 text-center">Agregar Nuevo Vehículo</h2>
       <form onSubmit={handleSubmit}>
-        <div className="grid grid-cols-1 gap-6 sm:grid-cols-4">
-          <div>
-            <label className="block text-gray-700 font-semibold">VIN</label>
-            <input
-              type="text"
-              name="vin"
-              value={formData.vin}
-              onChange={handleInputChange}
-              className="w-full border border-gray-200 rounded-lg px-4 py-2 focus:outline-none focus:border-gray-500 focus:ring-2 focus:ring-gray-200"
-            />
-          </div>
+        <div className="grid grid-cols-1 gap-6 sm:grid-cols-4">          
           <div>
             <label className="block text-gray-700 font-semibold">Número de Serie Interno</label>
             <input
@@ -119,7 +177,7 @@ const CreateVehicle = () => {
               <select
                 name="makeId"
                 value={formData.makeId}
-                onChange={handleInputChange}
+                onChange={handleMakeChange}
                 className="w-full border border-gray-200 rounded-lg px-4 py-2 focus:outline-none focus:border-gray-500 focus:ring-2 focus:ring-gray-200"
               >
                 <option value="">Seleccione un fabricante</option>
@@ -131,6 +189,28 @@ const CreateVehicle = () => {
               </select>
             )}
           </div>
+
+          <div>
+            <label className="block text-gray-700 font-semibold">Familia</label>
+            {familiesLoading ? (
+              <p>Cargando...</p>
+            ) : (
+              <select
+                name="familyId"
+                value={formData.familyId}
+                onChange={handleFamilyChange}
+                className="w-full border border-gray-200 rounded-lg px-4 py-2 focus:outline-none focus:border-gray-500 focus:ring-2 focus:ring-gray-200"
+              >
+                <option value="">Seleccione un fabricante</option>
+                {families?.map((make: any) => (
+                  <option key={make.familyId} value={make.familyId}>
+                    {make.name}
+                  </option>
+                ))}
+              </select>
+            )}
+          </div>
+
           <div>
             <label className="block text-gray-700 font-semibold">Modelo</label>
             {modelsLoading ? (
@@ -151,6 +231,18 @@ const CreateVehicle = () => {
               </select> 
             )}
           </div>
+
+          <div>
+            <label className="block text-gray-700 font-semibold">VIN</label>
+            <input
+              type="text"
+              name="vin"
+              value={formData.vin}
+              onChange={handleInputChange}
+              className="w-full border border-gray-200 rounded-lg px-4 py-2 focus:outline-none focus:border-gray-500 focus:ring-2 focus:ring-gray-200"
+            />
+          </div>
+          
           <div>
             <label className="block text-gray-700 font-semibold">Año</label>
             <input

@@ -19,6 +19,7 @@ export const getVehicles = async (req: Request, res: Response): Promise<void> =>
         model: {
           include: {
             make: true, // Incluir la relación con Make
+            family: true,
           },
         },
         color: true,
@@ -35,6 +36,7 @@ export const getVehicles = async (req: Request, res: Response): Promise<void> =>
       ...vehicle,
       modelName: vehicle.model?.name || 'N/A',
       makeName: vehicle.model?.make?.name || 'N/A', // Obtener el nombre del fabricante
+      familyName: vehicle.model?.family?.name || 'N/A',
       colorName: vehicle.color?.name || 'N/A',
       condition: vehicle.condition?.name || 'N/A',
       availabilityStatus: vehicle.availabilityStatus?.name || 'N/A',
@@ -108,7 +110,12 @@ export const getVehicleById = async (req: Request, res: Response): Promise<void>
     const vehicle = await prisma.vehicles.findUnique({
       where: { vehicleId: Number(id) },
       include: {
-        model: true,
+        model: {
+          include: {
+            make: true, // Asegúrate de incluir la relación de make
+            family: true, // Asegúrate de incluir la relación de family
+          },
+        },
         color: true,
         condition: true,
         availabilityStatus: true,
@@ -118,10 +125,20 @@ export const getVehicleById = async (req: Request, res: Response): Promise<void>
         batteryWarranty: true,
       },
     });
+
     if (!vehicle) {
       res.status(404).json({ message: "Vehicle not found" });
     } else {
-      res.json(vehicle);
+      // Extraer makeId y familyId
+      const makeId = vehicle.model?.make?.makeId || null; // Puede ser null si no existe
+      const familyId = vehicle.model?.family?.familyId || null; // Puede ser null si no existe
+
+      // Devolver el vehículo junto con makeId y familyId
+      res.json({
+        ...vehicle,
+        makeId,
+        familyId,
+      });
     }
   } catch (error) {
     res.status(500).json({ message: "Error retrieving vehicle" });
@@ -136,6 +153,8 @@ export const updateVehicle = async (req: Request, res: Response): Promise<void> 
       vin,
       internal_serial,
       modelId,
+      makeId,
+      familyId,
       year,
       colorId,
       mileage,
@@ -151,6 +170,8 @@ export const updateVehicle = async (req: Request, res: Response): Promise<void> 
       warrantyId,
       batteryWarrantyId,
     } = req.body;
+
+    console.log(req.body);
 
     const vehicle = await prisma.vehicles.update({
       where: { vehicleId: Number(id) },

@@ -1,4 +1,6 @@
-import React, { ChangeEvent, FormEvent, useState } from "react";
+import React, { ChangeEvent, FormEvent, useState, useEffect } from "react";
+import { useGetMakesQuery,
+         useGetFamiliesQuery } from "@/state/api";
 import Header from "@/app/(components)/Header";
 import { v4 } from "uuid";
 
@@ -6,6 +8,7 @@ type ModelFormData = {
   modelId: string;
   name: string;
   makeId: number;
+  familyId: number;
   year_start?: string;
   year_end?: string;
   vehicleTypeId: number;
@@ -27,7 +30,6 @@ type CreateModelModalProps = {
   isOpen: boolean;
   onClose: () => void;
   onCreate: (formData: ModelFormData) => void;
-  makes: { makeId: string; name: string }[];
   vehicleTypes: { vehicleTypeId: string; name: string }[];
   engineTypes: { engineTypeId: string; name: string }[];
   fuelTypes: { fuelTypeId: string; name: string }[];
@@ -38,7 +40,6 @@ const CreateModelModal = ({
   isOpen,
   onClose,
   onCreate,
-  makes,
   vehicleTypes,
   engineTypes,
   fuelTypes,
@@ -48,6 +49,7 @@ const CreateModelModal = ({
     modelId: v4(),
     name: "",
     makeId: 0,
+    familyId: 0,
     year_start: "",
     year_end: "",
     vehicleTypeId: 0,
@@ -64,6 +66,52 @@ const CreateModelModal = ({
     speed: 0,
     batteryVoltage: 0,
   });
+
+  const [selectedMakeId, setSelectedMakeId] = useState<number | null>(null);
+  const [selectedFamilyId, setSelectedFamilyId] = useState<number | null>(null);
+
+  const { data: makes = [] } = useGetMakesQuery();
+  const { data: families = [] } = useGetFamiliesQuery({
+    makeId: selectedMakeId ?? undefined, // Cambia a undefined si es null
+  });
+  
+  const handleMakeChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
+    const makeId = Number(event.target.value);
+    setSelectedMakeId(makeId);
+    setSelectedFamilyId(null); // Reset family selection when make changes
+  
+    // Actualizar el formData
+    setFormData((prevFormData) => ({
+      ...prevFormData,
+      makeId,  // Actualiza el makeId en formData
+      familyId: 0,  // Reinicia el familyId
+    }));
+  };
+  
+  const handleFamilyChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
+    const familyId = Number(event.target.value);
+    setSelectedFamilyId(familyId);
+  
+    // Actualizar el formData
+    setFormData((prevFormData) => ({
+      ...prevFormData,
+      familyId,  // Actualiza el familyId en formData
+    }));
+  };
+
+  useEffect(() => {
+    if (makes.length > 0) {
+      // Set the first make as default
+      setSelectedMakeId(Number(makes[0].makeId));
+    }
+  }, [makes]);
+
+  useEffect(() => {
+    if (families.length > 0) {
+      // Set the first family as default based on the selected make
+      setSelectedFamilyId(Number(families[0].familyId));
+    }
+  }, [families]);
 
   const handleChange = (e: ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
@@ -85,6 +133,7 @@ const CreateModelModal = ({
       modelId: v4(),
       name: "",
       makeId: 0,
+      familyId: 0,
       year_start: "",
       year_end: "",
       vehicleTypeId: 0,
@@ -137,7 +186,7 @@ const CreateModelModal = ({
             </label>
             <select
               name="makeId"
-              onChange={handleChange}
+              onChange={handleMakeChange}
               value={formData.makeId}
               className={inputCssStyles}
               required
@@ -146,6 +195,49 @@ const CreateModelModal = ({
               {makes.map((make) => (
                 <option key={make.makeId} value={make.makeId}>
                   {make.name}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          {/* FAMILY SELECTION */}
+          <div className="col-span-1">
+            <label htmlFor="familyId" className={labelCssStyles}>
+              Familia
+            </label>
+            <select
+              name="familyId"
+              onChange={handleFamilyChange}
+              value={formData.familyId}
+              className={inputCssStyles}
+              required
+            >
+              <option value="">Selecciona una familia</option>
+              {families.map((family) => (
+                <option key={family.familyId} value={family.familyId}>
+                  {family.name}
+                </option>
+              ))}
+            </select>
+          </div>
+
+
+          {/* VEHICLE TYPE */}
+          <div className="col-span-1">
+            <label htmlFor="vehicleTypeId" className={labelCssStyles}>
+              Tipo de Vehículo
+            </label>
+            <select
+              name="vehicleTypeId"
+              onChange={handleChange}
+              value={formData.vehicleTypeId}
+              className={inputCssStyles}
+              required
+            >
+              <option value="">Selecciona un tipo</option>
+              {vehicleTypes.map((type) => (
+                <option key={type.vehicleTypeId} value={type.vehicleTypeId}>
+                  {type.name}
                 </option>
               ))}
             </select>
@@ -179,28 +271,7 @@ const CreateModelModal = ({
               value={formData.year_end}
               className={inputCssStyles}
             />
-          </div>
-
-          {/* VEHICLE TYPE */}
-          <div className="col-span-1">
-            <label htmlFor="vehicleTypeId" className={labelCssStyles}>
-              Tipo de Vehículo
-            </label>
-            <select
-              name="vehicleTypeId"
-              onChange={handleChange}
-              value={formData.vehicleTypeId}
-              className={inputCssStyles}
-              required
-            >
-              <option value="">Selecciona un tipo</option>
-              {vehicleTypes.map((type) => (
-                <option key={type.vehicleTypeId} value={type.vehicleTypeId}>
-                  {type.name}
-                </option>
-              ))}
-            </select>
-          </div>
+          </div>          
 
           {/* ENGINE TYPE */}
           <div className="col-span-1">

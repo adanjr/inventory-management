@@ -126,7 +126,7 @@ const Sidebar = () => {
         { label: "Vehículos", href: "/vehicles", icon: Car },
         { label: "Productos", href: "/products", icon: Package },
         { label: "Modelos", href: "/models", icon: FileBox },
-        { label: "Familias de Modelos", href: "/models", icon: FolderTree },
+        { label: "Familias de Modelos", href: "/families", icon: FolderTree },
         { label: "Suc/Almacenes", href: "/locations", icon: Map },
       ],
     },

@@ -7,20 +7,29 @@ const prisma = new PrismaClient();
 export const getModels = async (req: Request, res: Response): Promise<void> => {
   try {
     const search = req.query.search?.toString();
+    const familyId = req.query.familyId ? parseInt(req.query.familyId.toString()) : undefined;
+
     const models = await prisma.models.findMany({
       where: {
-        name: {
-          contains: search,
-        },
+        AND: [
+          {
+            name: {
+              contains: search,
+            },
+          },
+          familyId ? { familyId } : {},  // Filtrar por familyId si está presente
+        ],
       },
       include: {
         make: true,              // Incluir la marca relacionada
+        family: true,            // Incluir la familia relacionada
         vehicleType: true,        // Incluir el tipo de vehículo
         engineType: true,         // Incluir el tipo de motor
         fuelType: true,           // Incluir el tipo de combustible (si aplica)
         transmission: true,       // Incluir la transmisión
       },
     });
+
     res.json(models);
   } catch (error) {
     res.status(500).json({ message: "Error retrieving models" });
@@ -33,6 +42,7 @@ export const createModel = async (req: Request, res: Response): Promise<void> =>
     const {
       name,
       makeId,
+      familyId,
       year_start,
       year_end,
       vehicleTypeId,
@@ -48,14 +58,13 @@ export const createModel = async (req: Request, res: Response): Promise<void> =>
       weightCapacity,
       speed,
       batteryVoltage,
-    } = req.body;
-
-    console.log(req.body);
+    } = req.body;    
 
     const model = await prisma.models.create({
       data: {
         name,
         makeId,
+        familyId,
         year_start,
         year_end,
         vehicleTypeId,
@@ -87,6 +96,7 @@ export const getModelById = async (req: Request, res: Response): Promise<void> =
       where: { modelId: Number(id) },
       include: {
         make: true,              // Incluir la marca relacionada
+        family: true,
         vehicleType: true,        // Incluir el tipo de vehículo
         engineType: true,         // Incluir el tipo de motor
         fuelType: true,           // Incluir el tipo de combustible (si aplica)
@@ -109,30 +119,34 @@ export const updateModel = async (req: Request, res: Response): Promise<void> =>
   try {
     const { id } = req.params;
     const {
-      name,
-      makeId,
-      year_start,
-      year_end,
-      vehicleTypeId,
-      engineTypeId,
-      fuelTypeId,
-      transmissionId,
-      batteryCapacity,
-      range,
-      wheelCount,
-      basePrice,
-      chargeTime,
-      motorWattage,
-      weightCapacity,
-      speed,
-      batteryVoltage,
+        name,
+        makeId,
+        familyId,
+        year_start,
+        year_end,
+        vehicleTypeId,
+        engineTypeId,
+        fuelTypeId,
+        transmissionId,
+        batteryCapacity,
+        range,
+        wheelCount,
+        basePrice,
+        chargeTime,
+        motorWattage,
+        weightCapacity,
+        speed,
+        batteryVoltage,
     } = req.body;
 
+    console.log(req.body);
+    
     const model = await prisma.models.update({
       where: { modelId: Number(id) },
       data: {
         name,
         makeId,
+        familyId,
         year_start,
         year_end,
         vehicleTypeId,
