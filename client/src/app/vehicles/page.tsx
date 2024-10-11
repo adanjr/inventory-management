@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useGetVehiclesQuery, useDeleteVehicleMutation, Vehicle } from "@/state/api";
 import { DataGrid, GridColDef, GridRowSelectionModel } from "@mui/x-data-grid";
 import Header from "@/app/(components)/Header";
-import { PlusCircleIcon, EditIcon, DeleteIcon } from "lucide-react";
+import { PlusCircleIcon, EditIcon, DeleteIcon } from "lucide-react"; 
 
 // Formato de moneda para México
 const formatCurrency = (value: number | null | undefined) => {
@@ -40,7 +40,6 @@ const Vehicles = () => {
   const router = useRouter();
   const [searchTerm, setSearchTerm] = useState("%");
   const [debouncedSearchTerm, setDebouncedSearchTerm] = useState(searchTerm);
-
   const [rowSelectionModel, setRowSelectionModel] = useState<GridRowSelectionModel>([]);
 
   // Mutación para eliminar un vehículo
@@ -74,7 +73,7 @@ const Vehicles = () => {
         console.error("Error eliminando el vehículo:", error);         
       }
     }
-  };  
+  };
 
   return (
     <div className="mx-auto pb-5 w-full">
@@ -119,6 +118,14 @@ const Vehicles = () => {
             <DeleteIcon className="w-5 h-5 mr-2" />
             Eliminar Vehículo
           </button>
+          <label className="flex items-center bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded cursor-pointer">
+            <input
+              type="file"
+              accept=".csv"               
+              className="hidden"
+            />
+            Cargar CSV
+          </label>
         </div>
       </div>
 
