@@ -101,8 +101,8 @@ model Manufacturers {
 
 model Vehicles {
   vehicleId             Int            @id @default(autoincrement())
-  vin                   String?        @unique // Vehicle Identification Number (opcional para motocicletas)
-  internal_serial       String?        @unique  
+  vin                   String?        // Vehicle Identification Number (opcional para motocicletas)
+  internal_serial       String?          
   modelId               Int            // Modelo del vehículo
   year                  Int            // Año de fabricación
   colorId               Int            // Color del vehículo
@@ -112,7 +112,7 @@ model Vehicles {
   availabilityStatusId  Int            // Disponible, Vendido, Fuera de inventario  
   statusId              Int            // Estado del vehículo
   locationId            Int            // Almacén, Sucursal
-  stockNumber           String         @unique // Número de inventario interno
+  stockNumber           String         // Número de inventario interno
   barcode               String?        // Código de barras único (opcional, para inventario)
   qrCode                String?        // Código QR único (opcional, para inventario)
   description           String?        // Descripción del vehículo (opcional)

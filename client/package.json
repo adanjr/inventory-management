@@ -21,6 +21,7 @@
     "mapbox-gl": "^3.6.0",
     "next": "^14.2.13",
     "numeral": "^2.0.6",
+    "papaparse": "^5.4.1",
     "react": "^18",
     "react-dom": "^18",
     "react-leaflet": "^4.2.1",
@@ -33,6 +34,7 @@
   "devDependencies": {
     "@types/node": "^20.14.10",
     "@types/numeral": "^2.0.5",
+    "@types/papaparse": "^5.3.14",
     "@types/react": "^18",
     "@types/react-dom": "^18",
     "@types/uuid": "^10.0.0",

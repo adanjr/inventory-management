@@ -318,6 +318,14 @@ export interface NewVehicle {
   batteryWarrantyId: number;
 }
 
+export interface NewVehicleCSV {
+  internal_serial: string;
+  modelName: string;
+  colorName: string;
+  availabilityStatusName: string;
+  locationId: number;
+}
+
 export interface UpdatedVehicle {
   vin?: string;
   internal_serial?: string;
@@ -1345,6 +1353,14 @@ export const api = createApi({
       }),
       invalidatesTags: ["Vehicles"],
     }),
+    createVehicleFromCSV: build.mutation<Vehicle, NewVehicleCSV>({
+      query: (newVehicleCSV) => ({
+        url: "/vehicles/csv",
+        method: "POST",
+        body: newVehicleCSV,
+      }),
+      invalidatesTags: ["Vehicles"],
+    }),
     updateVehicle: build.mutation<Vehicle, { id: string; data: UpdatedVehicle }>({
       query: ({ id, data }) => ({
         url: `/vehicles/${id}`,
@@ -1377,23 +1393,30 @@ export const api = createApi({
 
 export const {
   useGetDashboardMetricsQuery,
+
   useGetProductsQuery,
   useCreateProductMutation,
   useUpdateProductMutation,
+
   useGetUsersQuery,
+
   useGetExpensesByCategoryQuery,
+  
   useGetManufacturersQuery,
   useCreateManufacturerMutation,
   useUpdateManufacturerMutation,
   useDeleteManufacturerMutation,
+
   useGetCustomersQuery,
   useCreateCustomerMutation,
   useUpdateCustomerMutation,
   useDeleteCustomerMutation,
+
   useGetSuppliersQuery,
   useCreateSupplierMutation,
   useUpdateSupplierMutation,
   useDeleteSupplierMutation,
+
   useGetCategoriesQuery,
   useCreateCategoryMutation,
   useUpdateCategoryMutation,
@@ -1428,6 +1451,7 @@ export const {
   useCreateLocationMutation,
   useUpdateLocationMutation,
   useDeleteLocationMutation,
+
    // Vehicle Types
    useGetVehicleTypesQuery,
    useCreateVehicleTypeMutation,
@@ -1486,6 +1510,7 @@ export const {
    useGetVehiclesQuery,
    useGetVehicleByIdQuery,
    useCreateVehicleMutation,
+   useCreateVehicleFromCSVMutation,
    useUpdateVehicleMutation,
    useDeleteVehicleMutation,
 
