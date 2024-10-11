@@ -207,16 +207,18 @@ const Models = () => {
       </select>
     </div>
 
-    {/* FAMILY SELECT */}
+    {/* FAMILY SELECT */}    
     <div className="flex flex-col">
       <label htmlFor="familySelect" className="mb-1 font-semibold text-gray-700">Familia</label>
       <select
         id="familySelect"
-        value={selectedFamilyId || ""}
+        value={selectedFamilyId || ""} // Permitir un valor vacío para "Todas"
         onChange={handleFamilyChange}
         className="border-2 border-gray-300 rounded py-2 px-4"
         disabled={!selectedMakeId} // Disable if no make is selected
       >
+        {/* Opción de "Todas" */}
+        <option value="">Todas</option> 
         {families.map((family) => (
           <option key={family.familyId} value={family.familyId}>
             {family.name}
@@ -224,6 +226,7 @@ const Models = () => {
         ))}
       </select>
     </div>
+
   </div>
 
   {/* SEARCH BAR */}
