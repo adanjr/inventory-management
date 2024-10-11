@@ -31,7 +31,7 @@ const columns: GridColDef[] = [
     width: 100,
     type: "number",
     valueFormatter: (params) => {       
-      return formatCurrency(params.value); // Usa la función para formatear la moneda
+      return formatCurrency(params); // Usa la función para formatear la moneda
     },
   },
 ];
