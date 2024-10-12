@@ -10,9 +10,9 @@ export const getVehicles = async (req: Request, res: Response): Promise<void> =>
     const vehicles = await prisma.vehicles.findMany({
       where: {
         OR: [
-          { vin: { contains: search } },
-          { stockNumber: { contains: search } },
-          { description: { contains: search } },
+          { vin: { contains: search, mode: 'insensitive' } },
+          { stockNumber: { contains: search , mode: 'insensitive'} },
+          { internal_serial: { contains: search, mode: 'insensitive' } },
         ],
       },
       include: {
