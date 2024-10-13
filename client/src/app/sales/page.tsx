@@ -43,9 +43,10 @@ const Sales = () => {
   const [saleConfirmation, setSaleConfirmation] = useState(false);
   const [totalSale, setTotalSale] = useState(0);
   const [vehicleCode, setVehicleCode] = useState("");
+  const [selectedVehicles, setSelectedVehicles] = useState<any[]>([]); 
 
   // Se eliminaron las consultas para obtener vehículos inicialmente
-  const { data: vehicles = [], isError, isLoading } = useGetVehiclesQuery("%", { skip: true });
+  const { data: vehicles = [], isError, isLoading } = useGetVehiclesQuery("%");
 
   const handleSale = async () => {
     if (rowSelectionModel.length === 0 || !customerName) {
@@ -61,9 +62,10 @@ const Sales = () => {
   };
 
   const handleScan = () => {
-    const vehicle = vehicles.find(v => v.vin === vehicleCode); // Busca el vehículo por el VIN escaneado
+    const vehicle = vehicles.find(v => v.internal_serial?.trim().toLowerCase() === vehicleCode.trim().toLowerCase());
     if (vehicle) {
-      setRowSelectionModel([vehicle.vehicleId]); // Selecciona el vehículo encontrado
+      // Agrega el vehículo encontrado a la lista de vehículos seleccionados
+      setSelectedVehicles(prevSelected => [...prevSelected, vehicle]);
       setTotalSale(prevTotal => prevTotal + vehicle.price); // Actualiza el total de la venta
       setVehicleCode(""); // Limpiar el campo de escaneo
     } else {
@@ -96,7 +98,7 @@ const Sales = () => {
         <div className="flex mb-4">
           <input
             className="w-3/4 py-2 px-4 border-2 border-gray-200 rounded"
-            placeholder="Escanear Código del Vehículo (VIN)"
+            placeholder="Escanear Código del Vehículo"
             value={vehicleCode}
             onChange={(e) => setVehicleCode(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && handleScan()} // Escanear al presionar Enter
@@ -118,13 +120,13 @@ const Sales = () => {
 
       {/* Título del DataGrid */}
       <div className="mb-2">
-        <h2 className="text-xl font-bold">Vehículos a Comprar</h2>
+        <h2 className="text-xl font-bold">Lista a Vender</h2>
       </div>
 
       {/* Vehicles DataGrid vacío */}
       <div className="w-full mb-4">
         <DataGrid
-          rows={[]} // Mantener el grid vacío al inicio
+          rows={selectedVehicles} // Mantener el grid vacío al inicio
           columns={columns}
           getRowId={(row) => row.vehicleId}
           checkboxSelection

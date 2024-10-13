@@ -83,14 +83,14 @@ const InventoryByBranch = () => {
         <div className="flex space-x-4">
         <button
             className="flex items-center bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
-            onClick={() => {}}
+            onClick={() => router.push('/buy')}
           >
             <PackagePlus className="w-5 h-5 mr-2" />  
              Ingresar A Inventario        
           </button>
           <button
             className="flex items-center bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
-            onClick={() => {}}
+            onClick={() => router.push('/inventoryByBranch/movements')}
           >
             <MoveHorizontal className="w-5 h-5 mr-2" />  
             Transferir Vehículos        

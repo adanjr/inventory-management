@@ -135,7 +135,8 @@ const Sidebar = () => {
       icon: BadgeDollarSign,
       href: "",
       subItems: [
-        { label: "Punto de Venta", href: "/sales", icon: BadgeDollarSign },       
+        { label: "Punto de Venta", href: "/sales", icon: BadgeDollarSign },    
+        { label: "Ordenes de Venta", href: "/salesOrders", icon: BadgeDollarSign },       
         { label: "Clientes", href: "/customers", icon: SquareUser },
       ],
     },
@@ -145,6 +146,7 @@ const Sidebar = () => {
       href: "",
       subItems: [
         { label: "Compras", href: "/buy", icon: ShoppingBag },
+        { label: "Ordenes de Compra", href: "/purchasesOrders", icon: BadgeDollarSign },       
         { label: "Proveedores", href: "/suppliers", icon: Building },
       ],
     },
