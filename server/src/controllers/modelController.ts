@@ -58,6 +58,7 @@ export const createModel = async (req: Request, res: Response): Promise<void> =>
       weightCapacity,
       speed,
       batteryVoltage,
+      mainImageUrl,
     } = req.body;    
 
     const model = await prisma.models.create({
@@ -80,6 +81,7 @@ export const createModel = async (req: Request, res: Response): Promise<void> =>
         weightCapacity,
         speed,
         batteryVoltage,
+        mainImageUrl,
       },
     });
     res.status(201).json(model);
@@ -137,6 +139,7 @@ export const updateModel = async (req: Request, res: Response): Promise<void> =>
         weightCapacity,
         speed,
         batteryVoltage,
+        mainImageUrl,
     } = req.body;
 
     console.log(req.body);
@@ -162,6 +165,7 @@ export const updateModel = async (req: Request, res: Response): Promise<void> =>
         weightCapacity,
         speed,
         batteryVoltage,
+        mainImageUrl,
       },
     });
     res.json(model);

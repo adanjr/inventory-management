@@ -59,130 +59,148 @@ const CreateSupplierModal = ({
 
   return (
     <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-20">
-      <div className="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+      <div className="relative top-20 mx-auto p-5 border w-full max-w-2xl shadow-lg rounded-md bg-white">
         <Header name="Crear Nuevo Proveedor" />
-        <form onSubmit={handleSubmit} className="mt-5">
+        <form onSubmit={handleSubmit} className="mt-5 grid grid-cols-1 sm:grid-cols-2 gap-4">
           {/* SUPPLIER NAME */}
-          <label htmlFor="supplierName" className={labelCssStyles}>
-            Nombre del Proveedor
-          </label>
-          <input
-            type="text"
-            name="name"
-            placeholder="Nombre"
-            onChange={handleChange}
-            value={formData.name}
-            className={inputCssStyles}
-            required
-          />
+          <div>
+            <label htmlFor="supplierName" className={labelCssStyles}>
+              Nombre del Proveedor
+            </label>
+            <input
+              type="text"
+              name="name"
+              placeholder="Nombre"
+              onChange={handleChange}
+              value={formData.name}
+              className={inputCssStyles}
+              required
+            />
+          </div>
 
           {/* EMAIL */}
-          <label htmlFor="supplierEmail" className={labelCssStyles}>
-            Correo Electrónico
-          </label>
-          <input
-            type="email"
-            name="email"
-            placeholder="Correo Electrónico"
-            onChange={handleChange}
-            value={formData.email}
-            className={inputCssStyles}
-            required
-          />
+          <div>
+            <label htmlFor="supplierEmail" className={labelCssStyles}>
+              Correo Electrónico
+            </label>
+            <input
+              type="email"
+              name="email"
+              placeholder="Correo Electrónico"
+              onChange={handleChange}
+              value={formData.email}
+              className={inputCssStyles}
+              required
+            />
+          </div>
 
           {/* PHONE */}
-          <label htmlFor="phoneEmail" className={labelCssStyles}>
-            Telefono
-          </label>
-          <input
-            type="phone"
-            name="phone"
-            placeholder="Telefono"
-            onChange={handleChange}
-            value={formData.phone}
-            className={inputCssStyles}
-            required
-          />
+          <div>
+            <label htmlFor="phoneEmail" className={labelCssStyles}>
+              Teléfono
+            </label>
+            <input
+              type="phone"
+              name="phone"
+              placeholder="Teléfono"
+              onChange={handleChange}
+              value={formData.phone}
+              className={inputCssStyles}
+              required
+            />
+          </div>
 
           {/* ADDRESS */}
-          <label htmlFor="supplierAddress" className={labelCssStyles}>
-            Dirección
-          </label>
-          <input
-            type="text"
-            name="address"
-            placeholder="Dirección"
-            onChange={handleChange}
-            value={formData.address}
-            className={inputCssStyles}
-          />
+          <div>
+            <label htmlFor="supplierAddress" className={labelCssStyles}>
+              Dirección
+            </label>
+            <input
+              type="text"
+              name="address"
+              placeholder="Dirección"
+              onChange={handleChange}
+              value={formData.address}
+              className={inputCssStyles}
+            />
+          </div>
 
           {/* POSTAL CODE */}
-          <label htmlFor="supplierPostalCode" className={labelCssStyles}>
-            Código Postal
-          </label>
-          <input
-            type="text"
-            name="postalCode"
-            placeholder="Código Postal"
-            onChange={handleChange}
-            value={formData.postalCode}
-            className={inputCssStyles}
-          />
+          <div>
+            <label htmlFor="supplierPostalCode" className={labelCssStyles}>
+              Código Postal
+            </label>
+            <input
+              type="text"
+              name="postalCode"
+              placeholder="Código Postal"
+              onChange={handleChange}
+              value={formData.postalCode}
+              className={inputCssStyles}
+            />
+          </div>
 
           {/* CITY */}
-          <label htmlFor="supplierCity" className={labelCssStyles}>
-            Ciudad
-          </label>
-          <input
-            type="text"
-            name="city"
-            placeholder="Ciudad"
-            onChange={handleChange}
-            value={formData.city}
-            className={inputCssStyles}
-          />
+          <div>
+            <label htmlFor="supplierCity" className={labelCssStyles}>
+              Ciudad
+            </label>
+            <input
+              type="text"
+              name="city"
+              placeholder="Ciudad"
+              onChange={handleChange}
+              value={formData.city}
+              className={inputCssStyles}
+            />
+          </div>
 
           {/* STATE */}
-          <label htmlFor="supplierState" className={labelCssStyles}>
-            Estado
-          </label>
-          <input
-            type="text"
-            name="state"
-            placeholder="Estado"
-            onChange={handleChange}
-            value={formData.state}
-            className={inputCssStyles}
-          />
+          <div>
+            <label htmlFor="supplierState" className={labelCssStyles}>
+              Estado
+            </label>
+            <input
+              type="text"
+              name="state"
+              placeholder="Estado"
+              onChange={handleChange}
+              value={formData.state}
+              className={inputCssStyles}
+            />
+          </div>
 
           {/* COUNTRY */}
-          <label htmlFor="supplierCountry" className={labelCssStyles}>
-            País
-          </label>
-          <input
-            type="text"
-            name="country"
-            placeholder="País"
-            onChange={handleChange}
-            value={formData.country}
-            className={inputCssStyles}
-          />
+          <div>
+            <label htmlFor="supplierCountry" className={labelCssStyles}>
+              País
+            </label>
+            <input
+              type="text"
+              name="country"
+              placeholder="País"
+              onChange={handleChange}
+              value={formData.country}
+              className={inputCssStyles}
+            />
+          </div>
 
           {/* CREATE ACTIONS */}
-          <button
-            type="submit"
-            className="mt-4 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-700"
-          >
-            Crear
-          </button>
-          <button
-            onClick={onClose}
-            type="button"
-            className="ml-2 px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-700"
-          >
-            Cancelar
-          </button>
+          <div className="col-span-2 flex justify-end">
+            <button
+              type="submit"
+              className="mt-4 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-700"
+            >
+              Crear
+            </button>
+            <button
+              onClick={onClose}
+              type="button"
+              className="mt-4 ml-2 px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-700"
+            >
+              Cancelar
+            </button>
+          </div>
         </form>
       </div>
     </div>

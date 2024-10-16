@@ -1,5 +1,6 @@
 import React, { ChangeEvent, FormEvent, useState, useEffect } from "react";
 import Header from "@/app/(components)/Header";
+import { VehicleType } from "@/state/api";
 
 type VehicleTypeFormData = {
   vehicleTypeId: string;
@@ -9,16 +10,31 @@ type VehicleTypeFormData = {
 type EditVehicleTypeModalProps = {
   isOpen: boolean;
   onClose: () => void;
-  onEdit: (formData: VehicleTypeFormData) => void;
-  initialData: VehicleTypeFormData;
+  onEdit: (vehicletypeId: string, formData: Partial<VehicleTypeFormData>) => void;
+  selectedVehicleType: VehicleType | null;
 };
 
-const EditVehicleTypeModal = ({ isOpen, onClose, onEdit, initialData }: EditVehicleTypeModalProps) => {
-  const [formData, setFormData] = useState<VehicleTypeFormData>(initialData);
+const EditVehicleTypeModal = ({
+  isOpen,
+  onClose,
+  onEdit,
+  selectedVehicleType,
+}: EditVehicleTypeModalProps) => {
+  const [formData, setFormData] = useState({
+    vehicletypeId: selectedVehicleType?.vehicleTypeId || "",
+    name: selectedVehicleType?.name || "",   
+  });
 
   useEffect(() => {
-    setFormData(initialData);
-  }, [initialData]);
+    if (selectedVehicleType && isOpen) {
+      // Actualiza el formulario con los datos de la Fabricante seleccionada
+      setFormData({
+        vehicletypeId: selectedVehicleType.vehicleTypeId,
+        name: selectedVehicleType.name, 
+      
+      });
+    }
+  }, [selectedVehicleType, isOpen]);
 
   const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -30,7 +46,9 @@ const EditVehicleTypeModal = ({ isOpen, onClose, onEdit, initialData }: EditVehi
 
   const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    onEdit(formData);
+    onEdit(formData.vehicletypeId, {
+      name: formData.name,         
+    });
     onClose();
   };
 

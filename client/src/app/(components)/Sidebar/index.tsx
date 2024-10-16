@@ -6,13 +6,17 @@ import {
   Archive,
   BadgeDollarSign,
   BatteryCharging,
+  Blocks,
   Boxes,
+  Building,
+  Building2,   
   Car,
   CircleDollarSign,
   Clipboard,
   Copyright,
   CreditCard,
-  Building,
+  DatabaseBackup,
+  DollarSign,  
   Factory,
   FileBox, 
   FileText,
@@ -20,9 +24,11 @@ import {
   Layout,
   LucideIcon,
   Map,
+  Mail,
   Menu,
   MonitorDot,
   Package,
+  Percent,
   Plug,
   CheckCircle,
   NotebookPen,
@@ -32,7 +38,8 @@ import {
   User,
   ChevronDown,
   ChevronUp,
-  HandCoins,  
+  HandCoins,
+  Warehouse,
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
@@ -126,8 +133,7 @@ const Sidebar = () => {
         { label: "Vehículos", href: "/vehicles", icon: Car },
         { label: "Productos", href: "/products", icon: Package },
         { label: "Modelos", href: "/models", icon: FileBox },
-        { label: "Familias de Modelos", href: "/families", icon: FolderTree },
-        { label: "Suc/Almacenes", href: "/locations", icon: Map },
+        { label: "Familias de Modelos", href: "/families", icon: FolderTree },        
       ],
     },
     {
@@ -144,8 +150,7 @@ const Sidebar = () => {
       label: "Compras",
       icon: ShoppingBag,
       href: "",
-      subItems: [
-        { label: "Compras", href: "/buy", icon: ShoppingBag },
+      subItems: [       
         { label: "Ordenes de Compra", href: "/purchasesOrders", icon: BadgeDollarSign },       
         { label: "Proveedores", href: "/suppliers", icon: Building },
       ],
@@ -191,9 +196,16 @@ const Sidebar = () => {
     {
       label: "Administracion",
       icon: MonitorDot,
-      href: "",
-      subItems: [
-        { label: "Usuarios", href: "/users", icon: User },                 
+      href: "",      
+      subItems: [          
+        { label: "Perfil de Organización", href: "/organizationProfile", icon: Building2 }, 
+        { label: "Usuarios", href: "/users", icon: User },   
+        { label: "Almacenes", href: "/locations", icon: Warehouse }, 
+        { label: "Monedas", href: "/currencies", icon: DollarSign }, 
+        { label: "Impuestos", href: "/taxes", icon: Percent },       
+        { label: "Email", href: "/email", icon: Mail },              
+        { label: "Integraciones", href: "/integrations", icon: Blocks },              
+        { label: "Backup de Datos", href: "/databaseBackup", icon: DatabaseBackup },                        
       ],
     },
   ];

@@ -96,7 +96,8 @@ const Colors = () => {
             <div className="flex flex-col items-center">
               <h3 className="text-lg text-gray-900 font-semibold">
                 {color.name}
-              </h3>              
+              </h3>    
+              <p className="text-gray-800">Hexadecimal: {color.hexadecimal}</p>          
               <div className="flex mt-4">
                 <button
                   className="text-blue-500 hover:text-blue-700 flex items-center mr-4"
@@ -131,7 +132,7 @@ const Colors = () => {
           isOpen={isEditModalOpen}
           onClose={() => setIsEditModalOpen(false)}
           onEdit={handleEditColor}
-          color={selectedColor}
+          selectedColor={selectedColor}
         />
       )}
     </div>

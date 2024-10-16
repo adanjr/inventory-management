@@ -173,6 +173,7 @@ model Models {
   fuelType        FuelTypes?      @relation(fields: [fuelTypeId], references: [fuelTypeId])
   transmission    Transmissions   @relation(fields: [transmissionId], references: [transmissionId])
 
+  purchaseDetail  PurchaseDetails[]
   vehicles        Vehicles[]
 }
 
@@ -218,8 +219,11 @@ model VehicleAvailabilityStatus {
 }
 
 model Colors {
-  colorId  Int        @id @default(autoincrement())
-  name     String     @unique
+  colorId         Int          @id @default(autoincrement())
+  name            String       @unique
+  hexadecimal     String?       
+
+  purchaseDetail        PurchaseDetails[]
   vehicles Vehicles[]
 }
 
@@ -382,34 +386,54 @@ model Suppliers {
   email         String?
   phone         String?
   mainImageUrl  String?
+  
   createdAt     DateTime @default(now())
   purchase      Purchases[]
 }
 
 model Purchases {
-  purchaseId      Int        @id @default(autoincrement())  
-  timestamp       DateTime
-  totalCost       Float  
-  supplierId      Int?
+  purchaseId            Int         @id @default(autoincrement())
+  purchaseOrder         String
+  reference             String
+  purchaseDate          DateTime
+  receiptMethod         String
+  deliveryEstimate      DateTime
+  deliveryDate          DateTime?
+  timestamp             DateTime    @default(now())
+  paymentTerm           String
+  totalPurchase         Float  
+  supplierId            Int?
+  shipmentPreference    String
+  termsConditions       String
+  purchaseStatus        String // Borrador, En Proceso, Recibida, Completada
+  notes                 String
+  urlAttachments        String[]
 
-  supplier        Suppliers? @relation(fields: [supplierId], references: [supplierId])
+  supplier              Suppliers? @relation(fields: [supplierId], references: [supplierId])
 
-  purchaseDetails PurchaseDetails[]
+  purchaseDetails       PurchaseDetails[]
 }
 
 model PurchaseDetails {
   purchaseDetailId  Int         @id @default(autoincrement())  
   purchaseId        Int         
-  productId         Int  
+  productId         Int?
+  modelId           Int? 
+  colorId           Int? 
+  serialNumber      String?
   vehicleId         Int?        
   quantity          Int        // Para productos sin número de serie
   unitPrice         Float
   subtotal          Float
   expectedDate      DateTime?
   actualDate        DateTime?
-
+  receptionStatus   String // Borrador, Creado, Recibido, Validado, Completado
+  condition         String?
+       
   purchase          Purchases   @relation(fields: [purchaseId], references: [purchaseId])
-  product           Products    @relation(fields: [productId], references: [productId])
+  product           Products?    @relation(fields: [productId], references: [productId])
+  model             Models?   @relation(fields: [modelId], references: [modelId])
+  color             Colors?   @relation(fields: [colorId], references: [colorId])  
   vehicles          Vehicles?   @relation(fields: [vehicleId], references: [vehicleId])
 }
 

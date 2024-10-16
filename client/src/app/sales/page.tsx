@@ -1,167 +1,137 @@
 "use client";
 
+import { useGetVehicleSummaryByModelAndColorQuery } from "@/state/api";
 import { useState } from "react";
-import { useRouter } from 'next/navigation';
-import { useGetVehiclesQuery } from "@/state/api";
-import { DataGrid, GridColDef, GridRowSelectionModel } from "@mui/x-data-grid";
+import { BatteryCharging, Gauge, Dumbbell } from "lucide-react"; 
 import Header from "@/app/(components)/Header";
-import { ShoppingCartIcon, CheckCircleIcon, SearchIcon } from "lucide-react"; 
+import Image from "next/image";
 
-// Formato de moneda para México
-const formatCurrency = (value: number | null | undefined) => {
-  if (value == null || isNaN(value)) {
-    return "$0.00"; // Valor predeterminado si el precio es nulo o no es válido
+const ModelsPage = () => {
+  const [locationId, setLocationId] = useState(2); // Suponiendo que tienes un locationId
+
+  // Llamada al hook con el locationId
+  const { data: models, isLoading, isError } = useGetVehicleSummaryByModelAndColorQuery(locationId.toString());
+
+  if (isLoading) {
+    return <div className="py-4">Cargando...</div>;
   }
-  return new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN' }).format(value);
-};
 
-const columns: GridColDef[] = [
-  { field: "vehicleId", headerName: "ID", width: 30 },
-  { field: "vin", headerName: "VIN", width: 150 },
-  { field: "internal_serial", headerName: "Serial", width: 150 },
-  { field: "stockNumber", headerName: "Stock Number", width: 150 },
-  { field: "makeName", headerName: "Fabricante", width: 100 },
-  { field: "familyName", headerName: "Familia", width: 100 },
-  { field: "modelName", headerName: "Modelo", width: 100 },
-  { field: "colorName", headerName: "Color", width: 100 },
-  { field: "year", headerName: "Año", width: 40 },
-  {
-    field: "price",
-    headerName: "Precio",
-    width: 100,
-    type: "number",
-    valueFormatter: (params) => {       
-      return formatCurrency(params); // Usa la función para formatear la moneda
-    },
-  },
-];
-
-const Sales = () => {
-  const router = useRouter();
-  const [rowSelectionModel, setRowSelectionModel] = useState<GridRowSelectionModel>([]);
-  const [customerName, setCustomerName] = useState("");
-  const [saleConfirmation, setSaleConfirmation] = useState(false);
-  const [totalSale, setTotalSale] = useState(0);
-  const [vehicleCode, setVehicleCode] = useState("");
-  const [selectedVehicles, setSelectedVehicles] = useState<any[]>([]); 
-
-  // Se eliminaron las consultas para obtener vehículos inicialmente
-  const { data: vehicles = [], isError, isLoading } = useGetVehiclesQuery("%");
-
-  const handleSale = async () => {
-    if (rowSelectionModel.length === 0 || !customerName) {
-      alert("Por favor selecciona un vehículo y proporciona el nombre del cliente.");
-      return;
-    }
-
-    const selectedVehicleId = rowSelectionModel[0];
-    // Lógica para procesar la venta del vehículo...
-    setSaleConfirmation(true);
-    alert(`Venta procesada con éxito para el vehículo ID: ${selectedVehicleId}, Cliente: ${customerName}`);
-    // Aquí podrías hacer una llamada a una API para guardar la venta, etc.
-  };
-
-  const handleScan = () => {
-    const vehicle = vehicles.find(v => v.internal_serial?.trim().toLowerCase() === vehicleCode.trim().toLowerCase());
-    if (vehicle) {
-      // Agrega el vehículo encontrado a la lista de vehículos seleccionados
-      setSelectedVehicles(prevSelected => [...prevSelected, vehicle]);
-      setTotalSale(prevTotal => prevTotal + vehicle.price); // Actualiza el total de la venta
-      setVehicleCode(""); // Limpiar el campo de escaneo
-    } else {
-      alert("Vehículo no encontrado.");
-    }
-  };
-
-  const handleSearchVehicle = () => {
-    router.push("/vehicles"); // Redirigir a la página de búsqueda de vehículos
-  };
+  if (isError || !models) {
+    return (
+      <div className="text-center text-red-500 py-4">
+        Error al cargar los modelos
+      </div>
+    );
+  }
 
   return (
     <div className="mx-auto pb-5 w-full">
-      {/* Header y barra de búsqueda */}
-      <div className="mb-6 flex flex-col">
-        <div className="flex justify-between items-center">
-          <Header name="Punto de Venta" />
-        </div>
-        <div className="flex mb-4">
-          <input
-            className="w-3/4 py-2 px-4 border-2 border-gray-200 rounded"
-            placeholder="Nombre del Cliente"
-            value={customerName}
-            onChange={(e) => setCustomerName(e.target.value)}
-          />
-          <button className="ml-2 bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
-            <SearchIcon className="w-5 h-5" />
-          </button>
-        </div>
-        <div className="flex mb-4">
-          <input
-            className="w-3/4 py-2 px-4 border-2 border-gray-200 rounded"
-            placeholder="Escanear Código del Vehículo"
-            value={vehicleCode}
-            onChange={(e) => setVehicleCode(e.target.value)}
-            onKeyDown={(e) => e.key === 'Enter' && handleScan()} // Escanear al presionar Enter
-          />
-          <button
-            className="ml-2 bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded"
-            onClick={handleScan}
-          >
-            Agregar
-          </button>
-          <button
-            className="ml-2 bg-yellow-500 hover:bg-yellow-700 text-white font-bold py-2 px-4 rounded"
-            onClick={handleSearchVehicle}
-          >
-            Buscar Vehículo
-          </button>
-        </div>
+      {/* HEADER BAR */}
+      <div className="flex justify-between items-center mb-6">
+        <Header name="Elige el modelo a vender" />
       </div>
 
-      {/* Título del DataGrid */}
-      <div className="mb-2">
-        <h2 className="text-xl font-bold">Lista a Vender</h2>
-      </div>
-
-      {/* Vehicles DataGrid vacío */}
-      <div className="w-full mb-4">
-        <DataGrid
-          rows={selectedVehicles} // Mantener el grid vacío al inicio
-          columns={columns}
-          getRowId={(row) => row.vehicleId}
-          checkboxSelection
-          disableMultipleRowSelection
-          className="bg-white shadow rounded-lg border border-gray-200"
-          onRowSelectionModelChange={(newRowSelectionModel) => setRowSelectionModel(newRowSelectionModel)}
-          rowSelectionModel={rowSelectionModel}
+      {/* BODY MODELS LIST */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-10 justify-between">
+  {models?.map((model) => (
+    <div
+      key={model.modelId}
+      className="border shadow rounded-md p-4 max-w-full w-full mx-auto flex"
+      style={{ height: "400px" }} // Ajusta la altura del contenedor
+    >
+      {/* Left Section: Larger Image - 75% width */}
+      <div className="w-2/3 flex justify-center items-center">
+        <Image
+          src="https://s3-yaiiinventory.s3.us-east-2.amazonaws.com/AJ2000.jpg" // Imagen fija
+          alt={model.modelName}
+          width={300}
+          height={300}
+          className="rounded-2xl w-full h-full object-cover" // Imagen estirada
         />
       </div>
 
-      {/* Total de venta en la esquina inferior derecha */}
-      <div className="flex justify-end">
-        <div className="bg-gray-200 p-4 rounded-lg shadow-lg text-lg">
-          <strong>Total Venta: </strong>{formatCurrency(totalSale)}
-        </div>
-      </div>
+      {/* Right Section: Details - 25% width */}
+      <div className="w-1/3 flex flex-col justify-between px-4">
+  {/* Model Name */}
+  <div>
+    <h3 className="text-2xl text-gray-900 font-bold">{model.vehicleType} {model.modelName}</h3>
+  </div>
 
-      {/* Botones de venta */}
-      <div className="flex space-x-4 mt-4">
-        <button
-          className="flex items-center bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded"
-          onClick={handleSale}
-          disabled={rowSelectionModel.length === 0 || !customerName}
-        >
-          <CheckCircleIcon className="w-5 h-5 mr-2" />
-          Procesar Venta
-        </button>
-        {saleConfirmation && (
-          <div className="text-green-600 mt-2">
-            Venta confirmada.
-          </div>
-        )}
-      </div>
+  {/* Battery Duration */}
+  <div className="mt-2 border p-3 rounded-lg flex items-center space-x-3 bg-gray-100">
+    {/* Icono de batería a la izquierda */}
+    <BatteryCharging className="w-6 h-6 text-gray-700" />
+    
+    {/* Información de la duración de la batería */}
+    <div>
+      <p className="text-sm text-gray-700 font-medium">Duración de batería</p>
+      <p className="text-md text-gray-900">
+        {model.range ? `${model.range} kWh` : "N/A"}
+      </p>
+    </div>
+  </div>
+
+  {/* Weight Capacity */}
+  <div className="mt-2 border p-3 rounded-lg flex items-center space-x-3 bg-gray-100">
+    {/* Icono de pesa a la izquierda */}
+    <Dumbbell className="w-6 h-6 text-gray-700" />
+    
+    {/* Información de la capacidad de peso */}
+    <div>
+      <p className="text-sm text-gray-700 font-medium">Capacidad de peso</p>
+      <p className="text-md text-gray-900">
+        {model.weightCapacity ? `${model.weightCapacity} kg` : "N/A"}
+      </p>
+    </div>
+  </div>
+
+  {/* Speed */}
+  <div className="mt-2 border p-3 rounded-lg flex items-center space-x-3 bg-gray-100">
+    {/* Icono de acelerómetro a la izquierda */}
+    <Gauge className="w-6 h-6 text-gray-700" />
+    
+    {/* Información de la velocidad máxima */}
+    <div>
+      <p className="text-sm text-gray-700 font-medium">Velocidad máxima</p>
+      <p className="text-md text-gray-900">
+        {model.speed ? `${model.speed} km/h` : "N/A"}
+      </p>
+    </div>
+  </div>
+
+  {/* Colors Section */}
+  <div className="mt-2">
+  <h4 className="text-md text-gray-700 font-medium">Colores disponibles:</h4>
+  <div className="flex space-x-2 mt-2">
+    {model.colors.map((color) => {
+      return (
+        <div
+            key={color.colorId}
+            className="w-6 h-6 rounded-full border border-gray-300"
+            style={{ backgroundColor: color.hexadecimal }} // Usar el valor hexadecimal del color
+            title={color.colorName} // Puedes mostrar el nombre del color como título o usar un nombre en español si lo tienes
+          />
+
+      );
+    })}
+  </div>
+</div>
+
+  {/* Choose Button */}
+  <div className="mt-4">
+    <button className="bg-blue-500 text-white py-2 px-6 rounded-lg hover:bg-blue-600">
+      ELEGIR
+    </button>
+  </div>
+</div>
+
+    </div>
+  ))}
+</div>
+
+
     </div>
   );
 };
 
-export default Sales;
+export default ModelsPage;

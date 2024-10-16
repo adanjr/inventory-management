@@ -12,11 +12,12 @@ import Header from "@/app/(components)/Header";
 import CreateVehicleTypeModal from "./CreateVehicleTypeModal";
 
 import { VehicleType } from "@/state/api";
+import EditVehicleTypeModal from "./EditVehicleTypeModal";
 
 const VehicleTypes = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
-  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false); 
   const [selectedVehicleType, setSelectedVehicleType] = useState<VehicleType | null>(null);
 
   const { data: vehicleTypes, isLoading, isError } = useGetVehicleTypesQuery(searchTerm);
@@ -28,6 +29,13 @@ const VehicleTypes = () => {
   const handleCreateVehicleType = async (vehicleTypeData: VehicleType) => {
     await createVehicleType(vehicleTypeData);
     setIsCreateModalOpen(false);
+  };
+
+  const handleEditVehicleType = async (vehicletypeId: string, updatedData: Partial<VehicleType>) => {
+    if (vehicletypeId) {
+      await updateVehicleType({ id: vehicletypeId, data: updatedData });
+      setIsEditModalOpen(false);
+    }
   };
 
  
@@ -113,6 +121,13 @@ const VehicleTypes = () => {
         isOpen={isCreateModalOpen}
         onClose={() => setIsCreateModalOpen(false)}
         onCreate={handleCreateVehicleType}
+      />
+
+      <EditVehicleTypeModal
+        isOpen={isEditModalOpen}
+        onClose={() => setIsEditModalOpen(false)}
+        onEdit={handleEditVehicleType}
+        selectedVehicleType={selectedVehicleType}
       />
        
     </div>

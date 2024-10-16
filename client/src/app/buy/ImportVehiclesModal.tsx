@@ -2,14 +2,16 @@
 
 import { useState } from "react";
 import { parse } from 'papaparse';
+import { Vehicle } from "@/state/api";
 
 type ImportVehiclesModalProps = {
   isOpen: boolean;
   onClose: () => void;
-  onUpload: (vehicles: any[]) => void;
+  //onUpload: (vehicles: any[]) => void;
+  onVehiclesImported: (vehicles: Vehicle[]) => void; // Asegúrate de que esta propiedad esté definida.
 };
 
-const ImportVehiclesModal = ({ isOpen, onClose, onUpload }: ImportVehiclesModalProps) => {
+const ImportVehiclesModal = ({ isOpen, onClose, onVehiclesImported }: ImportVehiclesModalProps) => {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -36,7 +38,7 @@ const ImportVehiclesModal = ({ isOpen, onClose, onUpload }: ImportVehiclesModalP
               price: parseFloat(row[7]) || 0,
               location: "", // Se asignará después
             }));
-            onUpload(vehicles);
+            //onVehiclesImported(vehicles);
             onClose();
           }
         });

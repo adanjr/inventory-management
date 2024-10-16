@@ -1,30 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation"; // Hook para redirigir
 import { DataGrid, GridColDef, GridRowSelectionModel } from "@mui/x-data-grid";
 import Header from "@/app/(components)/Header";
-
-// Simulated data for purchases
-const purchases = [
-  {
-    purchaseId: 1,
-    timestamp: "2024-10-01",
-    totalCost: 15000.0,
-    supplierName: "Proveedor A",
-  },
-  {
-    purchaseId: 2,
-    timestamp: "2024-09-25",
-    totalCost: 12000.5,
-    supplierName: "Proveedor B",
-  },
-  {
-    purchaseId: 3,
-    timestamp: "2024-09-20",
-    totalCost: 18000.75,
-    supplierName: "Proveedor C",
-  },
-];
+import { useGetPurchasesQuery, useGetSuppliersQuery } from "@/state/api"; // Import the API hooks
 
 // Format currency for display
 const formatCurrency = (value: number) =>
@@ -36,8 +16,11 @@ const formatCurrency = (value: number) =>
 // DataGrid columns configuration
 const columns: GridColDef[] = [
   { field: "purchaseId", headerName: "ID", width: 50 },
-  { field: "timestamp", headerName: "Fecha", width: 150 },
-  { field: "supplierName", headerName: "Proveedor", width: 200 },
+  { field: "supplierName", headerName: "Proveedor", width: 100 },
+  { field: "purchaseOrder", headerName: "Orden de Compra", width: 100 },
+  { field: "purchaseDate", headerName: "Fecha de Compra", width: 100 },
+  { field: "deliveryEstimate", headerName: "Estimacion de Entrega", width: 100 },
+  { field: "purchaseStatus", headerName: "Estatus", width: 100 },
   {
     field: "totalCost",
     headerName: "Costo Total",
@@ -47,16 +30,20 @@ const columns: GridColDef[] = [
   },
 ];
 
-const suppliers = ["Proveedor A", "Proveedor B", "Proveedor C"];
-
 const PurchasesOrderPage = () => {
   const [rowSelectionModel, setRowSelectionModel] = useState<GridRowSelectionModel>([]);
   const [startDate, setStartDate] = useState<string>("");
   const [endDate, setEndDate] = useState<string>("");
   const [selectedSupplier, setSelectedSupplier] = useState<string>("");
 
+  const router = useRouter(); // Hook para redirigir
+
+  // Fetch purchases and suppliers using RTK Query
+  const { data: purchases = [], isLoading: purchasesLoading } = useGetPurchasesQuery();
+  const { data: suppliers = [], isLoading: suppliersLoading } = useGetSuppliersQuery();
+
   // Filter the purchases based on date range and supplier
-  const filteredPurchases = purchases.filter((purchase) => {
+  const filteredPurchases = purchases.filter((purchase: any) => {
     const purchaseDate = new Date(purchase.timestamp);
     const isWithinDateRange =
       (!startDate || new Date(startDate) <= purchaseDate) &&
@@ -66,10 +53,33 @@ const PurchasesOrderPage = () => {
     return isWithinDateRange && matchesSupplier;
   });
 
+  // Función para manejar el clic en "Agregar Orden de Compra"
+  const handleAddPurchaseOrder = () => {
+    router.push("/buy"); // Redirigir a la página 'buy'
+  };
+
+  // Función para manejar el clic en "Recibir Orden de Compra"
+  const handleReceiveOrder = () => {
+    if (rowSelectionModel.length > 0) {
+      const selectedOrderId = rowSelectionModel[0];
+      router.push(`/receivePurchase/${selectedOrderId}`); // Redirigir a la página de recibir la orden de compra
+    }
+  };
+
   return (
     <div className="mx-auto py-5 w-full">
       {/* Header */}
-      <Header name="Lista de Compras" />
+      <Header name="Lista de Ordenes de Compras" />
+
+      {/* Botón para agregar una nueva orden de compra */}
+      <div className="flex justify-end mt-3">
+        <button
+          onClick={handleAddPurchaseOrder}
+          className="bg-blue-500 text-white py-2 px-4 rounded-lg hover:bg-blue-600"
+        >
+          Agregar Orden de Compra
+        </button>
+      </div>
 
       {/* Filters */}
       <div className="flex space-x-4 items-end mt-5">
@@ -102,9 +112,9 @@ const PurchasesOrderPage = () => {
             className="border border-gray-300 rounded p-2"
           >
             <option value="">Todos</option>
-            {suppliers.map((supplier) => (
-              <option key={supplier} value={supplier}>
-                {supplier}
+            {suppliers.map((supplier: any) => (
+              <option key={supplier.supplierId} value={supplier.name}>
+                {supplier.name}
               </option>
             ))}
           </select>
@@ -113,18 +123,22 @@ const PurchasesOrderPage = () => {
 
       {/* Purchases DataGrid */}
       <div className="w-full mt-5">
-        <DataGrid
-          rows={filteredPurchases}
-          columns={columns}
-          getRowId={(row) => row.purchaseId} // Unique ID for each row
-          checkboxSelection
-          disableMultipleRowSelection
-          className="bg-white shadow rounded-lg border border-gray-200 !text-gray-700"
-          onRowSelectionModelChange={(newRowSelectionModel) =>
-            setRowSelectionModel(newRowSelectionModel)
-          }
-          rowSelectionModel={rowSelectionModel}
-        />
+        {purchasesLoading || suppliersLoading ? (
+          <p>Cargando datos...</p>
+        ) : (
+          <DataGrid
+            rows={filteredPurchases}
+            columns={columns}
+            getRowId={(row) => row.purchaseId} // Unique ID for each row
+            checkboxSelection
+            disableMultipleRowSelection
+            className="bg-white shadow rounded-lg border border-gray-200 !text-gray-700"
+            onRowSelectionModelChange={(newRowSelectionModel) =>
+              setRowSelectionModel(newRowSelectionModel)
+            }
+            rowSelectionModel={rowSelectionModel}
+          />
+        )}
       </div>
 
       {/* Selected row details or actions */}
@@ -132,7 +146,13 @@ const PurchasesOrderPage = () => {
         <div className="mt-4 p-4 bg-gray-100 rounded-lg shadow">
           <h2 className="text-lg font-semibold">Compra seleccionada:</h2>
           <p>ID de compra: {rowSelectionModel[0]}</p>
-          {/* Additional details or actions for the selected purchase */}
+          {/* Botón para recibir la orden de compra seleccionada */}
+          <button
+            onClick={handleReceiveOrder}
+            className="mt-3 bg-green-500 text-white py-2 px-4 rounded-lg hover:bg-green-600"
+          >
+            Recibir Orden de Compra
+          </button>
         </div>
       )}
     </div>

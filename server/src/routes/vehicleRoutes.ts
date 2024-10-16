@@ -1,6 +1,7 @@
 import { Router } from "express";
 import { 
     getVehicles, 
+    getVehicleSummaryByModelAndColor,
     createVehicle, 
     createVehicleFromCSV,
     getVehicleById, 
@@ -11,6 +12,7 @@ import {
 const router = Router();
 
 router.get("/", getVehicles);
+router.get("/modelsBySucursal", getVehicleSummaryByModelAndColor);
 router.post("/", createVehicle);
 router.post("/csv", createVehicleFromCSV);
 router.get("/:id", getVehicleById);

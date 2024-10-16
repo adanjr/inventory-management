@@ -9,7 +9,6 @@ import { useGetVehiclesQuery,
 import { DataGrid, GridColDef, GridRowSelectionModel } from "@mui/x-data-grid";
 import Header from "@/app/(components)/Header";
 import { PlusCircleIcon, EditIcon, DeleteIcon, UploadIcon } from "lucide-react"; 
-import { parse } from 'papaparse';
 import ImportVehiclesModal from "./ImportVehicles";
 
 // Formato de moneda para México

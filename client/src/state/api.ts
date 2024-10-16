@@ -191,14 +191,17 @@ export interface UpdatedModel {
 export interface Color {
   colorId: string;
   name: string;
+  hexadecimal: string;
 }
 
 export interface NewColor {
   name: string;
+  hexadecimal: string;
 }
 
 export interface UpdatedColor {
   name?: string;
+  hexadecimal?: string;
 }
 
 export interface EngineType {
@@ -680,6 +683,130 @@ export interface GetGroupedVehiclesResponse {
   groupedData: GroupedVehicleData[];
 }
 
+export interface Purchase {
+  purchaseId: number; // ID de la compra
+  purchaseOrder: string; // Orden de compra
+  reference: string; // Referencia
+  purchaseDate: Date; // Fecha de compra
+  receiptMethod: string; // Método de recepción
+  deliveryEstimate: Date; // Estimación de entrega
+  deliveryDate?: Date; // Fecha de entrega (opcional)
+  timestamp: Date; // Marca de tiempo de la creación
+  paymentTerm: string; // Término de pago
+  totalPurchase: number; // Total de la compra
+  supplierId?: number; // ID del proveedor (opcional)
+  shipmentPreference: string; // Preferencia de envío
+  termsConditions: string; // Términos y condiciones
+  purchaseStatus: string; // Estado de la compra
+  notes: string; // Notas adicionales
+  urlAttachments: string[]; // URLs de archivos adjuntos
+
+  // Relaciones
+  supplier?: Supplier; // Proveedor (opcional)
+  purchaseDetails: PurchaseDetail[]; // Detalles de la compra
+}
+
+export interface NewPurchase {
+  purchaseOrder: string; // Orden de compra
+  reference: string; // Referencia
+  purchaseDate: Date; // Fecha de compra
+  receiptMethod: string; // Método de recepción
+  deliveryEstimate: Date; // Estimación de entrega
+  deliveryDate?: Date; // Fecha de entrega (opcional)
+  timestamp: Date; // Marca de tiempo de la creación
+  paymentTerm: string; // Término de pago
+  totalPurchase: number; // Total de la compra
+  supplierId?: number; // ID del proveedor (opcional)
+  shipmentPreference: string; // Preferencia de envío
+  termsConditions: string; // Términos y condiciones
+  purchaseStatus: string; // Estado de la compra
+  notes: string; // Notas adicionales
+  urlAttachments: string[]; // URLs de archivos adjuntos
+
+  // Relaciones
+  supplier?: Supplier; // Proveedor (opcional)
+  purchaseDetails: PurchaseDetail[]; // Detalles de la compra
+}
+
+export interface UpdatedPurchase {
+  purchaseId: number; // ID de la compra
+  purchaseOrder: string; // Orden de compra
+  reference: string; // Referencia
+  purchaseDate: Date; // Fecha de compra
+  receiptMethod: string; // Método de recepción
+  deliveryEstimate: Date; // Estimación de entrega
+  deliveryDate?: Date; // Fecha de entrega (opcional)
+  timestamp: Date; // Marca de tiempo de la creación
+  paymentTerm: string; // Término de pago
+  totalPurchase: number; // Total de la compra
+  supplierId?: number; // ID del proveedor (opcional)
+  shipmentPreference: string; // Preferencia de envío
+  termsConditions: string; // Términos y condiciones
+  purchaseStatus: string; // Estado de la compra
+  notes: string; // Notas adicionales
+  urlAttachments: string[]; // URLs de archivos adjuntos
+
+  // Relaciones
+  supplier?: Supplier; // Proveedor (opcional)
+  purchaseDetails: PurchaseDetail[]; // Detalles de la compra
+}
+
+export interface PurchaseDetail {
+  purchaseDetailId: number; // ID del detalle de la compra
+  purchaseId: number; // ID de la compra
+  productId?: number; // ID del producto (opcional)
+  modelId?: number; // ID del modelo (opcional)
+  colorId?: number; // ID del color (opcional)
+  serialNumber?: string; // Número de serie (opcional)
+  vehicleId?: number; // ID del vehículo (opcional)
+  quantity: number; // Cantidad de productos
+  unitPrice: number; // Precio unitario
+  subtotal: number; // Subtotal
+  expectedDate?: Date; // Fecha esperada (opcional)
+  actualDate?: Date; // Fecha real (opcional)
+  receptionStatus: string; // Estado de recepción
+  condition?: string; // Condición (opcional)
+
+  // Relaciones
+  purchase: Purchase; // Compra a la que pertenece
+  product?: Product; // Producto (opcional)
+  model?: Model; // Modelo (opcional)
+  color?: Color; // Color (opcional)
+  vehicles?: Vehicle; // Vehículo (opcional)
+}
+
+export interface VehicleColor {
+  colorId: number;
+  colorName: string;
+  hexadecimal: string;
+  count: number;
+}
+
+export interface VehicleModelSummary {
+  modelId: number;
+  modelName: string;
+  makeId: number;
+  familyId: number;
+  year_start: "2015";
+  year_end: "";
+  vehicleTypeId: number;
+  vehicleType: string;
+  engineTypeId: number;
+  fuelTypeId: number;
+  transmissionId:number;
+  batteryCapacity: number;
+  range: number;
+  wheelCount: number;
+  basePrice: number;
+  chargeTime: number;
+  motorWattage: number;
+  weightCapacity: number;
+  speed: number;
+  batteryVoltage:number;
+  count: number;
+  colors: VehicleColor[];
+}
+
 export const api = createApi({
   baseQuery: fetchBaseQuery({ baseUrl: process.env.NEXT_PUBLIC_API_BASE_URL }),
   reducerPath: "api",
@@ -701,6 +828,7 @@ export const api = createApi({
     "VehicleAvailabilityStatus",
     "BatteryWarranties",
     "Inventory",
+    "Purchases",
   ],
   endpoints: (build) => ({
     getDashboardMetrics: build.query<DashboardMetrics, void>({
@@ -1345,6 +1473,12 @@ export const api = createApi({
       }),
       providesTags: (result, error, id) => [{ type: "Vehicles", id }],
     }),
+    getVehicleSummaryByModelAndColor: build.query<VehicleModelSummary[], string>({
+      query: (locationId) => ({
+        url: `/vehicles/modelsBySucursal?locationId=${locationId}`,
+      }),
+      providesTags: (result, error, locationId) => [{ type: "Vehicles", locationId }],
+    }),
     createVehicle: build.mutation<Vehicle, NewVehicle>({
       query: (newVehicle) => ({
         url: "/vehicles",
@@ -1388,6 +1522,44 @@ export const api = createApi({
         params: locationId ? { locationId } : {},
       }),
     }),
+
+    getPurchases: build.query<Purchase[], string | void>({
+      query: (search) => ({
+        url: "/purchases",
+        params: search ? { search } : {},
+      }),
+      providesTags: ["Purchases"],
+    }),
+    getPurchaseById: build.query<Purchase, string>({
+      query: (id) => ({
+        url: `/purchases/${id}`,
+      }),
+      providesTags: (result, error, id) => [{ type: "Purchases", id }],
+    }),
+    createPurchase: build.mutation<Purchase, NewPurchase>({
+      query: (newPurchase) => ({
+        url: "/purchases",
+        method: "POST",
+        body: newPurchase,
+      }),
+      invalidatesTags: ["Purchases"],
+    }),
+    updatePurchase: build.mutation<Purchase, { id: string; data: UpdatedPurchase }>({
+      query: ({ id, data }) => ({
+        url: `/purchases/${id}`,
+        method: "PUT",
+        body: data,
+      }),
+      invalidatesTags: ["Purchases"],
+    }),
+    deletePurchase: build.mutation<void, string>({
+      query: (id) => ({
+        url: `/purchases/${id}`,
+        method: "DELETE",
+      }),
+      invalidatesTags: ["Purchases"],
+    }),
+
   }),
 });
 
@@ -1509,10 +1681,17 @@ export const {
    // Vehicles
    useGetVehiclesQuery,
    useGetVehicleByIdQuery,
+   useGetVehicleSummaryByModelAndColorQuery,
    useCreateVehicleMutation,
    useCreateVehicleFromCSVMutation,
    useUpdateVehicleMutation,
    useDeleteVehicleMutation,
+
+   useGetPurchasesQuery,
+   useGetPurchaseByIdQuery,
+   useCreatePurchaseMutation,
+   useUpdatePurchaseMutation,
+   useDeletePurchaseMutation,
 
    //INVENTARIO
    useGetVehiclesCountByLocationQuery,

@@ -1,13 +1,19 @@
 "use client";
 
 import { useState } from 'react';
+import { 
+  useGetLocationsQuery, 
+  useGetVehiclesQuery, 
+  useGetProductsQuery  
+} from "@/state/api";
 import Header from '@/app/(components)/Header';
+import { Product, Location, Vehicle } from '@/state/api'; // Asegúrate de importar tus interfaces
 
 type MovementFormData = {
-  productId?: number;
+  productId?: string; // Cambiado a string para que coincida con Product
   vehicleId?: number;
-  fromLocationId: number;
-  toLocationId: number;
+  fromLocationId: string; // Cambiado a string para que coincida con Location
+  toLocationId: string; // Cambiado a string para que coincida con Location
   quantity?: number;
   movementType: string;
   movementDate: string;
@@ -15,49 +21,38 @@ type MovementFormData = {
   notes?: string;
 };
 
-// Mocked data for locations and vehicles/products (can be replaced with real data later)
-const locations = [
-  { id: 1, name: 'Almacén Central' },
-  { id: 2, name: 'Sucursal Norte' },
-  { id: 3, name: 'Sucursal Sur' },
-];
-
-const vehicles = [
-  { id: 1, name: 'Moto A (VIN 12345)' },
-  { id: 2, name: 'Moto B (VIN 67890)' },
-];
-
-const products = [
-  { id: 1, name: 'Casco' },
-  { id: 2, name: 'Llanta' },
-];
-
 const InventoryMovementsPage = () => {
+
+  const { data: products = [], isLoading: productsLoading, isError: productsError } = useGetProductsQuery();
+
+
   const [formData, setFormData] = useState<MovementFormData>({
-    fromLocationId: 1,
-    toLocationId: 2,
+    fromLocationId: '',
+    toLocationId: '',
+    vehicleId: undefined, // Asegúrate de inicializarlo correctamente
+    productId: undefined,
     movementType: 'transfer',
     movementDate: new Date().toISOString().slice(0, 10),
     status: 'in transit',
   });
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-    const { name, value } = e.target;
+  const { data: locations = [], isLoading: locationsLoading } = useGetLocationsQuery();
+  const { data: vehicles = [], isLoading: vehiclesLoading, isError } = useGetVehiclesQuery();
+
+  const handleChange = (e: React.ChangeEvent<HTMLElement>) => {
+    const { name, value } = e.target as HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement;
     setFormData({ ...formData, [name]: value });
   };
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    // Add logic to handle movement submission here
     console.log("Submitted Movement Data:", formData);
   };
 
   return (
     <div className="mx-auto py-5 w-full">
-      {/* Header */}
       <Header name="Registrar Movimiento de Inventario" />
 
-      {/* Movement Form */}
       <form onSubmit={handleSubmit} className="mt-5 grid grid-cols-2 gap-6">
         
         {/* From Location */}
@@ -69,8 +64,11 @@ const InventoryMovementsPage = () => {
             onChange={handleChange}
             className="border border-gray-300 rounded p-2"
           >
-            {locations.map(location => (
-              <option key={location.id} value={location.id}>{location.name}</option>
+            <option value="">Seleccionar ubicación</option>
+            {locations.map((location: Location) => (
+              <option key={location.locationId} value={location.locationId}>
+                {location.name}
+              </option>
             ))}
           </select>
         </div>
@@ -84,8 +82,11 @@ const InventoryMovementsPage = () => {
             onChange={handleChange}
             className="border border-gray-300 rounded p-2"
           >
-            {locations.map(location => (
-              <option key={location.id} value={location.id}>{location.name}</option>
+            <option value="">Seleccionar ubicación</option>
+            {locations.map((location: Location) => (
+              <option key={location.locationId} value={location.locationId} disabled={formData.fromLocationId === location.locationId}>
+                {location.name}
+              </option>
             ))}
           </select>
         </div>
@@ -119,30 +120,46 @@ const InventoryMovementsPage = () => {
           </select>
         </div>
 
-        {/* Product or Vehicle Selection */}
+        {/* Product Selection */}
         <div className="flex flex-col">
-          <label className="text-gray-700 font-medium">Producto o Vehículo</label>
+          <label className="text-gray-700 font-medium">Producto</label>
           <select
             name="productId"
+            value={formData.productId}
             onChange={handleChange}
             className="border border-gray-300 rounded p-2"
           >
             <option value="">Seleccionar producto</option>
-            {products.map(product => (
-              <option key={product.id} value={product.id}>{product.name}</option>
+            {products.map((product: Product) => (
+              <option key={product.productId} value={product.productId}>
+                {product.name}
+              </option>
             ))}
           </select>
+        </div>
 
-          <select
-            name="vehicleId"
-            onChange={handleChange}
-            className="border border-gray-300 rounded p-2 mt-2"
-          >
-            <option value="">Seleccionar vehículo</option>
-            {vehicles.map(vehicle => (
-              <option key={vehicle.id} value={vehicle.id}>{vehicle.name}</option>
-            ))}
-          </select>
+        {/* Vehicle Selection */}
+        <div className="flex flex-col">
+          <label className="text-gray-700 font-medium">Vehículo</label>
+          {vehiclesLoading ? (
+            <p>Cargando vehículos...</p> // Mensaje de carga
+          ) : isError ? (
+            <p>Error al cargar vehículos.</p> // Mensaje de error
+          ) : (
+            <select
+              name="vehicleId"
+              value={formData.vehicleId}
+              onChange={handleChange}
+              className="border border-gray-300 rounded p-2"
+            >
+              <option value="">Seleccionar vehículo</option>
+              {vehicles.map((vehicle: Vehicle) => (
+                <option key={vehicle.vehicleId} value={vehicle.vehicleId}>
+                  {`${vehicle.model.name} ${vehicle.color.name} ${vehicle.internal_serial}`}
+                </option>
+              ))}
+            </select>
+          )}
         </div>
 
         {/* Quantity (For Products without Serial Numbers) */}
@@ -176,7 +193,7 @@ const InventoryMovementsPage = () => {
           <textarea
             name="notes"
             value={formData.notes || ""}
-          
+            onChange={handleChange}
             className="border border-gray-300 rounded p-2"
             placeholder="Agregar notas sobre el movimiento"
           />

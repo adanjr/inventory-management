@@ -23,10 +23,11 @@ export const getColors = async (req: Request, res: Response): Promise<void> => {
 // Crear un nuevo color
 export const createColor = async (req: Request, res: Response): Promise<void> => {
   try {
-    const { name } = req.body;
+    const { name, hexadecimal } = req.body;
     const color = await prisma.colors.create({
       data: {
         name,
+        hexadecimal,
       },
     });
     res.status(201).json(color);
@@ -59,11 +60,12 @@ export const getColorById = async (req: Request, res: Response): Promise<void> =
 export const updateColor = async (req: Request, res: Response): Promise<void> => {
   try {
     const { id } = req.params;
-    const { name } = req.body;
+    const { name, hexadecimal } = req.body;
     const color = await prisma.colors.update({
       where: { colorId: Number(id) },
       data: {
         name,
+        hexadecimal,
       },
     });
     res.json(color);
