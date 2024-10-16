@@ -24,6 +24,7 @@ type ModelFormData = {
   weightCapacity: number;
   speed: number;
   batteryVoltage: number;
+  mainImageUrl?: string;
 };
 
 type CreateModelModalProps = {
@@ -65,6 +66,7 @@ const CreateModelModal = ({
     weightCapacity: 0,
     speed: 0,
     batteryVoltage: 0,
+    mainImageUrl: "",
   });
 
   const [selectedMakeId, setSelectedMakeId] = useState<number | null>(null);
@@ -467,6 +469,21 @@ const CreateModelModal = ({
               placeholder="Voltaje de Batería"
               onChange={handleChange}
               value={formData.batteryVoltage}
+              className={inputCssStyles}
+            />
+          </div>
+
+          {/* MAIN IMAGE URL */}
+          <div className="col-span-1">
+            <label htmlFor="mainImageUrl" className={labelCssStyles}>
+              URL de Imagen Principal
+            </label>
+            <input
+              type="string"
+              name="mainImageUrl"
+              placeholder="Url de Imagen Principal"
+              onChange={handleChange}
+              value={formData.mainImageUrl}
               className={inputCssStyles}
             />
           </div>

@@ -243,68 +243,76 @@ const Models = () => {
   </div>
 
   {/* BODY MODELS LIST */}
-  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-10 justify-between">
-    {models.map((model) => (
-      <div
-        key={model.modelId}
-        className="border shadow rounded-md p-4 max-w-full w-full mx-auto"
-      >
-        <div className="flex flex-col items-center">            
-          <Image
-            src="https://s3-yaiiinventory.s3.us-east-2.amazonaws.com/AJ2000.jpg"
-            alt={model.name}
-            width={150}
-            height={150}
-            className="mb-3 rounded-2xl w-36 h-36"
-          /> 
-          <h3 className="text-lg text-gray-900 font-semibold">
-            {model.name}
-          </h3>
-          {model.make?.name && (
-            <p className="text-gray-600">Fabricante: {model.make.name}</p>
-          )}
-          {model.family?.name && (
-            <p className="text-gray-600">Familia: {model.family.name}</p>
-          )}
-          {model.year_start && (
-            <p className="text-gray-600">Año Inicio: {model.year_start}</p>
-          )}
-          {model.year_end && (
-            <p className="text-gray-600">Año Fin: {model.year_end}</p>
-          )}
-          {model.vehicleType?.name && (
-            <p className="text-gray-600">Tipo de Vehículo: {model.vehicleType.name}</p>
-          )}
-          {model.engineType?.name && (
-            <p className="text-gray-600">Motor: {model.engineType.name}</p>
-          )}
-          {model.transmission?.type && (
-            <p className="text-gray-600">Transmisión: {model.transmission.type}</p>
-          )}
-          {model.fuelType?.name && (
-            <p className="text-gray-600">Tipo de Carga: {model.fuelType.name}</p>
-          )}
-          <div className="flex mt-4">
-            <button
-              className="text-blue-500 hover:text-blue-700 flex items-center mr-4"
-              onClick={() => {
-                setSelectedModel(model);
-                setIsEditModalOpen(true);
-              }}
-            >
-              <PencilIcon className="w-5 h-5 mr-2" /> Editar
-            </button>
-            <button
-              className="text-red-500 hover:text-red-700 flex items-center"
-              onClick={() => handleDeleteModel(model.modelId)}
-            >
-              <TrashIcon className="w-5 h-5 mr-2" /> Eliminar
-            </button>
-          </div>
+  <div className="grid grid-cols-1 sm:grid-cols-2 gap-10">
+  {models.map((model) => (
+    <div
+      key={model.modelId}
+      className="border shadow rounded-md p-4 max-w-full w-full mx-auto flex"
+    >
+      {/* Imagen en el lado izquierdo, tamaño grande */}
+      <div className="flex-shrink-0 w-1/2">
+        <Image
+          src={model.mainImageUrl || "/path/to/default-image.jpg"}  // Imagen por defecto
+          alt={model.name}
+          layout="responsive"
+          width={500}
+          height={500}
+          className="rounded-2xl object-cover"
+        />
+      </div>
+
+      {/* Texto en el lado derecho */}
+      <div className="ml-6 flex flex-col justify-center w-1/2">
+        <h3 className="text-2xl text-gray-900 font-semibold">{model.name}</h3>
+
+        {model.make?.name && (
+          <p className="text-gray-600 mt-2">Fabricante: {model.make.name}</p>
+        )}
+        {model.family?.name && (
+          <p className="text-gray-600">Familia: {model.family.name}</p>
+        )}
+        {model.year_start && (
+          <p className="text-gray-600">Año Inicio: {model.year_start}</p>
+        )}
+        {model.year_end && (
+          <p className="text-gray-600">Año Fin: {model.year_end}</p>
+        )}
+        {model.vehicleType?.name && (
+          <p className="text-gray-600">Tipo de Vehículo: {model.vehicleType.name}</p>
+        )}
+        {model.engineType?.name && (
+          <p className="text-gray-600">Motor: {model.engineType.name}</p>
+        )}
+        {model.transmission?.type && (
+          <p className="text-gray-600">Transmisión: {model.transmission.type}</p>
+        )}
+        {model.fuelType?.name && (
+          <p className="text-gray-600">Tipo de Carga: {model.fuelType.name}</p>
+        )}
+
+        {/* Botones en el lado derecho */}
+        <div className="flex mt-4 space-x-4">
+          <button
+            className="text-blue-500 hover:text-blue-700 flex items-center"
+            onClick={() => {
+              setSelectedModel(model);
+              setIsEditModalOpen(true);
+            }}
+          >
+            <PencilIcon className="w-5 h-5 mr-2" /> Editar
+          </button>
+          <button
+            className="text-red-500 hover:text-red-700 flex items-center"
+            onClick={() => handleDeleteModel(model.modelId)}
+          >
+            <TrashIcon className="w-5 h-5 mr-2" /> Eliminar
+          </button>
         </div>
       </div>
-    ))}
-  </div>
+    </div>
+  ))}
+</div>
+
 
   {/* MODALS */}
   <CreateModelModal

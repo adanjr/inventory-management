@@ -2,6 +2,7 @@ import { Router } from "express";
 import { 
     getVehicles, 
     getVehicleSummaryByModelAndColor,
+    getVehiclesByLocation,
     createVehicle, 
     createVehicleFromCSV,
     getVehicleById, 
@@ -13,6 +14,7 @@ const router = Router();
 
 router.get("/", getVehicles);
 router.get("/modelsBySucursal", getVehicleSummaryByModelAndColor);
+router.get("/vehiclesByLocation", getVehiclesByLocation);
 router.post("/", createVehicle);
 router.post("/csv", createVehicleFromCSV);
 router.get("/:id", getVehicleById);

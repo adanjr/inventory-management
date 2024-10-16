@@ -24,6 +24,7 @@ type ModelFormData = {
   weightCapacity: number;
   speed: number;
   batteryVoltage: number;
+  mainImageUrl?: string;
 };
 
 type EditModelModalProps = {
@@ -67,6 +68,7 @@ const EditModelModal = ({
     weightCapacity: selectedModel?.weightCapacity || 0,
     speed: selectedModel?.speed || 0,
     batteryVoltage: selectedModel?.batteryVoltage || 0,
+    mainImageUrl: selectedModel?.mainImageUrl || "",     
   });
 
   useEffect(() => {
@@ -92,6 +94,7 @@ const EditModelModal = ({
         weightCapacity: selectedModel?.weightCapacity || 0,
         speed: selectedModel?.speed || 0,
         batteryVoltage: selectedModel?.batteryVoltage || 0,
+        mainImageUrl: selectedModel?.mainImageUrl || "",  
       });
     }
   }, [selectedModel, isOpen]);
@@ -175,6 +178,7 @@ const EditModelModal = ({
       weightCapacity: formData?.weightCapacity ,
       speed: formData?.speed  ,
       batteryVoltage: formData?.batteryVoltage,
+      mainImageUrl: formData?.mainImageUrl ,     
     });
     onClose();
   };
@@ -497,6 +501,21 @@ const EditModelModal = ({
               placeholder="Voltaje de Batería"
               onChange={handleChange}
               value={formData.batteryVoltage}
+              className={inputCssStyles}
+            />
+          </div>
+
+          {/* MAIN IMAGE URL */}
+          <div className="col-span-1">
+            <label htmlFor="mainImageUrl" className={labelCssStyles}>
+              URL de Imagen Principal
+            </label>
+            <input
+              type="string"
+              name="mainImageUrl"
+              placeholder="Url de Imagen Principal"
+              onChange={handleChange}
+              value={formData.mainImageUrl}
               className={inputCssStyles}
             />
           </div>

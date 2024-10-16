@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { 
   useGetLocationsQuery, 
-  useGetVehiclesQuery, 
+  useGetVehiclesByLocationIdQuery, 
   useGetProductsQuery  
 } from "@/state/api";
 import Header from '@/app/(components)/Header';
@@ -24,6 +24,8 @@ type MovementFormData = {
 const InventoryMovementsPage = () => {
 
   const { data: products = [], isLoading: productsLoading, isError: productsError } = useGetProductsQuery();
+  const { data: locations = [], isLoading: locationsLoading } = useGetLocationsQuery();
+  const { data: vehicles = [], isLoading: vehiclesLoading, isError } = useGetVehiclesByLocationIdQuery("2");
 
 
   const [formData, setFormData] = useState<MovementFormData>({
@@ -35,9 +37,6 @@ const InventoryMovementsPage = () => {
     movementDate: new Date().toISOString().slice(0, 10),
     status: 'in transit',
   });
-
-  const { data: locations = [], isLoading: locationsLoading } = useGetLocationsQuery();
-  const { data: vehicles = [], isLoading: vehiclesLoading, isError } = useGetVehiclesQuery();
 
   const handleChange = (e: React.ChangeEvent<HTMLElement>) => {
     const { name, value } = e.target as HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement;
@@ -155,7 +154,7 @@ const InventoryMovementsPage = () => {
               <option value="">Seleccionar vehículo</option>
               {vehicles.map((vehicle: Vehicle) => (
                 <option key={vehicle.vehicleId} value={vehicle.vehicleId}>
-                  {`${vehicle.model.name} ${vehicle.color.name} ${vehicle.internal_serial}`}
+                  MODEL: {`${vehicle.model.name} - COLOR: ${vehicle.color.name} - SERIAL: ${vehicle.internal_serial}`}
                 </option>
               ))}
             </select>

@@ -143,6 +143,7 @@ export interface Model {
   weightCapacity: number;
   speed: number;
   batteryVoltage: number;
+  mainImageUrl?: string;
 }
 
 export interface NewModel {
@@ -164,6 +165,7 @@ export interface NewModel {
   weightCapacity: number;
   speed: number;
   batteryVoltage: number;
+  mainImageUrl?: string;
 }
 
 export interface UpdatedModel {
@@ -185,6 +187,7 @@ export interface UpdatedModel {
   weightCapacity: number;
   speed: number;
   batteryVoltage: number;
+  mainImageUrl?: string;
 }
 
 
@@ -1473,6 +1476,12 @@ export const api = createApi({
       }),
       providesTags: (result, error, id) => [{ type: "Vehicles", id }],
     }),
+    getVehiclesByLocationId: build.query<Vehicle[], string>({
+      query: (locationId) => ({
+        url: `/vehicles/vehiclesByLocation?locationId=${locationId}`,
+      }),
+      providesTags: (result, error, locationId) => [{ type: "Vehicles", locationId }],
+    }),
     getVehicleSummaryByModelAndColor: build.query<VehicleModelSummary[], string>({
       query: (locationId) => ({
         url: `/vehicles/modelsBySucursal?locationId=${locationId}`,
@@ -1682,6 +1691,7 @@ export const {
    useGetVehiclesQuery,
    useGetVehicleByIdQuery,
    useGetVehicleSummaryByModelAndColorQuery,
+   useGetVehiclesByLocationIdQuery,
    useCreateVehicleMutation,
    useCreateVehicleFromCSVMutation,
    useUpdateVehicleMutation,
