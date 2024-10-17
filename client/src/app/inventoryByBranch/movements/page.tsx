@@ -8,6 +8,7 @@ import {
 } from '@/state/api';
 import Header from '@/app/(components)/Header';
 import { Product, Location, Vehicle } from '@/state/api';
+import VehicleModal from './VehicleModal';
 
 type MovementFormData = {
   productId?: string;
@@ -26,6 +27,8 @@ const InventoryMovementsPage = () => {
   const { data: locations = [] } = useGetLocationsQuery();
   const { data: vehicles = [] } = useGetVehiclesByLocationIdQuery("2");
 
+  console.log("all vehicles: ",vehicles);
+
   const [formData, setFormData] = useState<MovementFormData>({
     fromLocationId: '',
     toLocationId: '',
@@ -40,6 +43,7 @@ const InventoryMovementsPage = () => {
   
   const [selectedVehicles, setSelectedVehicles] = useState<Vehicle[]>([]);
   const [availableVehicles, setAvailableVehicles] = useState<Vehicle[]>(vehicles);
+  const [modalOpen, setModalOpen] = useState(false);
 
   useEffect(() => {
     if (vehicles) {
@@ -47,31 +51,19 @@ const InventoryMovementsPage = () => {
     }
   }, [vehicles]);
 
-  // Manejo de cambio en los inputs
-  const handleChange = (e: React.ChangeEvent<HTMLElement>) => {
-    const { name, value } = e.target as HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement;
-    setFormData({ ...formData, [name]: value });
+  const handleChange = (e: React.ChangeEvent<HTMLSelectElement | HTMLInputElement | HTMLTextAreaElement>) => {
+    const { name, value } = e.target;
+    setFormData((prevFormData) => ({ ...prevFormData, [name]: value }));
   };
 
-  // Manejo de agregar vehículo
-  const handleAddVehicle = (vehicleId: number) => {
-    const selectedVehicle = availableVehicles.find((v) => v.vehicleId === vehicleId);
-    if (selectedVehicle) {
-      setSelectedVehicles([...selectedVehicles, selectedVehicle]);
-      setAvailableVehicles(availableVehicles.filter((v) => v.vehicleId !== vehicleId));
-    }
-  };
-
-  // Manejo de eliminar vehículo del grid
   const handleRemoveVehicle = (vehicleId: number) => {
-    const vehicleToRemove = selectedVehicles.find((v) => v.vehicleId === vehicleId);
-    if (vehicleToRemove) {
-      setAvailableVehicles([...availableVehicles, vehicleToRemove]);
-      setSelectedVehicles(selectedVehicles.filter((v) => v.vehicleId !== vehicleId));
-    }
+    setSelectedVehicles(selectedVehicles.filter((v) => v.vehicleId !== vehicleId));
   };
 
-  // Manejo del submit del formulario
+  const handleVehicleSelection = (selected: Vehicle[]) => {
+    setSelectedVehicles(selected);
+  };
+
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     console.log("Submitted Movement Data:", formData, "Selected Vehicles:", selectedVehicles);
@@ -117,13 +109,13 @@ const InventoryMovementsPage = () => {
               <option
                 key={location.locationId}
                 value={location.locationId}
-                disabled={formData.fromLocationId === location.locationId}
               >
                 {location.name}
               </option>
             ))}
           </select>
         </div>
+
 
         <div className="flex flex-col">
           <label className="text-gray-700 font-medium">Tipo de Movimiento</label>
@@ -163,22 +155,15 @@ const InventoryMovementsPage = () => {
           />
         </div>
 
-        {/* Vehicle Search */}
-        <div className="flex flex-col col-span-2">
-          <label className="text-gray-700 font-medium">Seleccionar Vehículo</label>
-          <select
-            onChange={(e) => handleAddVehicle(Number(e.target.value))}
-            className="border border-gray-300 rounded p-2"
-            value=""
+        <div className="col-span-2">
+          <button
+            type="button"
+            onClick={() => setModalOpen(true)}
+            className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-700"
           >
-            <option value="">Seleccionar vehículo</option>
-            {availableVehicles.map((vehicle: Vehicle) => (
-              <option key={vehicle.vehicleId} value={vehicle.vehicleId}>
-                {`Modelo: ${vehicle.model.name} - Color: ${vehicle.color.name} - Serial: ${vehicle.internal_serial}`}
-              </option>
-            ))}
-          </select>
-        </div>
+            Agregar Vehículos
+          </button>
+        </div>     
 
         {/* Vehículos Seleccionados Grid */}
         <div className="col-span-2">
@@ -211,7 +196,7 @@ const InventoryMovementsPage = () => {
               ))}
             </tbody>
           </table>
-        </div>
+        </div>                
 
         <div className="flex flex-col col-span-2">
           <label className="text-gray-700 font-medium">Notas</label>
@@ -233,6 +218,14 @@ const InventoryMovementsPage = () => {
           </button>
         </div>
       </form>
+
+      <VehicleModal
+        open={modalOpen}
+        onClose={() => setModalOpen(false)}
+        availableVehicles={vehicles}
+        selectedVehicles={selectedVehicles}
+        onSelect={handleVehicleSelection}
+      />
     </div>
   );
 };
