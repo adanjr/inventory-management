@@ -1,239 +1,134 @@
-"use client"; // Aseguramos que este componente se renderice del lado del cliente 
+"use client";
 
-import { useRouter, useSearchParams } from 'next/navigation';
-import { useGetVehicleSummaryByModelAndColorQuery, VehicleModelSummary, VehicleColor } from "@/state/api";
-import { useGetCustomersQuery, useCreateCustomerMutation } from "@/state/api"; // Asegúrate de importar las consultas y mutaciones necesarias
-import Image from "next/image";
-import { useEffect, useState } from 'react';
-import { BatteryCharging, Dumbbell, Gauge } from 'lucide-react';
+import { useState } from "react";
+import {
+  useGetCustomersQuery,
+  useCreateCustomerMutation,
+  useUpdateCustomerMutation,
+  useDeleteCustomerMutation } from "@/state/api";
+import { PlusCircleIcon, SearchIcon, PencilIcon, TrashIcon } from "lucide-react";
+import Header from "@/app/(components)/Header";
+import CreateCustomerModal from "./CreateCustomerModal";
+import { Customer } from "@/state/api";
 
-const SalesDetails = () => {                     
-  const router = useRouter();
-  const searchParams = useSearchParams();
-  const modelId = searchParams.get('modelId') || "";
-  const colorId = searchParams.get('colorId');
+const Customers = () => {
+  const [searchTerm, setSearchTerm] = useState("");
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
 
-  const locationId = "2";
-  
-  const { data: models, isLoading, isError } = useGetVehicleSummaryByModelAndColorQuery({ locationId, modelId });
-  const { data: customers } = useGetCustomersQuery(); // Consulta para obtener los clientes
+  const { data: customers, isLoading, isError } = useGetCustomersQuery(searchTerm);
 
-  const [createCustomer] = useCreateCustomerMutation(); // Mutación para crear un nuevo cliente
+  const [createCustomer] = useCreateCustomerMutation();
+  const [updateCustomer] = useUpdateCustomerMutation();
+  const [deleteCustomer] = useDeleteCustomerMutation();
 
-  const model = models && models.length > 0 ? models[0] : null;
+  const handleCreateCustomer = async (customerData: Customer) => {
+    await createCustomer(customerData);
+    setIsCreateModalOpen(false);
+  };
 
-  const [selectedColors, setSelectedColors] = useState<{ [modelId: number]: VehicleColor }>({});
-  const [selectedColor, setSelectedColor] = useState<number | null>(null);
-  const [quantity, setQuantity] = useState(1); // Estado para la cantidad
-  const [newCustomerName, setNewCustomerName] = useState(""); // Estado para el nombre del nuevo cliente
-  const [selectedCustomerId, setSelectedCustomerId] = useState<string | null>(null); // Estado para el cliente seleccionado
-
-  useEffect(() => {
-    if (model) {
-      const initialColor = model.colors.find(color => color.colorId === Number(colorId));
-      if (initialColor) {
-        setSelectedColor(initialColor.colorId);
-        setSelectedColors(prev => ({ ...prev, [model.modelId]: initialColor }));
-      }
+  const handleEditCustomer = async (customerId: string, updatedData: Partial<Customer>) => {
+    if (customerId) {
+      await updateCustomer({ id: customerId, data: updatedData });
+      setIsEditModalOpen(false);
     }
-  }, [model, colorId, modelId]);
+  };
+
+  const handleDeleteCustomer = async (customerId: string) => {
+    if (customerId) {
+      await deleteCustomer(customerId);
+    }
+  };
 
   if (isLoading) {
-    return <div className="py-4">Cargando...</div>;
+    return <div className="py-4">Loading...</div>;
   }
 
-  if (isError || !model) {
+  if (isError || !customers) {
     return (
       <div className="text-center text-red-500 py-4">
-        Error al cargar el modelo
+        Failed to fetch customers
       </div>
     );
   }
 
-  const selectedModel = model;
-  let selectedColorObject: VehicleColor | undefined;
-
-  if (selectedModel) {
-    selectedColorObject = selectedModel.colors.find(color => color.colorId === selectedColor);
-  }
-
-  const handleColorSelect = (modelId: number, color: VehicleColor) => {
-    setSelectedColors(prev => ({
-      ...prev,
-      [modelId]: color,
-    }));
-    setSelectedColor(color.colorId);
-    setQuantity(1); // Resetear cantidad al seleccionar un nuevo color
-  };
-
-  const incrementQuantity = () => {
-    if (quantity < (selectedColorObject?.count || 1)) {
-      setQuantity(prev => prev + 1);
-    }
-  };
-
-  const decrementQuantity = () => {
-    if (quantity > 1) {
-      setQuantity(prev => prev - 1);
-    }
-  };
-
-  const handleCreateCustomer = async () => {
-    if (newCustomerName) {
-      await createCustomer({ name: newCustomerName }); // Ajusta según la estructura de tu API
-      setNewCustomerName(""); // Limpiar el campo después de crear
-    }
-  };
-
   return (
     <div className="mx-auto pb-5 w-full">
-      <div className="border shadow rounded-md p-4 max-w-full w-full mx-auto flex relative">
-        {/* Left Section: Larger Image - 70% width */}
-        <div className="w-full flex justify-center items-center relative" style={{ height: "70vh", flex: '0 0 70%' }}>
-          <Image
-            src={`https://s3-yaiiinventory.s3.us-east-2.amazonaws.com/${model.modelName}-${selectedColors[model.modelId]?.colorName}.jpg`}
-            alt={model.modelName}
-            fill
-            className="rounded-2xl object-cover"
-            style={{ objectFit: 'cover' }} // Asegura que la imagen no se distorsione
+      {/* SEARCH BAR */}
+      <div className="mb-6">
+        <div className="flex items-center border-2 border-gray-200 rounded">
+          <SearchIcon className="w-5 h-5 text-gray-500 m-2" />
+          <input
+            className="w-full py-2 px-4 rounded bg-white"
+            placeholder="Buscar clientes..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
           />
-        </div>
-
-        {/* Right Section: Details - 30% width */}
-        <div className="w-full flex flex-col justify-between px-4 h-full" style={{ flex: '0 0 30%' }}>
-          {/* Model Name */}
-          <div>
-            <h3 className="text-2xl text-gray-900 font-bold">{model.vehicleType} {model.modelName}</h3>
-          </div>
-
-          {/* Battery Duration */}
-          <div className="mt-2 border p-3 rounded-lg flex items-center space-x-3 bg-gray-100">
-            <BatteryCharging className="w-6 h-6 text-gray-700" />
-            <div>
-              <p className="text-sm text-gray-700 font-medium">Duración de batería</p>
-              <p className="text-md text-gray-900">
-                {model.range ? `${model.range} kWh` : "N/A"}
-              </p>
-            </div>
-          </div>
-
-          {/* Weight Capacity */}
-          <div className="mt-2 border p-3 rounded-lg flex items-center space-x-3 bg-gray-100">
-            <Dumbbell className="w-6 h-6 text-gray-700" />
-            <div>
-              <p className="text-sm text-gray-700 font-medium">Capacidad de peso</p>
-              <p className="text-md text-gray-900">
-                {model.weightCapacity ? `${model.weightCapacity} kg` : "N/A"}
-              </p>
-            </div>
-          </div>
-
-          {/* Speed */}
-          <div className="mt-2 border p-3 rounded-lg flex items-center space-x-3 bg-gray-100">
-            <Gauge className="w-6 h-6 text-gray-700" />
-            <div>
-              <p className="text-sm text-gray-700 font-medium">Velocidad máxima</p>
-              <p className="text-md text-gray-900">
-                {model.speed ? `${model.speed} km/h` : "N/A"}
-              </p>
-            </div>
-          </div>
-
-          {/* Colors Section */}
-          <div className="mt-2">
-            <h4 className="text-md text-gray-700 font-medium">Colores disponibles:</h4>
-            <div className="flex space-x-2 mt-2">
-              {model.colors.map((color) => {
-                const isSelected = selectedColors[model.modelId]?.colorId === color.colorId;
-                return (
-                  <div
-                    key={color.colorId}
-                    className={`w-8 h-8 rounded-full cursor-pointer border border-gray-300 ${isSelected ? 'ring-2 ring-blue-500' : ''}`}
-                    style={{ backgroundColor: color.hexadecimal }}
-                    title={color.colorName}
-                    onClick={() => handleColorSelect(model.modelId, color)}
-                  />
-                );
-              })}
-            </div>
-          </div>
-
-          {/* Quantity Section */}
-          <div className="mt-4 flex items-center">
-            <label className="mr-2 text-md text-gray-700 font-medium">Cantidad:</label>
-            <button onClick={decrementQuantity} className="border p-1 rounded-l-md">-</button>
-            <input 
-              type="number" 
-              value={quantity} 
-              readOnly 
-              className="border text-center w-16"
-            />
-            <button onClick={incrementQuantity} className="border p-1 rounded-r-md">+</button>
-          </div>
-
-          <div className="flex justify-center">
-            <h1 className="text-2xl text-gray-900 font-bold">
-              {new Intl.NumberFormat('es-MX', {
-                style: 'currency',
-                currency: 'MXN',
-              }).format(model.basePrice)}
-            </h1>
-          </div>
-
-          {/* Confirm Sale Button */}
-          <div className="mt-4">
-            <button 
-              className="bg-green-500 text-white py-2 px-6 rounded-lg hover:bg-green-600 w-full"
-              onClick={() => {
-                // Lógica para confirmar la venta aquí
-                console.log(`Confirmar venta: ${quantity} ${selectedColorObject?.colorName} ${model.modelName}`);
-              }}
-            >
-              Confirmar Venta
-            </button>
-          </div>
         </div>
       </div>
 
-      {/* Sección para buscar o agregar un cliente */}
-      <div className="mt-10">
-        <h2 className="text-xl font-bold">Buscar o Agregar Cliente</h2>
-        
-        {/* Selección de cliente existente */}
-        <div className="mt-4">
-          <select 
-            className="border rounded p-2 w-full"
-            value={selectedCustomerId || ""}
-            onChange={(e) => setSelectedCustomerId(e.target.value)}
+      {/* HEADER BAR */}
+      <div className="flex justify-between items-center mb-6">
+        <Header name="Clientes" />
+        <button
+          className="flex items-center bg-blue-500 hover:bg-blue-700 text-gray-200 font-bold py-2 px-4 rounded"
+          onClick={() => setIsCreateModalOpen(true)}
+        >
+          <PlusCircleIcon className="w-5 h-5 mr-2 !text-gray-200" /> Crear Cliente
+        </button>
+      </div>
+
+      {/* BODY CUSTOMERS LIST */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-10 justify-between">
+        {customers.map((customer) => (
+          <div
+            key={customer.id}
+            className="border shadow rounded-md p-4 max-w-full w-full mx-auto"
           >
-            <option value="">Seleccionar Cliente</option>
-            {customers && customers.map(customer => (
-              <option key={customer.customerId} value={customer.customerId}>
+            <div className="flex flex-col items-center">
+              <h3 className="text-lg text-gray-900 font-semibold">
                 {customer.name}
-              </option>
-            ))}
-          </select>
-        </div>
-
-        {/* Campo para agregar nuevo cliente */}
-        <div className="mt-4">
-          <input 
-            type="text" 
-            placeholder="Nombre del nuevo cliente" 
-            value={newCustomerName} 
-            onChange={(e) => setNewCustomerName(e.target.value)} 
-            className="border rounded p-2 w-full" 
-          />
-          <button 
-            className="bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-600 mt-2"
-            onClick={handleCreateCustomer}
-          >
-            Agregar Cliente
-          </button>
-        </div>
+              </h3>
+              <p className="text-gray-800">Email: {customer.email}</p>
+              {customer.phone && (
+                <p className="text-gray-800">Phone: {customer.phone}</p>
+              )}
+              {customer.address && (
+                <div className="text-sm text-gray-600 mt-1">
+                  Dirección: {customer.address}, {customer.city}, {customer.state}, {customer.country}, {customer.postalCode}
+                </div>
+              )}
+              <div className="flex mt-4">
+                <button
+                  className="text-blue-500 hover:text-blue-700 flex items-center mr-4"
+                  onClick={() => {
+                    setSelectedCustomer(customer);
+                    setIsEditModalOpen(true);
+                  }}
+                >
+                  <PencilIcon className="w-5 h-5 mr-2" /> Editar
+                </button>
+                <button
+                  className="text-red-500 hover:text-red-700 flex items-center"
+                  onClick={() => handleDeleteCustomer(customer.id)}
+                >
+                  <TrashIcon className="w-5 h-5 mr-2" /> Eliminar
+                </button>
+              </div>
+            </div>
+          </div>
+        ))}
       </div>
+
+      {/* MODALS */}
+      <CreateCustomerModal
+        isOpen={isCreateModalOpen}
+        onClose={() => setIsCreateModalOpen(false)}
+        onCreate={handleCreateCustomer}
+      />
     </div>
   );
 };
 
-export default SalesDetails;
+export default Customers;
