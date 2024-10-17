@@ -56,22 +56,32 @@ export const getVehiclesByLocation = async (req: Request, res: Response): Promis
   try {
     const search = req.query.search?.toString() || '';
     const locationId = req.query.locationId ? Number(req.query.locationId) : null;
+    const modelId = req.query.modelId ? Number(req.query.modelId) : null;
 
-    // Validar que locationId es un número válido
+    // Validar que locationId y modelId son números válidos
     if (locationId !== null && isNaN(locationId)) {
       res.status(400).json({ message: 'Invalid locationId' });
       return;
     }
+    if (modelId !== null && isNaN(modelId)) {
+      res.status(400).json({ message: 'Invalid modelId' });
+      return;
+    }
 
+    // Construir la condición del filtro
+    const filters: any = {
+      ...(locationId && { locationId }), // Filtrar por locationId si está presente
+      ...(modelId && { modelId }), // Filtrar por modelId si está presente
+      OR: [
+        { vin: { contains: search, mode: 'insensitive' } },
+        { stockNumber: { contains: search, mode: 'insensitive' } },
+        { internal_serial: { contains: search, mode: 'insensitive' } },
+      ],
+    };
+
+    // Realizar la consulta con los filtros
     const vehicles = await prisma.vehicles.findMany({
-      where: {
-        ...(locationId && { locationId }), // Filtrar solo si locationId es proporcionado
-        OR: [
-          { vin: { contains: search, mode: 'insensitive' } },
-          { stockNumber: { contains: search, mode: 'insensitive' } },
-          { internal_serial: { contains: search, mode: 'insensitive' } },
-        ],
-      },
+      where: filters,
       include: {
         model: {
           include: {

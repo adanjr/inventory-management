@@ -1,19 +1,19 @@
-"use client";
+'use client';
 
-import { useState } from 'react';
-import { 
-  useGetLocationsQuery, 
-  useGetVehiclesByLocationIdQuery, 
-  useGetProductsQuery  
-} from "@/state/api";
+import { useState, useEffect } from 'react';
+import {
+  useGetLocationsQuery,
+  useGetVehiclesByLocationIdQuery,
+  useGetProductsQuery,
+} from '@/state/api';
 import Header from '@/app/(components)/Header';
-import { Product, Location, Vehicle } from '@/state/api'; // Asegúrate de importar tus interfaces
+import { Product, Location, Vehicle } from '@/state/api';
 
 type MovementFormData = {
-  productId?: string; // Cambiado a string para que coincida con Product
+  productId?: string;
   vehicleId?: number;
-  fromLocationId: string; // Cambiado a string para que coincida con Location
-  toLocationId: string; // Cambiado a string para que coincida con Location
+  fromLocationId: string;
+  toLocationId: string;
   quantity?: number;
   movementType: string;
   movementDate: string;
@@ -22,30 +22,59 @@ type MovementFormData = {
 };
 
 const InventoryMovementsPage = () => {
-
-  const { data: products = [], isLoading: productsLoading, isError: productsError } = useGetProductsQuery();
-  const { data: locations = [], isLoading: locationsLoading } = useGetLocationsQuery();
-  const { data: vehicles = [], isLoading: vehiclesLoading, isError } = useGetVehiclesByLocationIdQuery("2");
-
+  const { data: products = [] } = useGetProductsQuery();
+  const { data: locations = [] } = useGetLocationsQuery();
+  const { data: vehicles = [] } = useGetVehiclesByLocationIdQuery("2");
 
   const [formData, setFormData] = useState<MovementFormData>({
     fromLocationId: '',
     toLocationId: '',
-    vehicleId: undefined, // Asegúrate de inicializarlo correctamente
+    vehicleId: undefined,
     productId: undefined,
     movementType: 'transfer',
     movementDate: new Date().toISOString().slice(0, 10),
     status: 'in transit',
   });
 
+  // Estado para los vehículos seleccionados y disponibles
+  
+  const [selectedVehicles, setSelectedVehicles] = useState<Vehicle[]>([]);
+  const [availableVehicles, setAvailableVehicles] = useState<Vehicle[]>(vehicles);
+
+  useEffect(() => {
+    if (vehicles) {
+      setAvailableVehicles(vehicles); // Aquí actualizamos availableVehicles cuando vehicles cambia
+    }
+  }, [vehicles]);
+
+  // Manejo de cambio en los inputs
   const handleChange = (e: React.ChangeEvent<HTMLElement>) => {
     const { name, value } = e.target as HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement;
     setFormData({ ...formData, [name]: value });
   };
 
+  // Manejo de agregar vehículo
+  const handleAddVehicle = (vehicleId: number) => {
+    const selectedVehicle = availableVehicles.find((v) => v.vehicleId === vehicleId);
+    if (selectedVehicle) {
+      setSelectedVehicles([...selectedVehicles, selectedVehicle]);
+      setAvailableVehicles(availableVehicles.filter((v) => v.vehicleId !== vehicleId));
+    }
+  };
+
+  // Manejo de eliminar vehículo del grid
+  const handleRemoveVehicle = (vehicleId: number) => {
+    const vehicleToRemove = selectedVehicles.find((v) => v.vehicleId === vehicleId);
+    if (vehicleToRemove) {
+      setAvailableVehicles([...availableVehicles, vehicleToRemove]);
+      setSelectedVehicles(selectedVehicles.filter((v) => v.vehicleId !== vehicleId));
+    }
+  };
+
+  // Manejo del submit del formulario
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    console.log("Submitted Movement Data:", formData);
+    console.log("Submitted Movement Data:", formData, "Selected Vehicles:", selectedVehicles);
   };
 
   return (
@@ -53,6 +82,8 @@ const InventoryMovementsPage = () => {
       <Header name="Registrar Movimiento de Inventario" />
 
       <form onSubmit={handleSubmit} className="mt-5 grid grid-cols-2 gap-6">
+        {/* Otros inputs como Movement Type, Status, etc. */}
+        {/* Manteniendo todos los inputs que ya tenías... */}
         
         {/* From Location */}
         <div className="flex flex-col">
@@ -83,14 +114,17 @@ const InventoryMovementsPage = () => {
           >
             <option value="">Seleccionar ubicación</option>
             {locations.map((location: Location) => (
-              <option key={location.locationId} value={location.locationId} disabled={formData.fromLocationId === location.locationId}>
+              <option
+                key={location.locationId}
+                value={location.locationId}
+                disabled={formData.fromLocationId === location.locationId}
+              >
                 {location.name}
               </option>
             ))}
           </select>
         </div>
 
-        {/* Movement Type */}
         <div className="flex flex-col">
           <label className="text-gray-700 font-medium">Tipo de Movimiento</label>
           <select
@@ -105,7 +139,6 @@ const InventoryMovementsPage = () => {
           </select>
         </div>
 
-        {/* Movement Status */}
         <div className="flex flex-col">
           <label className="text-gray-700 font-medium">Estado del Movimiento</label>
           <select
@@ -119,62 +152,6 @@ const InventoryMovementsPage = () => {
           </select>
         </div>
 
-        {/* Product Selection */}
-        <div className="flex flex-col">
-          <label className="text-gray-700 font-medium">Producto</label>
-          <select
-            name="productId"
-            value={formData.productId}
-            onChange={handleChange}
-            className="border border-gray-300 rounded p-2"
-          >
-            <option value="">Seleccionar producto</option>
-            {products.map((product: Product) => (
-              <option key={product.productId} value={product.productId}>
-                {product.name}
-              </option>
-            ))}
-          </select>
-        </div>
-
-        {/* Vehicle Selection */}
-        <div className="flex flex-col">
-          <label className="text-gray-700 font-medium">Vehículo</label>
-          {vehiclesLoading ? (
-            <p>Cargando vehículos...</p> // Mensaje de carga
-          ) : isError ? (
-            <p>Error al cargar vehículos.</p> // Mensaje de error
-          ) : (
-            <select
-              name="vehicleId"
-              value={formData.vehicleId}
-              onChange={handleChange}
-              className="border border-gray-300 rounded p-2"
-            >
-              <option value="">Seleccionar vehículo</option>
-              {vehicles.map((vehicle: Vehicle) => (
-                <option key={vehicle.vehicleId} value={vehicle.vehicleId}>
-                  MODEL: {`${vehicle.model.name} - COLOR: ${vehicle.color.name} - SERIAL: ${vehicle.internal_serial}`}
-                </option>
-              ))}
-            </select>
-          )}
-        </div>
-
-        {/* Quantity (For Products without Serial Numbers) */}
-        <div className="flex flex-col">
-          <label className="text-gray-700 font-medium">Cantidad (solo productos)</label>
-          <input
-            type="number"
-            name="quantity"
-            value={formData.quantity || ""}
-            onChange={handleChange}
-            className="border border-gray-300 rounded p-2"
-            placeholder="Ej: 10"
-          />
-        </div>
-
-        {/* Movement Date */}
         <div className="flex flex-col">
           <label className="text-gray-700 font-medium">Fecha del Movimiento</label>
           <input
@@ -186,7 +163,56 @@ const InventoryMovementsPage = () => {
           />
         </div>
 
-        {/* Notes */}
+        {/* Vehicle Search */}
+        <div className="flex flex-col col-span-2">
+          <label className="text-gray-700 font-medium">Seleccionar Vehículo</label>
+          <select
+            onChange={(e) => handleAddVehicle(Number(e.target.value))}
+            className="border border-gray-300 rounded p-2"
+            value=""
+          >
+            <option value="">Seleccionar vehículo</option>
+            {availableVehicles.map((vehicle: Vehicle) => (
+              <option key={vehicle.vehicleId} value={vehicle.vehicleId}>
+                {`Modelo: ${vehicle.model.name} - Color: ${vehicle.color.name} - Serial: ${vehicle.internal_serial}`}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        {/* Vehículos Seleccionados Grid */}
+        <div className="col-span-2">
+          <label className="text-gray-700 font-medium">Vehículos Seleccionados</label>
+          <table className="min-w-full table-auto border-collapse border border-gray-400">
+            <thead>
+              <tr>
+                <th className="border border-gray-300 px-4 py-2">Modelo</th>
+                <th className="border border-gray-300 px-4 py-2">Color</th>
+                <th className="border border-gray-300 px-4 py-2">Serial</th>
+                <th className="border border-gray-300 px-4 py-2">Acciones</th>
+              </tr>
+            </thead>
+            <tbody>
+              {selectedVehicles.map((vehicle: Vehicle) => (
+                <tr key={vehicle.vehicleId}>
+                  <td className="border border-gray-300 px-4 py-2">{vehicle.model.name}</td>
+                  <td className="border border-gray-300 px-4 py-2">{vehicle.color.name}</td>
+                  <td className="border border-gray-300 px-4 py-2">{vehicle.internal_serial}</td>
+                  <td className="border border-gray-300 px-4 py-2">
+                    <button
+                      type="button"
+                      onClick={() => handleRemoveVehicle(vehicle.vehicleId)}
+                      className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-700"
+                    >
+                      Eliminar
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+
         <div className="flex flex-col col-span-2">
           <label className="text-gray-700 font-medium">Notas</label>
           <textarea
@@ -198,7 +224,6 @@ const InventoryMovementsPage = () => {
           />
         </div>
 
-        {/* Submit Button */}
         <div className="flex col-span-2 justify-end mt-4">
           <button
             type="submit"

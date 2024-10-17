@@ -1482,10 +1482,14 @@ export const api = createApi({
       }),
       providesTags: (result, error, locationId) => [{ type: "Vehicles", locationId }],
     }),
-    getVehicleSummaryByModelAndColor: build.query<VehicleModelSummary[], string>({
-      query: (locationId) => ({
-        url: `/vehicles/modelsBySucursal?locationId=${locationId}`,
-      }),
+    getVehicleSummaryByModelAndColor: build.query<VehicleModelSummary[], { locationId: string, modelId?: string }>({
+      query: ({ locationId, modelId }) => {
+        let url = `/vehicles/modelsBySucursal?locationId=${locationId}`;
+        if (modelId) {
+          url += `&modelId=${modelId}`;  // Añadir modelId al query string si está presente
+        }
+        return { url };
+      },
       providesTags: (result, error, locationId) => [{ type: "Vehicles", locationId }],
     }),
     createVehicle: build.mutation<Vehicle, NewVehicle>({

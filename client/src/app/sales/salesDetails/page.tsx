@@ -1,32 +1,28 @@
-"use client"; // Aseguramos que este componente se renderice del lado del cliente 
+"use client"; // Aseguramos que este componente se renderice del lado del cliente
 
-import { useRouter, useSearchParams } from 'next/navigation';
-import { useGetVehicleSummaryByModelAndColorQuery, VehicleModelSummary, VehicleColor } from "@/state/api";
-import { useGetCustomersQuery, useCreateCustomerMutation } from "@/state/api"; // Asegúrate de importar las consultas y mutaciones necesarias
+import { useRouter, useSearchParams  } from 'next/navigation';
+import { useGetVehicleSummaryByModelAndColorQuery, 
+         VehicleModelSummary, 
+         VehicleColor } from "@/state/api";
 import Image from "next/image";
 import { useEffect, useState } from 'react';
 import { BatteryCharging, Dumbbell, Gauge } from 'lucide-react';
 
 const SalesDetails = () => {                     
   const router = useRouter();
-  const searchParams = useSearchParams();
+  const searchParams = useSearchParams()
   const modelId = searchParams.get('modelId') || "";
   const colorId = searchParams.get('colorId');
-
+  
   const locationId = "2";
   
   const { data: models, isLoading, isError } = useGetVehicleSummaryByModelAndColorQuery({ locationId, modelId });
-  const { data: customers } = useGetCustomersQuery(); // Consulta para obtener los clientes
-
-  const [createCustomer] = useCreateCustomerMutation(); // Mutación para crear un nuevo cliente
 
   const model = models && models.length > 0 ? models[0] : null;
 
   const [selectedColors, setSelectedColors] = useState<{ [modelId: number]: VehicleColor }>({});
   const [selectedColor, setSelectedColor] = useState<number | null>(null);
   const [quantity, setQuantity] = useState(1); // Estado para la cantidad
-  const [newCustomerName, setNewCustomerName] = useState(""); // Estado para el nombre del nuevo cliente
-  const [selectedCustomerId, setSelectedCustomerId] = useState<string | null>(null); // Estado para el cliente seleccionado
 
   useEffect(() => {
     if (model) {
@@ -75,13 +71,6 @@ const SalesDetails = () => {
   const decrementQuantity = () => {
     if (quantity > 1) {
       setQuantity(prev => prev - 1);
-    }
-  };
-
-  const handleCreateCustomer = async () => {
-    if (newCustomerName) {
-      await createCustomer({ name: newCustomerName }); // Ajusta según la estructura de tu API
-      setNewCustomerName(""); // Limpiar el campo después de crear
     }
   };
 
@@ -192,44 +181,6 @@ const SalesDetails = () => {
               Confirmar Venta
             </button>
           </div>
-        </div>
-      </div>
-
-      {/* Sección para buscar o agregar un cliente */}
-      <div className="mt-10">
-        <h2 className="text-xl font-bold">Buscar o Agregar Cliente</h2>
-        
-        {/* Selección de cliente existente */}
-        <div className="mt-4">
-          <select 
-            className="border rounded p-2 w-full"
-            value={selectedCustomerId || ""}
-            onChange={(e) => setSelectedCustomerId(e.target.value)}
-          >
-            <option value="">Seleccionar Cliente</option>
-            {customers && customers.map(customer => (
-              <option key={customer.customerId} value={customer.customerId}>
-                {customer.name}
-              </option>
-            ))}
-          </select>
-        </div>
-
-        {/* Campo para agregar nuevo cliente */}
-        <div className="mt-4">
-          <input 
-            type="text" 
-            placeholder="Nombre del nuevo cliente" 
-            value={newCustomerName} 
-            onChange={(e) => setNewCustomerName(e.target.value)} 
-            className="border rounded p-2 w-full" 
-          />
-          <button 
-            className="bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-600 mt-2"
-            onClick={handleCreateCustomer}
-          >
-            Agregar Cliente
-          </button>
         </div>
       </div>
     </div>

@@ -16,8 +16,8 @@ interface Color {
 
 const ModelsPage = () => {
   const router = useRouter();
-  const [locationId, setLocationId] = useState(2); // Suponiendo que tienes un locationId
-  const { data: models= [], isLoading, isError } = useGetVehicleSummaryByModelAndColorQuery(locationId.toString());
+  const [locationId, setLocationId] = useState("2"); // Suponiendo que tienes un locationId
+  const { data: models= [], isLoading, isError } = useGetVehicleSummaryByModelAndColorQuery({locationId});
 
   // Estado para manejar el color seleccionado por modelo
   const [selectedColors, setSelectedColors] = useState<{ [modelId: number]: VehicleColor }>({});
@@ -78,7 +78,10 @@ const ModelsPage = () => {
                 className="rounded-2xl w-full h-full object-cover" // Imagen estirada
               />
               {/* Botón ELEGIR sobre la imagen */}
-              <button className="absolute bottom-4 left-1/2 transform -translate-x-1/2 bg-blue-500 text-white py-2 px-6 rounded-lg hover:bg-blue-600 z-10">
+              <button 
+              className="absolute bottom-4 left-1/2 transform -translate-x-1/2 bg-blue-500 text-white py-2 px-6 rounded-lg hover:bg-blue-600 z-10"
+              onClick={() => router.push(`/sales/salesDetails?modelId=${model.modelId}&colorId=${selectedColors[model.modelId]?.colorId}`)}
+              >
                 ELEGIR
               </button>
             </div>
