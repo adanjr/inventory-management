@@ -16,13 +16,24 @@ export const getVehiclesCountByLocation = async (req: Request, res: Response): P
     // Similar al método anterior para mapear ubicaciones
     const countsWithLocationNames = await Promise.all(
       vehiclesCount.map(async (count) => {
+        // Si el locationId es null, no realices la consulta, simplemente asigna 'N/A'
+        if (count.locationId === null) {
+          return {
+            locationId: null,
+            count: count._count.vehicleId,
+            locationName: 'N/A', // Valor predeterminado si no hay locationId
+          };
+        }
+    
+        // Si locationId no es null, realiza la consulta
         const location = await prisma.locations.findUnique({
           where: { locationId: count.locationId },
         });
+    
         return {
           locationId: count.locationId,
           count: count._count.vehicleId,
-          locationName: location ? location.name : 'N/A',
+          locationName: location ? location.name : 'N/A', // Si no se encuentra la ubicación, asigna 'N/A'
         };
       })
     );

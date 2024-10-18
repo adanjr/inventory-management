@@ -810,6 +810,77 @@ export interface VehicleModelSummary {
   colors: VehicleColor[];
 }
 
+export interface VehicleMovement {
+  vehicleId: number,
+  internal_serial:string,
+  modelName: string,
+  colorName: string,
+}
+
+export interface Movement {
+  movementId: number;
+  fromLocationId?: number | null;  // Puede ser opcional para ciertos tipos de movimientos
+  toLocationId?: number | null;    // Puede ser opcional para ciertos tipos de movimientos
+  quantity?: number | null;        // Solo se usa cuando hay productos involucrados
+  movementType: string;  // Definir los tipos de movimiento como uniones de string
+  movementDate: string;            // Fecha del movimiento en formato ISO
+  orderReference?: string | null;  // Referencia de la orden, puede ser opcional
+  status: string;  // Estados posibles del movimiento
+  notes?: string | null;           // Notas adicionales
+  approved: boolean;               // Indica si el movimiento fue aprobado
+  createdBy: string;               // Usuario que creó el movimiento
+  approvedBy?: string | null;      // Usuario que aprobó el movimiento, puede ser opcional
+  lastUpdatedAt: string;           // Fecha de la última actualización en formato ISO
+
+  fromLocation: { name: string };
+  toLocation?: { name: string };
+  fromLocationName: string;
+  toLocationName: string;
+
+  details: MovementDetail[];   
+  
+  vehicles: VehicleMovement[]; 
+}
+
+export interface NewMovement {
+  fromLocationId?: number | null;
+  toLocationId?: number | null;
+  quantity?: number | null;
+  movementType: string;
+  movementDate?: string;    // Se puede opcional si la fecha es generada automáticamente
+  orderReference?: string | null;
+  status: string;
+  notes?: string | null;
+  approved?: boolean;        // Puede ser opcional al crear un nuevo movimiento
+  createdBy: string;
+  details: NewMovementDetail[];  // Colección de detalles del movimiento que se está creando
+}
+
+export interface MovementDetail {
+  movementDetailId: number;        // ID del detalle de movimiento
+  movementId: number;              // ID del movimiento al que pertenece
+  vehicleId?: number | null;       // Si es un vehículo, este campo será completado
+  productId?: number | null;       // Si es un producto, este campo será completado
+  inspectionStatus: string;  // Estado de la inspección
+
+  movement: Movement;              // Relación con el movimiento padre
+  vehicle?: Vehicle | null;        // Relación con un vehículo
+  product?: Product | null;        // Relación con un producto
+}
+
+export interface NewMovementDetail {
+  vehicleId?: number | null;       // Opcional si se trata de un producto
+  productId?: number | null;       // Opcional si se trata de un vehículo
+  inspectionStatus: string;  // Estado inicial de la inspección
+}     
+
+export interface UpdatedMovement {   
+  arrivalDate:      Date;    
+  receivedBy:       string;
+  isReceived:       Boolean;
+  receptionNotes?:  string | null; 
+}
+
 export const api = createApi({
   baseQuery: fetchBaseQuery({ baseUrl: process.env.NEXT_PUBLIC_API_BASE_URL }),
   reducerPath: "api",
@@ -832,6 +903,7 @@ export const api = createApi({
     "BatteryWarranties",
     "Inventory",
     "Purchases",
+    "Movements",
   ],
   endpoints: (build) => ({
     getDashboardMetrics: build.query<DashboardMetrics, void>({
@@ -1573,6 +1645,43 @@ export const api = createApi({
       invalidatesTags: ["Purchases"],
     }),
 
+    getMovements: build.query<Movement[], string | void>({
+      query: (search) => ({
+        url: "/movements",
+        params: search ? { search } : {},
+      }),
+      providesTags: ["Movements"],
+    }),
+    getMovementById: build.query<Movement, string>({
+      query: (id) => ({
+        url: `/movements/${id}`,
+      }),
+      providesTags: (result, error, id) => [{ type: "Movements", id }],
+    }),
+    createMovement: build.mutation<Movement, NewMovement>({
+      query: (newMovement) => ({
+        url: "/movements",
+        method: "POST",
+        body: newMovement,
+      }),
+      invalidatesTags: ["Movements"],
+    }),
+    updateMovement: build.mutation<Movement, { id: string; data: UpdatedMovement }>({
+      query: ({ id, data }) => ({
+        url: `/movements/${id}`,
+        method: "PUT",
+        body: data,
+      }),
+      invalidatesTags: ["Movements"],
+    }),
+    deleteMovement: build.mutation<void, string>({
+      query: (id) => ({
+        url: `/movements/${id}`,
+        method: "DELETE",
+      }),
+      invalidatesTags: ["Movements"],
+    }),
+
   }),
 });
 
@@ -1706,6 +1815,12 @@ export const {
    useCreatePurchaseMutation,
    useUpdatePurchaseMutation,
    useDeletePurchaseMutation,
+
+   useGetMovementsQuery,
+   useGetMovementByIdQuery,
+   useCreateMovementMutation,
+   useUpdateMovementMutation,
+   useDeleteMovementMutation,
 
    //INVENTARIO
    useGetVehiclesCountByLocationQuery,

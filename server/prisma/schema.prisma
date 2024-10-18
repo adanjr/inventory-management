@@ -81,7 +81,7 @@ model Products {
   inventoryLocations InventoryLocations[]
   saleDetails        SaleDetails[]
   purchaseDetails    PurchaseDetails[]
-  movements          Movements[]     
+  movementDetail     MovementDetail[]
 }
 
 model Categories {
@@ -111,7 +111,7 @@ model Vehicles {
   conditionId           Int            // Nuevo/Usado
   availabilityStatusId  Int            // Disponible, Vendido, Fuera de inventario  
   statusId              Int            // Estado del vehículo
-  locationId            Int            // Almacén, Sucursal
+  locationId            Int?            // Almacén, Sucursal
   stockNumber           String         // Número de inventario interno
   barcode               String?        // Código de barras único (opcional, para inventario)
   qrCode                String?        // Código QR único (opcional, para inventario)
@@ -130,7 +130,7 @@ model Vehicles {
   color                 Colors                    @relation(fields: [colorId], references: [colorId])
   condition             VehicleCondition          @relation(fields: [conditionId], references: [conditionId]) 
   availabilityStatus    VehicleAvailabilityStatus @relation(fields: [availabilityStatusId], references: [statusId]) 
-  location              Locations                 @relation(fields: [locationId], references: [locationId])
+  location              Locations?                 @relation(fields: [locationId], references: [locationId])
   warranty              Warranty                  @relation(fields: [warrantyId], references: [warrantyId])
   batteryWarranty       BatteryWarranty?           @relation(fields: [batteryWarrantyId], references: [batteryWarrantyId])
     
@@ -138,7 +138,7 @@ model Vehicles {
   vehicleInventoryLocations VehicleInventoryLocations[]  
   saleDetail                SaleDetails[]
   purchaseDetail            PurchaseDetails[]
-  movements                 Movements[] 
+  movementDetail            MovementDetail[] 
 }
 
 model Models {
@@ -342,22 +342,42 @@ model VehicleInventoryLocations {
 }
 
 model Movements {
-  movementId      Int         @id @default(autoincrement())  
-  productId       Int?   
-  vehicleId       Int?         
-  fromLocationId  Int         
-  toLocationId    Int  
-  quantity        Int?        // Solo para productos sin número de serie
-  movementType    String      // "entry", "exit", "transfer"
-  movementDate    DateTime    @default(now())
-  status          String      // Estado del movimiento (completed, in transit)
-  notes           String?
-  lastUpdatedAt   DateTime    @updatedAt
+  movementId        Int         @id @default(autoincrement())  
+  fromLocationId    Int?        
+  toLocationId      Int?  
+  quantity          Int?        // Solo para productos sin número de serie
+  movementType      String      // "entry", "exit", "transfer"
+  movementDate      DateTime    @default(now())
+  orderReference    String?
+  status            String      // Estado del movimiento (completed, in transit)
+  notes             String?
+  approved          Boolean
+  createdBy         String?
+  approvedBy        String?
+  lastUpdatedAt     DateTime    @updatedAt
+  initialMovementId Int?      // Campo opcional para vincular movimientos iniciales en transferencias
 
-  product         Products?   @relation(fields: [productId], references: [productId])
-  vehicles        Vehicles?   @relation(fields: [vehicleId], references: [vehicleId])
-  fromLocation    Locations   @relation("MovementFrom", fields: [fromLocationId], references: [locationId])
-  toLocation      Locations   @relation("MovementTo", fields: [toLocationId], references: [locationId])
+  arrivalDate       DateTime?    // Fecha en la que el inventario llegó a la ubicación destino
+  receivedBy        String?      // Usuario que confirmó la recepción
+  isReceived        Boolean?     // Confirmación de que el inventario llegó correctamente
+  receptionNotes    String?      // Notas adicionales sobre la recepción (daños, diferencias, etc.)
+
+  fromLocation      Locations?   @relation("MovementFrom", fields: [fromLocationId], references: [locationId])
+  toLocation        Locations?   @relation("MovementTo", fields: [toLocationId], references: [locationId])
+
+  MovementDetail    MovementDetail[]
+}
+
+model MovementDetail {
+  movementDetailId    Int         @id @default(autoincrement())
+  movementId          Int      
+  vehicleId           Int?        // The vehicle being moved
+  productId           Int?   
+  inspectionStatus    String      // e.g., 'Pending', 'Approved', 'Rejected'
+
+  movement            Movements?  @relation(fields: [movementId], references: [movementId])
+  product             Products?   @relation(fields: [productId], references: [productId])
+  vehicle             Vehicles?   @relation(fields: [vehicleId], references: [vehicleId])
 }
 
 model Customers {

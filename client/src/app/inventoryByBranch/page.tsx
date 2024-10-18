@@ -16,7 +16,8 @@ import { PlusCircleIcon,
          Printer,
          PackagePlus,
          Download,
- } from "lucide-react"; 
+ } from "lucide-react";
+ import * as XLSX from 'xlsx'; 
 
 const InventoryByBranch = () => {
   const router = useRouter();
@@ -50,6 +51,13 @@ const InventoryByBranch = () => {
     { field: "count", headerName: "Total", width: 100 },
   ];
 
+  const exportToExcel = () => {
+    const ws = XLSX.utils.json_to_sheet(rows); // Convierte los datos a una hoja de Excel
+    const wb = XLSX.utils.book_new(); // Crea un nuevo libro de Excel
+    XLSX.utils.book_append_sheet(wb, ws, "Inventario"); // Agrega la hoja al libro
+    XLSX.writeFile(wb, "inventario_vehiculos.xlsx"); // Descarga el archivo
+  };
+
   return (
     <div className="mx-auto pb-5 w-full">
       {/* Header y botones */}
@@ -81,20 +89,14 @@ const InventoryByBranch = () => {
         </div>
 
         <div className="flex space-x-4">
-        <button
-            className="flex items-center bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
-            onClick={() => router.push('/buy')}
-          >
-            <PackagePlus className="w-5 h-5 mr-2" />  
-             Ingresar A Inventario        
-          </button>
+         
           <button
             className="flex items-center bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
-            onClick={() => router.push('/inventoryByBranch/movements')}
+            onClick={() => router.push('/inventoryMovements')}
           >
-            <MoveHorizontal className="w-5 h-5 mr-2" />  
-            Transferir Vehículos        
-          </button>
+            <PackagePlus className="w-5 h-5 mr-2" />  
+            Gestión de Inventario    
+          </button>          
           <button
             className="flex items-center bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
             onClick={() => {}}
@@ -104,7 +106,7 @@ const InventoryByBranch = () => {
           </button>        
           <button
             className="flex items-center bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
-            onClick={() => {}}
+            onClick={exportToExcel}
           >
             <Download className="w-5 h-5 mr-2" />
             Exportar Inventario

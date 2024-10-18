@@ -100,7 +100,7 @@ export const getVehiclesByLocation = async (req: Request, res: Response): Promis
     });
 
     if (vehicles.length === 0) {
-      res.status(404).json({ message: 'No vehicles found' });
+      res.status(200).json([]); // Respuesta vacía
       return;
     }
 
