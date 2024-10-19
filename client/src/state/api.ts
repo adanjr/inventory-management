@@ -840,6 +840,11 @@ export interface Movement {
   details: MovementDetail[];   
   
   vehicles: VehicleMovement[]; 
+
+  arrivalDate?:      Date;    
+  receivedBy?:       string;
+  isReceived?:       Boolean;
+  receptionNotes?:  string | null; 
 }
 
 export interface NewMovement {
@@ -866,6 +871,11 @@ export interface MovementDetail {
   movement: Movement;              // Relación con el movimiento padre
   vehicle?: Vehicle | null;        // Relación con un vehículo
   product?: Product | null;        // Relación con un producto
+
+  arrivalDate?:      Date;    
+  receivedBy?:       string;
+  isReceived?:       Boolean;
+  receptionNotes?:  string | null; 
 }
 
 export interface NewMovementDetail {

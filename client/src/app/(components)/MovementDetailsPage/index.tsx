@@ -79,6 +79,37 @@ const MovementDetailsPage = ({ movementId }: { movementId: string }) => {
           <label className="text-gray-700 font-medium">Notas</label>
           <p className="border border-gray-300 rounded p-2">{movement.notes || "Sin notas"}</p>
         </div>
+
+        {movement.status === "COMPLETADO" && (
+          <div className="border border-gray-300 rounded-lg p-4 mb-4 col-span-2">
+            <h2 className="text-lg font-bold mb-4">Información de Recepción</h2>
+
+            <div className="grid grid-cols-2 gap-6">
+              <div className="flex flex-col">
+                <label className="text-gray-700 font-medium">Fecha de Recepción</label>
+                <p className="border border-gray-300 rounded p-2">
+                {movement.arrivalDate ? new Date(movement.arrivalDate).toLocaleDateString() : "Fecha no disponible"}
+                </p>
+              </div>
+
+              <div className="flex flex-col">
+                <label className="text-gray-700 font-medium">Recibido Por</label>
+                <p className="border border-gray-300 rounded p-2">
+                    {movement.receivedBy || ''}
+                </p>
+              </div>
+
+              <div className="flex flex-col col-span-2">
+                <label className="text-gray-700 font-medium">Notas de Recepción</label>
+                <p className="border border-gray-300 rounded p-2">
+                  {movement.receptionNotes || "Sin notas"}
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
+
+
       </div>
 
       {/* Botones de acciones */}
