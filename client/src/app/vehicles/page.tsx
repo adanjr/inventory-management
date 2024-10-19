@@ -8,8 +8,9 @@ import { useGetVehiclesQuery,
          Vehicle } from "@/state/api";
 import { DataGrid, GridColDef, GridRowSelectionModel } from "@mui/x-data-grid";
 import Header from "@/app/(components)/Header";
-import { PlusCircleIcon, EditIcon, DeleteIcon, UploadIcon } from "lucide-react"; 
+import { PlusCircleIcon, EditIcon, DeleteIcon, UploadIcon, DownloadIcon  } from "lucide-react"; 
 import ImportVehiclesModal from "./ImportVehicles";
+import * as XLSX from 'xlsx';
 
 // Formato de moneda para México
 const formatCurrency = (value: number | null | undefined) => {
@@ -27,6 +28,7 @@ const columns: GridColDef[] = [
   { field: "makeName", headerName: "Fabricante", width: 100 },
   { field: "familyName", headerName: "Familia", width: 100 },
   { field: "modelName", headerName: "Modelo", width: 100 },
+  { field: "locationName", headerName: "Ubicacion", width: 100 },
   { field: "colorName", headerName: "Color", width: 100 },
   { field: "year", headerName: "Año", width: 40 },
   {
@@ -85,6 +87,12 @@ const Vehicles = () => {
     setIsModalOpen(true);
   };
 
+  const exportToExcel = () => {
+    const worksheet = XLSX.utils.json_to_sheet(vehicles);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Vehículos");
+    XLSX.writeFile(workbook, "vehiculos.xlsx");
+  };
 
   return (
     <div className="mx-auto pb-5 w-full">
@@ -132,7 +140,11 @@ const Vehicles = () => {
           <button className="flex items-center bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded" onClick={handleImportClick}>
             <UploadIcon className="w-5 h-5 mr-2" />
             Importar
-          </button>              
+          </button>   
+          <button className="flex items-center bg-yellow-500 hover:bg-yellow-700 text-white font-bold py-2 px-4 rounded" onClick={exportToExcel}>
+            <DownloadIcon className="w-5 h-5 mr-2" />
+            Exportar a Excel
+          </button>           
         </div>
       </div>
       <div className="flex justify-between items-center mb-2">
