@@ -148,39 +148,49 @@ const SalesDetails = () => {
           </div>
 
           {/* Quantity Section */}
-          <div className="mt-4 flex items-center">
-            <label className="mr-2 text-md text-gray-700 font-medium">Cantidad:</label>
-            <button onClick={decrementQuantity} className="border p-1 rounded-l-md">-</button>
-            <input 
-              type="number" 
-              value={quantity} 
-              readOnly 
-              className="border text-center w-16"
-            />
-            <button onClick={incrementQuantity} className="border p-1 rounded-r-md">+</button>
-          </div>
-
-          <div className="flex justify-center">
-            <h1 className="text-2xl text-gray-900 font-bold">
-              {new Intl.NumberFormat('es-MX', {
-                style: 'currency',
-                currency: 'MXN',
-              }).format(model.basePrice)}
-            </h1>
-          </div>
-
-          {/* Confirm Sale Button */}
           <div className="mt-4">
-            <button 
-              className="bg-green-500 text-white py-2 px-6 rounded-lg hover:bg-green-600 w-full"
-              onClick={() => {
-                // Lógica para confirmar la venta aquí
-                console.log(`Confirmar venta: ${quantity} ${selectedColorObject?.colorName} ${model.modelName}`);
-              }}
-            >
-              Confirmar Venta
-            </button>
+            {/* Grand Total arriba del input */}
+            <div className="flex justify-center mb-4">
+              <span className="text-xl font-medium mr-2">Grand Total:</span>
+              <span className="text-2xl font-bold">
+                {new Intl.NumberFormat('es-MX', {
+                  style: 'currency',
+                  currency: 'MXN',
+                }).format(model.basePrice * quantity)}
+              </span>
+            </div>
+
+            {/* Input numérico y botón en la misma línea */}
+            <div className="flex items-center mb-4">
+              <input 
+                type="number"
+                value={quantity}
+                onChange={(e) => setQuantity(Math.min(Math.max(1, Number(e.target.value)), model.count))} 
+                min={1} 
+                max={selectedColorObject?.count}
+                className="border text-center w-24 h-12 text-xl mr-2 px-2 rounded-lg"  // Ajusta tamaño
+              />
+              <button 
+                onClick={() => {
+                  router.push(`/cart?modelId=${modelId}&quantity=${quantity}&color=${selectedColorObject?.colorId}`);
+                }} 
+                className="bg-green-500 text-white py-4 px-10 rounded-lg text-2xl font-bold hover:bg-green-600"
+              >
+                Comprar
+              </button>
+            </div>
+
+            {/* Precio en grande */}
+            <div className="flex justify-center">
+              <h1 className="text-3xl text-gray-900 font-bold">
+                {new Intl.NumberFormat('es-MX', {
+                  style: 'currency',
+                  currency: 'MXN',
+                }).format(model.basePrice)}
+              </h1>
+            </div>
           </div>
+
         </div>
       </div>
     </div>
