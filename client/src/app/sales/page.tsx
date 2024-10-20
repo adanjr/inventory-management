@@ -136,7 +136,7 @@ const ModelsPage = () => {
                       <div
                         key={color.colorId}
                         className={`w-8 h-8 rounded-full cursor-pointer border border-gray-300 ${isSelected ? 'ring-2 ring-blue-500' : ''}`} // Resaltar color seleccionado
-                        style={{ backgroundColor: color.hexadecimal }} // Usar el valor hexadecimal del color
+                        style={{ backgroundColor: `${color.hexadecimal}` }}
                         title={color.colorName} // Mostrar el nombre del color
                         onClick={() => handleColorSelect(model.modelId, color)} // Manejar el clic
                       />
