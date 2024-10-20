@@ -6,6 +6,13 @@ import { useGetVehicleSummaryByModelAndColorQuery,
          VehicleColor } from "@/state/api";
 import { useEffect, useState } from 'react';
 
+type CartItem = {
+    modelId: string;
+    quantity: number;
+    color: string;
+    price: number; // si es opcional
+};
+
 const CartPage = () => {
   const router = useRouter();
   const searchParams = useSearchParams()
@@ -13,7 +20,7 @@ const CartPage = () => {
   const color = searchParams.get('color');
   const quantity = searchParams.get('quantity');
 
-  const [cartItems, setCartItems] = useState([]);
+  const [cartItems, setCartItems] = useState<CartItem[]>([]);
 
   const locationId = "2";
   const { data: models, isLoading, isError } = useGetVehicleSummaryByModelAndColorQuery({ locationId, modelId });
@@ -29,7 +36,7 @@ const CartPage = () => {
         modelId: modelId,
         quantity: Number(quantity),
         color: color,
-        price: model?.basePrice, // Reemplaza esto con el precio real
+        price: model?.basePrice ?? 0 , // Reemplaza esto con el precio real
       };
       setCartItems([item]);
     }
