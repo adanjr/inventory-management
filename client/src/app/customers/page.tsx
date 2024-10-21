@@ -5,10 +5,13 @@ import {
   useGetCustomersQuery,
   useCreateCustomerMutation,
   useUpdateCustomerMutation,
-  useDeleteCustomerMutation } from "@/state/api";
+  useDeleteCustomerMutation,
+  NewCustomer,
+} from "@/state/api";
 import { PlusCircleIcon, SearchIcon, PencilIcon, TrashIcon } from "lucide-react";
 import Header from "@/app/(components)/Header";
 import CreateCustomerModal from "./CreateCustomerModal";
+import { DataGrid, GridColDef, GridRowSelectionModel } from "@mui/x-data-grid";
 import { Customer } from "@/state/api";
 
 const Customers = () => {
@@ -16,14 +19,14 @@ const Customers = () => {
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
+  const [rowSelectionModel, setRowSelectionModel] = useState<GridRowSelectionModel>([]);
 
-  const { data: customers, isLoading, isError } = useGetCustomersQuery(searchTerm);
-
+  const { data: customers = [], isLoading, isError } = useGetCustomersQuery(searchTerm);
   const [createCustomer] = useCreateCustomerMutation();
   const [updateCustomer] = useUpdateCustomerMutation();
   const [deleteCustomer] = useDeleteCustomerMutation();
 
-  const handleCreateCustomer = async (customerData: Customer) => {
+  const handleCreateCustomer = async (customerData: NewCustomer) => {
     await createCustomer(customerData);
     setIsCreateModalOpen(false);
   };
@@ -53,6 +56,16 @@ const Customers = () => {
     );
   }
 
+  const columns: GridColDef[] = [
+    { field: "id", headerName: "ID", width: 30 },
+    { field: "name", headerName: "Nombre", width: 150 },
+    { field: "lastname", headerName: "Apellidos", width: 150 },
+    { field: "email", headerName: "Email", width: 200 },
+    { field: "phone", headerName: "Teléfono", width: 150 },
+    { field: "address", headerName: "Dirección", width: 200 },
+    { field: "city", headerName: "Ciudad", width: 120 },
+  ];
+
   return (
     <div className="mx-auto pb-5 w-full">
       {/* SEARCH BAR */}
@@ -79,46 +92,18 @@ const Customers = () => {
         </button>
       </div>
 
-      {/* BODY CUSTOMERS LIST */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-10 justify-between">
-        {customers.map((customer) => (
-          <div
-            key={customer.id}
-            className="border shadow rounded-md p-4 max-w-full w-full mx-auto"
-          >
-            <div className="flex flex-col items-center">
-              <h3 className="text-lg text-gray-900 font-semibold">
-                {customer.name}
-              </h3>
-              <p className="text-gray-800">Email: {customer.email}</p>
-              {customer.phone && (
-                <p className="text-gray-800">Phone: {customer.phone}</p>
-              )}
-              {customer.address && (
-                <div className="text-sm text-gray-600 mt-1">
-                  Dirección: {customer.address}, {customer.city}, {customer.state}, {customer.country}, {customer.postalCode}
-                </div>
-              )}
-              <div className="flex mt-4">
-                <button
-                  className="text-blue-500 hover:text-blue-700 flex items-center mr-4"
-                  onClick={() => {
-                    setSelectedCustomer(customer);
-                    setIsEditModalOpen(true);
-                  }}
-                >
-                  <PencilIcon className="w-5 h-5 mr-2" /> Editar
-                </button>
-                <button
-                  className="text-red-500 hover:text-red-700 flex items-center"
-                  onClick={() => handleDeleteCustomer(customer.id)}
-                >
-                  <TrashIcon className="w-5 h-5 mr-2" /> Eliminar
-                </button>
-              </div>
-            </div>
-          </div>
-        ))}
+      {/* Customers DataGrid */}
+      <div className="w-full">
+        <DataGrid
+          rows={customers}
+          columns={columns}
+          getRowId={(row) => row.customerId}
+          checkboxSelection
+          disableMultipleRowSelection
+          className="bg-white shadow rounded-lg border border-gray-200 mt-5 !text-gray-700"
+          onRowSelectionModelChange={(newRowSelectionModel) => setRowSelectionModel(newRowSelectionModel)}
+          rowSelectionModel={rowSelectionModel}
+        />
       </div>
 
       {/* MODALS */}

@@ -13,6 +13,7 @@ export const getVehicles = async (req: Request, res: Response): Promise<void> =>
           { vin: { contains: search, mode: 'insensitive' } },
           { stockNumber: { contains: search , mode: 'insensitive'} },
           { internal_serial: { contains: search, mode: 'insensitive' } },
+          { engineNumber: { contains: search, mode: 'insensitive' } },
         ],
       },
       include: {
@@ -76,6 +77,7 @@ export const getVehiclesByLocation = async (req: Request, res: Response): Promis
         { vin: { contains: search, mode: 'insensitive' } },
         { stockNumber: { contains: search, mode: 'insensitive' } },
         { internal_serial: { contains: search, mode: 'insensitive' } },
+        { engineNumber: { contains: search, mode: 'insensitive' } },
       ],
     };
 
@@ -327,6 +329,7 @@ export const createVehicle = async (req: Request, res: Response): Promise<void> 
       description,
       warrantyId,
       batteryWarrantyId,
+      engineNumber,
     } = req.body;    
 
     const vehicle = await prisma.vehicles.create({
@@ -348,6 +351,7 @@ export const createVehicle = async (req: Request, res: Response): Promise<void> 
         description,
         warrantyId,
         batteryWarrantyId,
+        engineNumber,
       },
     });
 
@@ -361,6 +365,7 @@ export const createVehicleFromCSV = async (req: Request, res: Response): Promise
   try {
     const {
       internal_serial,
+      engineNumber,
       modelName,
       colorName,
       availabilityStatusName,
@@ -451,6 +456,7 @@ export const createVehicleFromCSV = async (req: Request, res: Response): Promise
         description: defaultDescription,
         warrantyId: defaultWarrantyId || 1,
         batteryWarrantyId: defaultBatteryWarrantyId || 1,
+        engineNumber: engineNumber,
       },
     });
 
@@ -485,6 +491,7 @@ export const updateVehicle = async (req: Request, res: Response): Promise<void> 
       description,
       warrantyId,
       batteryWarrantyId,
+      engineNumber,
     } = req.body;
 
     console.log(req.body);
@@ -509,6 +516,7 @@ export const updateVehicle = async (req: Request, res: Response): Promise<void> 
         description,
         warrantyId,
         batteryWarrantyId,
+        engineNumber,
       },
     });
     res.json(vehicle);

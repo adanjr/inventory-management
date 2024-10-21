@@ -5,6 +5,7 @@ import Header from "@/app/(components)/Header";
 type CustomerFormData = {
   id: string;
   name: string;
+  lastname?: string;
   email: string;
   phone?: string;
   address?: string;
@@ -28,6 +29,7 @@ const CreateCustomerModal = ({
   const [formData, setFormData] = useState<CustomerFormData>({
     id: v4(),
     name: "",
+    lastname: "",
     email: "",
     phone: "",
     address: "",
@@ -68,7 +70,7 @@ const CreateCustomerModal = ({
             {/* CUSTOMER NAME */}
             <div>
               <label htmlFor="name" className={labelCssStyles}>
-                Nombre del Cliente
+                Nombre
               </label>
               <input
                 type="text"
@@ -76,6 +78,21 @@ const CreateCustomerModal = ({
                 placeholder="Nombre"
                 onChange={handleChange}
                 value={formData.name}
+                className={inputCssStyles}
+                required
+              />
+            </div>
+
+            <div>
+              <label htmlFor="lastname" className={labelCssStyles}>
+                Apellidos
+              </label>
+              <input
+                type="text"
+                name="lastname"
+                placeholder="Apellidos"
+                onChange={handleChange}
+                value={formData.lastname}
                 className={inputCssStyles}
                 required
               />

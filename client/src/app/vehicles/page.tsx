@@ -22,8 +22,8 @@ const formatCurrency = (value: number | null | undefined) => {
 
 const columns: GridColDef[] = [
   { field: "vehicleId", headerName: "ID", width: 30 },
-  { field: "vin", headerName: "VIN", width: 150 },
   { field: "internal_serial", headerName: "Serial", width: 150 },
+  { field: "engineNumber", headerName: "Número de Motor", width: 150 },
   { field: "stockNumber", headerName: "Stock Number", width: 150 },
   { field: "makeName", headerName: "Fabricante", width: 100 },
   { field: "familyName", headerName: "Familia", width: 100 },

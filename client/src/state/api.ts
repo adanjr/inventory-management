@@ -266,6 +266,7 @@ export interface Vehicle {
   vehicleId: number; // Cambié a number para que coincida con el modelo
   vin?: string;
   internal_serial?: string;
+  engineNumber?: string;
   makeId: number;
   familyId: number;
   modelId: number; // Cambiado de string a number
@@ -304,6 +305,7 @@ export interface Vehicle {
 export interface NewVehicle {
   vin?: string;
   internal_serial?: string;
+  engineNumber?: string;
   modelId: number; // Cambiado a number
   year: number;
   colorId: number; // Cambiado a number
@@ -329,12 +331,14 @@ export interface NewVehicleCSV {
   modelName: string;
   colorName: string;
   availabilityStatusName: string;
+  engineNumber?: string;
   locationId: number;
 }
 
 export interface UpdatedVehicle {
   vin?: string;
   internal_serial?: string;
+  engineNumber?: string;
   familyId: number;
   modelId?: number; // Cambiado a number
   year?: number;
@@ -417,8 +421,9 @@ export interface UpdatedManufacturer {
 }
 
 export interface Customer {
-  id: string;
+  customerId: number;
   name: string;
+  lastname?: string;
   email: string;
   phone?: string;
   address?: string;
@@ -430,6 +435,7 @@ export interface Customer {
 
 export interface NewCustomer {
   name: string;
+  lastname?: string;
   email: string;
   phone?: string;
   address?: string;
@@ -441,6 +447,7 @@ export interface NewCustomer {
 
 export interface UpdatedCustomer {
   name?: string;
+  lastname?: string;
   email?: string;
   phone?: string;
   address?: string;

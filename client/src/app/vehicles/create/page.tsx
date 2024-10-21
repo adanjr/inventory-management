@@ -59,6 +59,7 @@ const CreateVehicle = () => {
     barcode: "",
     qrCode: "",
     description: "",
+    engineNumber: "",
   });
 
   const handleMakeChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
@@ -230,6 +231,17 @@ const CreateVehicle = () => {
                 ))}
               </select> 
             )}
+          </div>
+
+          <div>
+            <label className="block text-gray-700 font-semibold">Número de Motor</label>
+            <input
+              type="text"
+              name="engineNumber"
+              value={formData.engineNumber}
+              onChange={handleInputChange}
+              className="w-full border border-gray-200 rounded-lg px-4 py-2 focus:outline-none focus:border-gray-500 focus:ring-2 focus:ring-gray-200"
+            />
           </div>
 
           <div>

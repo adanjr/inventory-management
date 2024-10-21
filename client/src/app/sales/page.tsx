@@ -80,7 +80,11 @@ const ModelsPage = () => {
               {/* Botón ELEGIR sobre la imagen */}
               <button 
               className="absolute bottom-4 left-1/2 transform -translate-x-1/2 bg-blue-500 text-white py-2 px-6 rounded-lg hover:bg-blue-600 z-10"
-              onClick={() => router.push(`/sales/salesDetails?modelId=${model.modelId}&colorId=${selectedColors[model.modelId]?.colorId}`)}
+              onClick={() => {
+                localStorage.setItem('modelId', model.modelId.toString());
+                localStorage.setItem('colorId', selectedColors[model.modelId]?.colorId.toString());
+                router.push('/sales/salesDetails');
+              }}
               >
                 ELEGIR
               </button>

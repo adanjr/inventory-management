@@ -7,26 +7,34 @@ const prisma = new PrismaClient();
 export const getCustomers = async (req: Request, res: Response): Promise<void> => {
   try {
     const search = req.query.search?.toString();
+
+    // Si no hay parámetro de búsqueda, devolver todos los clientes
     const customers = await prisma.customers.findMany({
-      where: {
-        name: {
-          contains: search,
-        },
-      },
+      where: search
+        ? {
+            OR: [
+              { name: { contains: search, mode: 'insensitive' } },
+              { lastname: { contains: search, mode: 'insensitive' } },
+            ],
+          }
+        : {}, // Si no hay búsqueda, no aplicar filtro
     });
+
     res.json(customers);
   } catch (error) {
     res.status(500).json({ message: "Error retrieving customers" });
   }
 };
 
+
 // Crear un nuevo cliente
 export const createCustomer = async (req: Request, res: Response): Promise<void> => {
   try {
-    const { name, email, phone, address, postalCode, city, state, country } = req.body;
+    const { name, lastname, email, phone, address, postalCode, city, state, country } = req.body;
     const customer = await prisma.customers.create({
       data: {
         name,
+        lastname,
         email,
         phone,
         address,       // Opcional
@@ -63,11 +71,12 @@ export const getCustomerById = async (req: Request, res: Response): Promise<void
 export const updateCustomer = async (req: Request, res: Response): Promise<void> => {
   try {
     const { id } = req.params;
-    const { name, email, phone, address, postalCode, city, state, country } = req.body;
+    const { name, lastname, email, phone, address, postalCode, city, state, country } = req.body;
     const customer = await prisma.customers.update({
       where: { customerId: Number(id) },
       data: {
         name,
+        lastname,
         email,
         phone,
         address,       // Opcional

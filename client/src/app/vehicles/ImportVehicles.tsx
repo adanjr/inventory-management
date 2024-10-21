@@ -55,6 +55,7 @@ const ImportVehiclesModal = ({
               internal_serial: row[2],
               colorName: row[3],
               availabilityStatusName: row[5],
+              engineNumber: row[6],
               locationId: Number(selectedLocationId),
             };
 
