@@ -243,12 +243,12 @@ export const generatePdf = async (req: Request, res: Response): Promise<void> =>
 
       // Configurar Nodemailer
       const transporter = nodemailer.createTransport({
-        host: 'mail.yiwualliance.com.mx', // Servidor de correo saliente (SMTP)
+        host: process.env.EMAIL_HOST, // Servidor de correo saliente (SMTP)
         port: 465, // Puerto SMTP recomendado para SSL
         secure: true, // Utilizar SSL
         auth: {
-          user: 'terrazaoblatos@yiwualliance.com.mx', // Nombre de usuario de la cuenta
-          pass: 'OVDGA!aiyQB-', // Contraseña de la cuenta de correo
+          user: process.env.EMAIL_USER, // Nombre de usuario de la cuenta
+          pass: process.env.EMAIL_PASS, // Contraseña de la cuenta de correo
         },
         tls: {
           rejectUnauthorized: false, // Opción para aceptar certificados autofirmados
@@ -369,7 +369,7 @@ export const generatePdf = async (req: Request, res: Response): Promise<void> =>
     doc.end();
 
     await transporter.sendMail({
-      from: 'terrazaoblatos@yiwualliance.com.mx', // El remitente
+      from: process.env.EMAIL_USER, // El remitente
       to: customerEmail, // Correo del cliente
       subject, // Asunto
       text, // Mensaje
