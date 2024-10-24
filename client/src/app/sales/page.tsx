@@ -1,6 +1,9 @@
 "use client";
 
-import { useGetVehicleSummaryByModelAndColorQuery,  VehicleModelSummary, VehicleColor
+import { useGetVehicleSummaryByModelAndColorQuery,  
+         VehicleModelSummary, 
+         VehicleColor,
+         useGetLocationsQuery,                 
           } from "@/state/api";
 import { useState, useEffect } from "react";
 import { useRouter } from 'next/navigation';
@@ -16,11 +19,20 @@ interface Color {
 
 const ModelsPage = () => {
   const router = useRouter();
-  const [locationId, setLocationId] = useState("2"); // Suponiendo que tienes un locationId
+  
+  const { data: locations= [] } = useGetLocationsQuery();
+  const sucursal = locations.find(l=>l.type === 'Sucursal');
+  const [locationId, setLocationId] = useState('0');
   const { data: models= [], isLoading, isError } = useGetVehicleSummaryByModelAndColorQuery({locationId});
 
   // Estado para manejar el color seleccionado por modelo
   const [selectedColors, setSelectedColors] = useState<{ [modelId: number]: VehicleColor }>({});
+
+  useEffect(() => {
+    if (sucursal) {
+      setLocationId(sucursal.locationId.toString());
+    }
+  }, [sucursal]);
 
   useEffect(() => {
     if (models.length > 0) {

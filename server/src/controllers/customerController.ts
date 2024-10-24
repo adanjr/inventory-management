@@ -31,6 +31,7 @@ export const getCustomers = async (req: Request, res: Response): Promise<void> =
 export const createCustomer = async (req: Request, res: Response): Promise<void> => {
   try {
     const { name, lastname, email, phone, address, postalCode, city, state, country } = req.body;
+
     const customer = await prisma.customers.create({
       data: {
         name,

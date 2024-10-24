@@ -270,27 +270,36 @@ model BatteryWarranty {
 }
 
 model Sales {
-  saleId      Int           @id @default(autoincrement())   
-  timestamp   DateTime
-  quantity    Int
-  unitPrice   Float
-  totalAmount Float
-  customer    Customers?    @relation(fields: [customerId], references: [customerId])
-  customerId  Int?
+  saleId            Int           @id @default(autoincrement())   
+  timestamp         DateTime
+  totalAmount       Float
+  paymentMethod     String?
+  customerId        Int?
+  enviarADomicilio  Boolean
+  recogerEnTieda    Boolean
+  compraOnline      Boolean
+  locationId        Int?
+  userId            String?
+  
+  customer        Customers?    @relation(fields: [customerId], references: [customerId])
+  location        Locations?    @relation(fields: [locationId], references: [locationId])
+  
   saleDetails SaleDetails[]
 }
 
 model SaleDetails {
-  saleDetailId  Int         @id @default(autoincrement())
-  sale          Sales       @relation(fields: [saleId], references: [saleId])
-  saleId        Int         
-  product       Products?   @relation(fields: [productId], references: [productId])
-  productId     Int?      
-  vehicle       Vehicles?   @relation(fields: [vehicleId], references: [vehicleId])  
-  vehicleId     Int?       
-  quantity      Int        
-  unitPrice     Float
-  subtotal      Float
+  saleDetailId                  Int         @id @default(autoincrement())
+  saleId                        Int         
+  productId                     Int?      
+  vehicleId                     Int?       
+  quantity                      Int        
+  unitPrice                     Float
+  subtotal                      Float
+  assemblyAndConfigurationCost  Float?
+
+  vehicle                       Vehicles?   @relation(fields: [vehicleId], references: [vehicleId])
+  product                       Products?   @relation(fields: [productId], references: [productId]) 
+  sale                          Sales       @relation(fields: [saleId], references: [saleId])
 }
 
 model Locations {
@@ -314,6 +323,7 @@ model Locations {
   products          Products[]    
   inventoryLocation InventoryLocations[]
   unitLocation      VehicleInventoryLocations[]
+  sales             Sales[]
   movementFrom      Movements[] @relation("MovementFrom")
   movementTo        Movements[] @relation("MovementTo")
 }
@@ -484,14 +494,14 @@ model Expenses {
 }
 
 model SalesSummary {
-  salesSummaryId   String   @id
+  salesSummaryId   String   @unique @default(uuid())
   totalValue       Float
   changePercentage Float?
   date             DateTime
 }
 
 model PurchaseSummary {
-  purchaseSummaryId String   @id
+  purchaseSummaryId String   @unique @default(uuid())
   totalPurchased    Float
   changePercentage  Float?
   date              DateTime
@@ -511,4 +521,30 @@ model ExpenseByCategory {
   amount              BigInt
   date                DateTime
   expenseSummary      ExpenseSummary @relation(fields: [expenseSummaryId], references: [expenseSummaryId])
+}
+
+model Organization {
+  id                      Int      @id @default(autoincrement())
+  name                    String   // Nombre de la organización
+  commercialName          String?  // Nombre comercial
+  rfc                     String   // RFC (Registro Federal de Contribuyentes)
+  email                   String?  // Correo electrónico
+  phone                   String?  // Teléfono de contacto
+  address                 String   // Dirección principal
+  address2                String?   // Dirección principal
+  neighborhood            String?   // Dirección principal
+  city                    String   // Ciudad
+  state                   String   // Estado
+  postalCode             String?  // Código postal
+  country                 String   // País
+  createdAt               DateTime @default(now()) // Fecha de creación
+  updatedAt               DateTime @updatedAt // Fecha de actualización
+  purchaseOrderPrefix     String   // Prefijo para órdenes de compra
+  saleOrderPrefix         String   // Prefijo para órdenes de venta
+  invoicePrefix           String   // Prefijo para facturas
+  startingOrderNumber     Int      // Número inicial para pedidos
+  startingInvoiceNumber   Int      // Número inicial para facturas
+  startingPurchaseOrderNumber Int   // Número inicial para órdenes de compra
+  responsiblePerson       String?  // Persona responsable
+  logoUrl                 String?  // Persona responsable
 }

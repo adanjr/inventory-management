@@ -60,6 +60,7 @@ const MovementDetailsPage = ({ movementId }: { movementId: string }) => {
                 <th className="border border-gray-300 px-4 py-2">Modelo</th>
                 <th className="border border-gray-300 px-4 py-2">Color</th>
                 <th className="border border-gray-300 px-4 py-2">Serial</th>
+                <th className="border border-gray-300 px-4 py-2">Numero de Motor</th>
               </tr>
             </thead>
             <tbody>
@@ -68,6 +69,7 @@ const MovementDetailsPage = ({ movementId }: { movementId: string }) => {
                   <td className="border border-gray-300 px-4 py-2">{vehicle.modelName}</td>
                   <td className="border border-gray-300 px-4 py-2">{vehicle.colorName}</td>
                   <td className="border border-gray-300 px-4 py-2">{vehicle.internal_serial}</td>
+                  <td className="border border-gray-300 px-4 py-2">{vehicle.engineNumber}</td>
                 </tr>
               ))}
             </tbody>

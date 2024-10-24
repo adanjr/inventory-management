@@ -237,6 +237,7 @@ const InventoryMovementsPage = () => {
                 <th className="border border-gray-300 px-4 py-2">Modelo</th>
                 <th className="border border-gray-300 px-4 py-2">Color</th>
                 <th className="border border-gray-300 px-4 py-2">Serial</th>
+                <th className="border border-gray-300 px-4 py-2">Numero de Motor</th>
                 <th className="border border-gray-300 px-4 py-2">Acciones</th>
               </tr>
             </thead>
@@ -246,6 +247,7 @@ const InventoryMovementsPage = () => {
                   <td className="border border-gray-300 px-4 py-2">{vehicle.model.name}</td>
                   <td className="border border-gray-300 px-4 py-2">{vehicle.color.name}</td>
                   <td className="border border-gray-300 px-4 py-2">{vehicle.internal_serial}</td>
+                  <td className="border border-gray-300 px-4 py-2">{vehicle.engineNumber}</td>
                   <td className="border border-gray-300 px-4 py-2">
                     <button
                       type="button"

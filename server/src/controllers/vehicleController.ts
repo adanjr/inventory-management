@@ -365,107 +365,106 @@ export const createVehicleFromCSV = async (req: Request, res: Response): Promise
   try {
     const {
       internal_serial,
+      barcode,
       engineNumber,
       modelName,
       colorName,
       availabilityStatusName,
       locationId,
-    } = req.body;    
+    } = req.body;
 
     console.log(req.body);
 
-    // Buscar los IDs correspondientes para los nombres que vienen en el CSV
-    const model = await prisma.models.findUnique({
-      where: { name: modelName },
-    });
-    if (!model) {
-      console.log(`Model not found: ${modelName}`);
-      res.status(400).json({ message: `Model not found: ${modelName}` });
-    };
-    const defaultPrice = model?.basePrice || 0;
+    const transactionResult = await prisma.$transaction(async (prisma) => {
+      // Buscar los IDs correspondientes para los nombres que vienen en el CSV
+      const model = await prisma.models.findUnique({
+        where: { name: modelName },
+      });
+      if (!model) {
+        throw new Error(`Model not found: ${modelName}`);
+      }
+      const defaultPrice = model.basePrice || 0;
 
-    const color = await prisma.colors.findUnique({
-      where: { name: colorName },
-    });
-    if (!color) {
-      console.log(`Color not found: ${colorName}`);
-      res.status(400).json({ message: `Color not found: ${colorName}` });
-    }
+      const color = await prisma.colors.findUnique({
+        where: { name: colorName },
+      });
+      if (!color) {
+        throw new Error(`Color not found: ${colorName}`);
+      }
 
-    const availabilityStatus = await prisma.vehicleAvailabilityStatus.findFirst({
-      where: { name: availabilityStatusName },
-    });
-    if (!availabilityStatus) {
-      console.log(`Availability Status not found: ${availabilityStatusName}`);
-      res.status(400).json({ message: `Availability Status not found: ${availabilityStatusName}` });
-    }
+      const availabilityStatus = await prisma.vehicleAvailabilityStatus.findFirst({
+        where: { name: availabilityStatusName },
+      });
+      if (!availabilityStatus) {
+        throw new Error(`Availability Status not found: ${availabilityStatusName}`);
+      }
 
-    const condition = await prisma.vehicleCondition.findFirst({});
-    if (!condition) {
-      console.log(`No condition found.`);
-      res.status(400).json({ message: `No condition found.` });
-    }
-    const defaultConditionId = condition?.conditionId;
+      const condition = await prisma.vehicleCondition.findFirst({});
+      if (!condition) {
+        throw new Error(`No condition found.`);
+      }
+      const defaultConditionId = condition.conditionId;
 
-    const status = await prisma.vehicleStatus.findFirst({});
-    if (!status) {
-      console.log(`No status found.`);
-      res.status(400).json({ message: `No status found.` });
-    }
-    const defaultStatusId = status?.statusId;
+      const status = await prisma.vehicleStatus.findFirst({});
+      if (!status) {
+        throw new Error(`No status found.`);
+      }
+      const defaultStatusId = status.statusId;
 
-    const warranty = await prisma.warranty.findFirst({});
-    if (!warranty) {
-      console.log(`No warranty found.`);
-      res.status(400).json({ message: `No warranty found.` });
-    }
-    const defaultWarrantyId = warranty?.warrantyId;
+      const warranty = await prisma.warranty.findFirst({});
+      if (!warranty) {
+        throw new Error(`No warranty found.`);
+      }
+      const defaultWarrantyId = warranty.warrantyId;
 
-    const batteryWarranty = await prisma.batteryWarranty.findFirst({});
-    if (!batteryWarranty) {
-      console.log(`No battery warranty found.`);
-      res.status(400).json({ message: `No battery warranty found.` });
-    }
-    const defaultBatteryWarrantyId = batteryWarranty?.batteryWarrantyId;
+      const batteryWarranty = await prisma.batteryWarranty.findFirst({});
+      if (!batteryWarranty) {
+        throw new Error(`No battery warranty found.`);
+      }
+      const defaultBatteryWarrantyId = batteryWarranty.batteryWarrantyId;
 
-    const defaultYear = new Date().getFullYear();
-    const defaultMileage = 0;
-    const defaultVin = "N/A";
-    const defaultStockNumber = "N/A";
-    const defaultBarcode = "";
-    const defaultQRCode = "";
-    const defaultDescription = "Vehiculo Cargado via Importacion de Archivo CSV";
+      const defaultYear = new Date().getFullYear();
+      const defaultMileage = 0;
+      const defaultVin = "N/A";
+      const defaultStockNumber = "N/A";
+      const defaultBarcode = "";
+      const defaultQRCode = "";
+      const defaultDescription = "Vehiculo Cargado via Importacion de Archivo CSV";
 
-    // Crear el vehículo con los IDs encontrados
-    const vehicle = await prisma.vehicles.create({
-      data: {
-        vin: defaultVin,
-        internal_serial,
-        modelId: model?.modelId || 1,
-        year: defaultYear,
-        colorId: color?.colorId || 1,
-        mileage: defaultMileage,
-        price: defaultPrice,
-        conditionId: defaultConditionId || 1,
-        availabilityStatusId: availabilityStatus?.statusId || 1,
-        statusId: defaultStatusId || 1,
-        locationId: locationId || 1,
-        stockNumber: defaultStockNumber,
-        barcode: defaultBarcode,
-        qrCode: defaultQRCode,
-        description: defaultDescription,
-        warrantyId: defaultWarrantyId || 1,
-        batteryWarrantyId: defaultBatteryWarrantyId || 1,
-        engineNumber: engineNumber,
-      },
+      // Crear el vehículo con los IDs encontrados
+      const vehicle = await prisma.vehicles.create({
+        data: {
+          vin: defaultVin,
+          internal_serial,
+          modelId: model.modelId,
+          year: defaultYear,
+          colorId: color.colorId,
+          mileage: defaultMileage,
+          price: defaultPrice,
+          conditionId: defaultConditionId,
+          availabilityStatusId: availabilityStatus.statusId,
+          statusId: defaultStatusId,
+          locationId: locationId || 1,
+          stockNumber: defaultStockNumber,
+          barcode: barcode,
+          qrCode: defaultQRCode,
+          description: defaultDescription,
+          warrantyId: defaultWarrantyId,
+          batteryWarrantyId: defaultBatteryWarrantyId,
+          engineNumber: engineNumber,
+        },
+      });
+
+      return vehicle;
     });
 
-    res.status(201).json(vehicle);
+    res.status(201).json(transactionResult);
   } catch (error) {
-    console.log(error);
-    res.status(500).json({ message: "Error creating vehicle from CSV: " + error });
+    console.error(error);
+    res.status(500).json({ message: "Error creating vehicle from CSV. " });
   }
 };
+
 
 // Actualizar un vehículo por ID
 export const updateVehicle = async (req: Request, res: Response): Promise<void> => {

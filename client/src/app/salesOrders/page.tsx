@@ -1,74 +1,66 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { DataGrid, GridColDef, GridRowSelectionModel } from "@mui/x-data-grid";
 import Header from "@/app/(components)/Header";
-
-// Simulated data for sales
-const sales = [
-  {
-    saleId: 1,
-    timestamp: "2024-10-01",
-    quantity: 2,   
-    totalAmount: 30000.0,
-    customerName: "Cliente A",
-  },
-  {
-    saleId: 2,
-    timestamp: "2024-09-25",
-    quantity: 1,  
-    totalAmount: 12000.5,
-    customerName: "Cliente B",
-  },
-  {
-    saleId: 3,
-    timestamp: "2024-09-20",
-    quantity: 3,    
-    totalAmount: 54002.25,
-    customerName: "Cliente C",
-  },
-];
-
-// Format currency for display
-const formatCurrency = (value: number) =>
-  new Intl.NumberFormat("es-MX", {
-    style: "currency",
-    currency: "MXN",
-  }).format(value);
-
-// DataGrid columns configuration
-const columns: GridColDef[] = [
-  { field: "saleId", headerName: "ID", width: 50 },
-  { field: "timestamp", headerName: "Fecha", width: 150 },
-  { field: "customerName", headerName: "Cliente", width: 200 },
-  { field: "quantity", headerName: "Cantidad", width: 100 },   
-  {
-    field: "totalAmount",
-    headerName: "Monto Total",
-    width: 150,
-    type: "number",
-    valueFormatter: (params) => formatCurrency(params),
-  },
-];
-
-const customers = ["Cliente A", "Cliente B", "Cliente C"];
+import { useGetSalesQuery } from "@/state/api"; // Ajusta esta importación según la ubicación real de tu hook
+import { Sale } from "@/state/api"; // Importa tus interfaces
+import { useRouter } from "next/navigation";
 
 const SalesOrdersPage = () => {
+  const router = useRouter(); // Agrega esto para usar el enrutador de Next.js
   const [rowSelectionModel, setRowSelectionModel] = useState<GridRowSelectionModel>([]);
   const [startDate, setStartDate] = useState<string>("");
   const [endDate, setEndDate] = useState<string>("");
-  const [selectedCustomer, setSelectedCustomer] = useState<string>("");
+  const [selectedCustomer, setSelectedCustomer] = useState<number | undefined>(undefined);
 
-  // Filter the sales based on date range and customer
-  const filteredSales = sales.filter((sale) => {
+  // Obtén las ventas desde el API
+  const { data: sales = [], isLoading, isError } = useGetSalesQuery();
+
+  // Maneja el estado de carga y error
+  if (isLoading) return <div>Cargando...</div>;
+  if (isError) return <div>Error al cargar las ventas</div>;
+
+  // Filtra las ventas según el rango de fechas y el cliente
+  const filteredSales = sales.filter((sale: Sale) => {
     const saleDate = new Date(sale.timestamp);
     const isWithinDateRange =
       (!startDate || new Date(startDate) <= saleDate) &&
       (!endDate || new Date(endDate) >= saleDate);
     const matchesCustomer =
-      !selectedCustomer || sale.customerName === selectedCustomer;
+      selectedCustomer === undefined || (sale.customer && sale.customer.customerId === selectedCustomer);
     return isWithinDateRange && matchesCustomer;
   });
+
+  // Configuración de columnas para DataGrid
+  const columns: GridColDef[] = [
+    { field: "saleId", headerName: "ID", width: 50 },
+    { field: "locationName", headerName: "Ubicación", width: 200 },
+    {
+      field: "timestamp",
+      headerName: "Fecha",
+      width: 150,
+      valueGetter: (params) => {
+        const date = new Date(params);
+        return date.toLocaleDateString();
+      },
+    },
+    { field: "customerName", headerName: "Cliente", width: 200 },    
+    { field: "totalAmount", headerName: "Monto Total", width: 150, type: "number", valueFormatter: (params) => formatCurrency(params) },
+  ];
+
+  // Formatear moneda para mostrar
+  const formatCurrency = (value: number) =>
+    new Intl.NumberFormat("es-MX", {
+      style: "currency",
+      currency: "MXN",
+    }).format(value);
+
+  const handleViewDetails = () => {
+    if (rowSelectionModel.length > 0) {
+      router.push(`/salesOrders/details?Id=${rowSelectionModel[0]}`); // Redirige a la página de detalles de la venta
+    }
+  };
 
   return (
     <div className="mx-auto py-5 w-full">
@@ -102,15 +94,19 @@ const SalesOrdersPage = () => {
           <label className="text-gray-700 font-medium">Cliente</label>
           <select
             value={selectedCustomer}
-            onChange={(e) => setSelectedCustomer(e.target.value)}
+            onChange={(e) => setSelectedCustomer(e.target.value ? Number(e.target.value) : undefined)}
             className="border border-gray-300 rounded p-2"
           >
             <option value="">Todos</option>
-            {customers.map((customer) => (
-              <option key={customer} value={customer}>
-                {customer}
-              </option>
-            ))}
+            {/* Aquí puedes generar dinámicamente la lista de clientes según tus datos */}
+            {Array.from(new Set(sales.map(sale => sale.customer?.customerId))).map((customerId) => {
+              const customer = sales.find(sale => sale.customer?.customerId === customerId)?.customer;
+              return customer ? (
+                <option key={customer.customerId} value={customer.customerId}>
+                  {customer.name}
+                </option>
+              ) : null;
+            })}
           </select>
         </div>
       </div>
@@ -124,11 +120,20 @@ const SalesOrdersPage = () => {
           checkboxSelection
           disableMultipleRowSelection
           className="bg-white shadow rounded-lg border border-gray-200 !text-gray-700"
-          onRowSelectionModelChange={(newRowSelectionModel) =>
-            setRowSelectionModel(newRowSelectionModel)
-          }
+          onRowSelectionModelChange={(newRowSelectionModel) => setRowSelectionModel(newRowSelectionModel)}
           rowSelectionModel={rowSelectionModel}
         />
+      </div>
+
+      {/* Button to view details of selected sale */}
+      <div className="flex justify-end mt-4">
+        <button
+          onClick={handleViewDetails}
+          disabled={rowSelectionModel.length === 0}
+          className={`px-4 py-2 bg-blue-500 text-white rounded ${rowSelectionModel.length === 0 ? 'opacity-50 cursor-not-allowed' : 'hover:bg-blue-600'}`}
+        >
+          Ver Detalles
+        </button>
       </div>
 
       {/* Selected row details or actions */}
@@ -136,7 +141,6 @@ const SalesOrdersPage = () => {
         <div className="mt-4 p-4 bg-gray-100 rounded-lg shadow">
           <h2 className="text-lg font-semibold">Venta seleccionada:</h2>
           <p>ID de venta: {rowSelectionModel[0]}</p>
-          {/* Additional details or actions for the selected sale */}
         </div>
       )}
     </div>

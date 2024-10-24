@@ -4,11 +4,8 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { useGetVehicleSummaryByModelAndColorQuery, 
          VehicleModelSummary, 
          VehicleColor,
-         useCreateCustomerMutation } from "@/state/api";
-import Image from "next/image";
+         useCreateSaleMutation } from "@/state/api";
 import { ChangeEvent, FormEvent, useEffect, useState } from 'react';
-
-
 
 type CartItem = {
     modelId: string;
@@ -29,14 +26,15 @@ const CheckoutPage = () => {
     const initialQuantity = Number(localStorage.getItem('quantity')) || 1;
 
     const [cartItems, setCartItems] = useState<CartItem[]>([]);
-    const [quantity, setQuantity] = useState<number>(initialQuantity); // Estado para la cantidad
+    const [quantity, setQuantity] = useState<number>(initialQuantity);
+    const [paymentMethod, setPaymentMethod] = useState<string>('');
 
     const locationId = "2";
     const { data: models = [], isLoading, isError } = useGetVehicleSummaryByModelAndColorQuery({ locationId, modelId });
 
     const model = models.find((m) => m.modelId === Number(modelId));
 
-    const [createCustomer] = useCreateCustomerMutation();
+    const [createSale] = useCreateSaleMutation();
     
     const [formData, setFormData] = useState({
         name: "",
@@ -72,16 +70,76 @@ const CheckoutPage = () => {
     const subtotal = cartItems.reduce((acc, item) => acc + item.price * item.quantity, 0);
     const total = subtotal;
 
-    function handleSubmit(event: FormEvent<HTMLFormElement>): void {
-        console.log('Function not implemented.');
-    }
-
-    function handleChange(event: ChangeEvent<HTMLInputElement| HTMLSelectElement>): void {
-        console.log('Function not implemented.');
+    function handleChange(event: ChangeEvent<HTMLInputElement | HTMLSelectElement>): void {
+        setFormData({
+            ...formData,
+            [event.target.name]: event.target.value,
+        });
     }
 
     function handlePaymentChange(event: ChangeEvent<HTMLInputElement>): void {
-        console.log('Function not implemented.');
+        setPaymentMethod(event.target.value);
+    }
+
+    async function handlePayment() {
+
+        // Validar que se han ingresado todos los datos obligatorios del cliente
+        const { name, lastname, email } = formData;
+        if (!name || !lastname || !email) {
+            alert("Por favor, completa todos los campos obligatorios del cliente (Nombre, Apellidos y Email).");
+            return;
+        }
+
+        // Validar que haya seleccionado un método de pago
+        if (!paymentMethod) {
+            alert("Por favor, selecciona un método de pago.");
+            return;
+        }
+
+        try {
+            // Datos para crear la venta
+            const newSale = {
+                saleId: 0,  // Esto puede generarlo el backend
+                timestamp: new Date().toISOString(),
+                quantity: quantity,
+                unitPrice: cartItems[0].price,
+                totalAmount: total,
+                customerId: 0,  // Supongamos que no tienes un customerId aún
+                paymentMethod: paymentMethod,
+                enviarADomicilio: false,  // Según la lógica que tengas
+                recogerEnTieda: true,     // Según la lógica que tengas
+                compraOnline: true,       // Según la lógica que tengas
+                locationId: Number(locationId),
+                saleDetails: cartItems.map(item => ({
+                    saleDetailId: 0,  // Esto también lo puede generar el backend
+                    modelId: Number(item.modelId),
+                    colorId: Number(item.color),
+                    isVehicle: true,
+                    vehicleId: null,  // Si aplica
+                    quantity: item.quantity,
+                    unitPrice: item.price,
+                    subtotal: item.price * item.quantity,
+                    assemblyAndConfigurationCost: 0,  // Ajustar según sea necesario
+                })),
+                customerData: {
+                    ...formData,
+                }
+            };
+
+            // Llamar a la mutación para crear la venta
+            const saleResponse = await createSale(newSale);
+
+            if (saleResponse.data.saleId) {                
+                alert("Venta creada exitosamente");
+                router.push(`/salesOrders/details?Id=${saleResponse.data.saleId}`); // Usa el ID recuperado aquí
+            } else {
+                alert("No se pudo recuperar el ID de la venta.");
+            }
+  
+        } catch (error) {
+            console.error("Error creando la venta:", error);
+            alert("Hubo un error al crear la venta.");
+        }
     }
 
     return (
@@ -92,7 +150,7 @@ const CheckoutPage = () => {
                 {/* Aquí puedes agregar los campos de datos del cliente */}
                 <div className="border p-4 bg-white mb-4">
                     <h2 className="text-2xl font-bold mb-4">DATOS DEL CLIENTE</h2>
-                    <form onSubmit={handleSubmit} className="space-y-4">
+                    <form className="space-y-4">
                         {/* Row 1: Nombre y Apellidos */}
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div>
@@ -100,15 +158,15 @@ const CheckoutPage = () => {
                                 NOMBRE
                             </label>
                             <input
-                                type="text"
-                                id="name"
-                                name="name"
-                                placeholder="NOMBRE"
-                                value={formData.name}
-                                onChange={handleChange}
-                                className="border w-full p-2 mb-2 rounded"
-                                required
-                            />
+                                        type="text"
+                                        id="name"
+                                        name="name"
+                                        placeholder="NOMBRE"
+                                        value={formData.name}
+                                        onChange={handleChange}
+                                        className="border w-full p-2 mb-2 rounded"
+                                        required
+                                    />
                             </div>
                             <div>
                             <label
@@ -118,15 +176,15 @@ const CheckoutPage = () => {
                                 APELLIDOS
                             </label>
                             <input
-                                type="text"
-                                id="lastname"
-                                name="lastname"
-                                placeholder="APELLIDOS"
-                                value={formData.lastname}
-                                onChange={handleChange}
-                                className="border w-full p-2 mb-2 rounded"
-                                required
-                            />
+                                        type="text"
+                                        id="lastname"
+                                        name="lastname"
+                                        placeholder="APELLIDOS"
+                                        value={formData.lastname}
+                                        onChange={handleChange}
+                                        className="border w-full p-2 mb-2 rounded"
+                                        required
+                                    />
                             </div>
                         </div>
 
@@ -139,14 +197,14 @@ const CheckoutPage = () => {
                             CODIGO POSTAL
                             </label>
                             <input
-                            type="text"
-                            id="postalCode"
-                            name="postalCode"
-                            placeholder="CODIGO POSTAL"
-                            value={formData.postalCode}
-                            onChange={handleChange}
-                            className="border w-full p-2 mb-2 rounded"
-                            />
+                                    type="text"
+                                    id="postalCode"
+                                    name="postalCode"
+                                    placeholder="CODIGO POSTAL"
+                                    value={formData.postalCode}
+                                    onChange={handleChange}
+                                    className="border w-full p-2 mb-2 rounded"
+                                />
                         </div>
 
                         {/* Row 3: Teléfono */}
@@ -155,14 +213,14 @@ const CheckoutPage = () => {
                             TELEFONO
                             </label>
                             <input
-                            type="tel"
-                            id="phone"
-                            name="phone"
-                            placeholder="TELEFONO"
-                            value={formData.phone}
-                            onChange={handleChange}
-                            className="border w-full p-2 mb-2 rounded"
-                            />
+                                    type="tel"
+                                    id="phone"
+                                    name="phone"
+                                    placeholder="TELEFONO"
+                                    value={formData.phone}
+                                    onChange={handleChange}
+                                    className="border w-full p-2 mb-2 rounded"
+                                />
                         </div>
 
                         {/* Row 4: Correo Electrónico */}
@@ -171,15 +229,15 @@ const CheckoutPage = () => {
                             EMAIL
                             </label>
                             <input
-                            type="email"
-                            id="email"
-                            name="email"
-                            placeholder="EMAIL"
-                            value={formData.email}
-                            onChange={handleChange}
-                            className="border w-full p-2 mb-2 rounded"
-                            required
-                            />
+                                    type="email"
+                                    id="email"
+                                    name="email"
+                                    placeholder="EMAIL"
+                                    value={formData.email}
+                                    onChange={handleChange}
+                                    className="border w-full p-2 mb-2 rounded"
+                                    required
+                                />
                         </div>
 
                         {/* Row 5: Dirección */}
@@ -191,14 +249,14 @@ const CheckoutPage = () => {
                             CALLE Y NUMERO
                             </label>
                             <input
-                            type="text"
-                            id="address"
-                            name="address"
-                            placeholder="CALLE Y NUMERO"
-                            value={formData.address}
-                            onChange={handleChange}
-                            className="border w-full p-2 mb-2 rounded"
-                            />
+                                    type="text"
+                                    id="address"
+                                    name="address"
+                                    placeholder="CALLE Y NUMERO"
+                                    value={formData.address}
+                                    onChange={handleChange}
+                                    className="border w-full p-2 mb-2 rounded"
+                                />
                         </div>
 
                         {/* Row 6: Ciudad */}
@@ -207,14 +265,14 @@ const CheckoutPage = () => {
                             CIUDAD
                             </label>
                             <input
-                            type="text"
-                            id="city"
-                            name="city"
-                            placeholder="CIUDAD"
-                            value={formData.city}
-                            onChange={handleChange}
-                            className="border w-full p-2 mb-2 rounded"
-                            />
+                                    type="text"
+                                    id="city"
+                                    name="city"
+                                    placeholder="CIUDAD"
+                                    value={formData.city}
+                                    onChange={handleChange}
+                                    className="border w-full p-2 mb-2 rounded"
+                                />
                         </div>
 
                         {/* Row 7: Estado */}
@@ -223,14 +281,14 @@ const CheckoutPage = () => {
                             ESTADO
                             </label>
                             <input
-                            type="text"
-                            id="state"
-                            name="state"
-                            placeholder="ESTADO"
-                            value={formData.state}
-                            onChange={handleChange}
-                            className="border w-full p-2 mb-2 rounded"
-                            />
+                                    type="text"
+                                    id="state"
+                                    name="state"
+                                    placeholder="ESTADO"
+                                    value={formData.state}
+                                    onChange={handleChange}
+                                    className="border w-full p-2 mb-2 rounded"
+                                />
                         </div>
 
                         {/* Row 8: País */}
@@ -238,15 +296,15 @@ const CheckoutPage = () => {
                             <label htmlFor="country" className="block text-sm font-medium text-gray-700">
                             PAIS
                             </label>
-                            <select
-                            id="country"
-                            name="country"
-                            value={formData.country}
-                            onChange={handleChange}
-                            className="border w-full p-2 mb-2 rounded"
-                            >
-                            <option value="México">MEXICO</option>
-                            </select>
+                            <input
+                                    type="text"
+                                    id="country"
+                                    name="country"
+                                    placeholder="PAIS"
+                                    value={formData.country}
+                                    onChange={handleChange}
+                                    className="border w-full p-2 mb-2 rounded"
+                                />
                         </div>
                     </form>
                 </div>
@@ -294,7 +352,7 @@ const CheckoutPage = () => {
                         <input 
                             type="radio" 
                             name="paymentMethod" 
-                            value="efectivo" 
+                            value="EFECTIVO" 
                             className="mr-2" 
                             onChange={handlePaymentChange} 
                             required 
@@ -305,32 +363,23 @@ const CheckoutPage = () => {
                         <input 
                             type="radio" 
                             name="paymentMethod" 
-                            value="tarjeta" 
+                            value="TARJETA" 
                             className="mr-2" 
                             onChange={handlePaymentChange} 
                         />
                         Tarjeta de Crédito/Débito
-                    </label>
-                    <label className="flex items-center">
-                        <input 
-                            type="radio" 
-                            name="paymentMethod" 
-                            value="plazos" 
-                            className="mr-2" 
-                            onChange={handlePaymentChange} 
-                        />
-                        Paga en Plazos sin Tarjeta de Crédito
-                    </label>
+                    </label>                     
                 </div>
 
                 {/* Botón para proceder al pago */}
-                <button className="bg-blue-500 text-white py-3 px-4 mt-6 rounded hover:bg-blue-600 w-full text-lg font-bold">
+                <button 
+                onClick={handlePayment}
+                className="bg-blue-500 text-white py-3 px-4 mt-6 rounded hover:bg-blue-600 w-full text-lg font-bold">
                     Proceder al Pago
                 </button>
             </div>
         </div>
-
-    </div>
+        </div>
     </div>
 
     );

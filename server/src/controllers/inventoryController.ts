@@ -19,9 +19,9 @@ export const getVehiclesCountByLocation = async (req: Request, res: Response): P
         // Si el locationId es null, no realices la consulta, simplemente asigna 'N/A'
         if (count.locationId === null) {
           return {
-            locationId: null,
+            locationId: 0,
             count: count._count.vehicleId,
-            locationName: 'N/A', // Valor predeterminado si no hay locationId
+            locationName: 'VENDIDO', // Valor predeterminado si no hay locationId
           };
         }
     

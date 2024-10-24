@@ -1,4 +1,5 @@
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
+import numeral from "numeral";
 
 export interface Product {
   productId: string;
@@ -328,6 +329,7 @@ export interface NewVehicle {
 
 export interface NewVehicleCSV {
   internal_serial: string;
+  barcode?: string;
   modelName: string;
   colorName: string;
   availabilityStatusName: string;
@@ -625,11 +627,43 @@ export interface UpdatedLocation {
 export interface Sale {
   saleId: number;
   timestamp: string; // o Date dependiendo de tu preferencia
+  totalAmount: number;
+  paymentMethod?: string;
+  customerId?: number;
+  customerName: string;
+  enviarADomicilio: boolean;
+  recogerEnTieda: boolean;
+  compraOnline: boolean;
+  locationId?: number;
+  locationName: string;
+  customer?: Customer;  
+  location?: Location;  
+  saleDetails: SaleDetail[];
+}
+
+export interface NewSale {
+  saleId: number;
+  timestamp: string; // o Date dependiendo de tu preferencia
   quantity: number;
   unitPrice: number;
   totalAmount: number;
   customerId?: number;
-  saleDetails: SaleDetail[];
+  paymentMethod?: string;
+  enviarADomicilio: boolean;
+  recogerEnTieda: boolean;
+  compraOnline: boolean;
+  locationId: number;
+
+  saleDetails: NewSaleDetail[];
+  customerData: NewCustomer;
+}
+
+export interface UpdatedSale {
+  timestamp?: string; // o Date
+  quantity?: number;
+  unitPrice?: number;
+  customerId?: number;
+  saleDetails?: UpdatedSaleDetail[];
 }
 
 export interface SaleDetail {
@@ -640,30 +674,22 @@ export interface SaleDetail {
   quantity: number;
   unitPrice: number;
   subtotal: number;
-}
-
-export interface NewSale {
-  timestamp: string; // o Date
-  quantity: number;
-  unitPrice: number;
-  customerId?: number;
-  saleDetails: NewSaleDetail[];
+  assemblyAndConfigurationCost?: number;
+  product?: Product;
+  vehicle?: Vehicle;
 }
 
 export interface NewSaleDetail {
+  saleDetailId: number;
   productId?: number;
+  modelId?: number;
+  colorId?: number;
+  isVehicle: boolean;
   vehicleId?: number;
   quantity: number;
   unitPrice: number;
   subtotal: number;
-}
-
-export interface UpdatedSale {
-  timestamp?: string; // o Date
-  quantity?: number;
-  unitPrice?: number;
-  customerId?: number;
-  saleDetails?: UpdatedSaleDetail[];
+  assemblyAndConfigurationCost: number;
 }
 
 export interface UpdatedSaleDetail {
@@ -898,6 +924,98 @@ export interface UpdatedMovement {
   receptionNotes?:  string | null; 
 }
 
+export interface Item {
+  id: number;
+  name: string;
+  price: number;
+  imagePath: string;
+}
+
+export interface CartItem {
+  item: Item;
+  qty: number;
+}
+export interface Organization {
+  name: string;           // Nombre de la organización
+  rfc: string;           // Registro Federal de Contribuyentes
+  commercialName?: string; // Nombre comercial
+  responsiblePerson?: string; // Persona responsable
+  address: string;       // Dirección
+  address2?: string;
+  neighborhood?:string;
+  city: string;         // Ciudad
+  state: string;        // Estado
+  postalCode: string;   // Código postal
+  country: string;      // País
+  phone?: string; // Número de teléfono
+  email?: string;       // Correo electrónico
+  purchaseOrderPrefix?: string;  // Prefijo para órdenes de compra
+  saleOrderPrefix?: string;      // Prefijo para órdenes de venta
+  invoicePrefix?: string;        // Prefijo para facturas
+  startingOrderNumber?: number;  // Número inicial de órdenes de venta
+  startingInvoiceNumber?: number;  // Número inicial de facturas
+  startingPurchaseOrderNumber?: number;  // Número inicial de órdenes de compra
+  createdAt?: Date;     // Fecha de creación
+  updatedAt?: Date;     // Fecha de actualización
+  logoUrl?: string;  
+}
+
+export interface NewOrganization {
+  name: string;           // Nombre de la organización
+  rfc: string;           // Registro Federal de Contribuyentes
+  commercialName?: string; // Nombre comercial
+  responsiblePerson?: string; // Persona responsable
+  address: string;       // Dirección
+  address2?: string;
+  neighborhood?:string;
+  city: string;         // Ciudad
+  state: string;        // Estado
+  postalCode: string;   // Código postal
+  country: string;      // País
+  phone?: string; // Número de teléfono
+  email?: string;       // Correo electrónico
+  purchaseOrderPrefix?: string;  // Prefijo para órdenes de compra
+  saleOrderPrefix?: string;      // Prefijo para órdenes de venta
+  invoicePrefix?: string;        // Prefijo para facturas
+  startingOrderNumber?: number;  // Número inicial de órdenes de venta
+  startingInvoiceNumber?: number;  // Número inicial de facturas
+  startingPurchaseOrderNumber?: number;  // Número inicial de órdenes de compra
+  logoUrl?: string;  
+}
+
+export interface UpdatedOrganization {
+  name?: string;           // Nombre de la organización
+  rfc?: string;           // Registro Federal de Contribuyentes
+  commercialName?: string; // Nombre comercial
+  responsiblePerson?: string; // Persona responsable
+  address?: string;       // Dirección
+  address2?: string;
+  neighborhood?:string;
+  city?: string;         // Ciudad
+  state?: string;        // Estado
+  postalCode?: string;   // Código postal
+  country?: string;      // País
+  phone?: string; // Número de teléfono
+  email?: string;       // Correo electrónico
+  purchaseOrderPrefix?: string;  // Prefijo para órdenes de compra
+  saleOrderPrefix?: string;      // Prefijo para órdenes de venta
+  invoicePrefix?: string;        // Prefijo para facturas
+  startingOrderNumber?: number;  // Número inicial de órdenes de venta
+  startingInvoiceNumber?: number;  // Número inicial de facturas
+  startingPurchaseOrderNumber?: number;  // Número inicial de órdenes de compra
+  logoUrl?: string;  
+}
+
+export interface EmailData {
+  to: string;
+  subject: string;
+  text: string;
+}
+
+export interface SendMailResponse {
+  message: string;
+}
+
 export const api = createApi({
   baseQuery: fetchBaseQuery({ baseUrl: process.env.NEXT_PUBLIC_API_BASE_URL }),
   reducerPath: "api",
@@ -921,12 +1039,49 @@ export const api = createApi({
     "Inventory",
     "Purchases",
     "Movements",
+    "Organizations",
   ],
   endpoints: (build) => ({
     getDashboardMetrics: build.query<DashboardMetrics, void>({
       query: () => "/dashboard",
       providesTags: ["DashboardMetrics"],
     }),
+
+    getOrganizations: build.query<Organization[], string | void>({
+      query: (search) => ({
+        url: "/organizations",
+        params: search ? { search } : {},
+      }),
+      providesTags: ["Organizations"],
+    }),
+    createOrganization: build.mutation<Organization, UpdatedOrganization>({
+      query: (newOrganization) => ({
+        url: "/organizations",
+        method: "POST",
+        body: newOrganization,
+      }),
+      invalidatesTags: ["Organizations"],
+    }),
+    updateOrganization: build.mutation<Organization, { id: string; data: UpdatedOrganization }>({
+      query: ({ id, data }) => ({
+        url: `/organizations/${id}`,
+        method: "PUT",
+        body: data,
+      }),
+      invalidatesTags: ["Organizations"],
+    }),
+    getOrganizationById: build.query<Organization, string>({
+      query: (id) => `/organizations/${id}`,
+      providesTags: ["Organizations"],
+    }),
+    deleteOrganization: build.mutation<void, string>({
+      query: (id) => ({
+        url: `/organizations/${id}`,
+        method: "DELETE",
+      }),
+      invalidatesTags: ["Organizations"],
+    }),
+
     getProducts: build.query<Product[], string | void>({
       query: (search) => ({
         url: "/products",
@@ -1662,6 +1817,43 @@ export const api = createApi({
       invalidatesTags: ["Purchases"],
     }),
 
+    getSales: build.query<Sale[], string | void>({
+      query: (search) => ({
+        url: "/sales",
+        params: search ? { search } : {},
+      }),
+      providesTags: ["Sales"],
+    }),
+    getSaleById: build.query<Sale, string>({
+      query: (id) => ({
+        url: `/sales/${id}`,
+      }),
+      providesTags: (result, error, id) => [{ type: "Sales", id }],
+    }),
+    createSale: build.mutation<Sale, NewSale>({
+      query: (newSale) => ({
+        url: "/sales",
+        method: "POST",
+        body: newSale,
+      }),
+      invalidatesTags: ["Sales"],
+    }),
+    updateSale: build.mutation<Sale, { id: string; data: UpdatedSale }>({
+      query: ({ id, data }) => ({
+        url: `/sales/${id}`,
+        method: "PUT",
+        body: data,
+      }),
+      invalidatesTags: ["Sales"],
+    }),
+    deleteSale: build.mutation<void, string>({
+      query: (id) => ({
+        url: `/sales/${id}`,
+        method: "DELETE",
+      }),
+      invalidatesTags: ["Sales"],
+    }),
+
     getMovements: build.query<Movement[], string | void>({
       query: (search) => ({
         url: "/movements",
@@ -1699,11 +1891,34 @@ export const api = createApi({
       invalidatesTags: ["Movements"],
     }),
 
+    sendMail: build.mutation<SendMailResponse, EmailData>({
+      query: (emailData) => ({
+        url: "/send-email",  
+        method: "POST",
+        body: emailData,
+      }),
+    }),
+
+    generatePdf: build.query<Blob, string>({
+      query: (id) => ({
+        url: `/nota-pdf/${id}`,
+      }),
+    }),
+ 
   }),
 });
 
 export const {
   useGetDashboardMetricsQuery,
+
+  useSendMailMutation,
+  useGeneratePdfQuery,
+
+  useGetOrganizationsQuery,
+  useCreateOrganizationMutation,
+  useUpdateOrganizationMutation,
+  useGetOrganizationByIdQuery,
+  useDeleteOrganizationMutation,
 
   useGetProductsQuery,
   useCreateProductMutation,
@@ -1832,6 +2047,12 @@ export const {
    useCreatePurchaseMutation,
    useUpdatePurchaseMutation,
    useDeletePurchaseMutation,
+
+   useGetSalesQuery,
+   useGetSaleByIdQuery,
+   useCreateSaleMutation,
+   useUpdateSaleMutation,
+   useDeleteSaleMutation,
 
    useGetMovementsQuery,
    useGetMovementByIdQuery,

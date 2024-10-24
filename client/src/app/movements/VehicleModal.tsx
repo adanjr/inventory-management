@@ -25,6 +25,7 @@ const VehicleModal: React.FC<VehicleModalProps> = ({
   const [modelFilter, setModelFilter] = useState('');
   const [colorFilter, setColorFilter] = useState('');
   const [serialFilter, setSerialFilter] = useState('');
+  const [motorFilter, setMotorFilter] = useState('');
 
   useEffect(() => {
     if (open) {
@@ -36,12 +37,13 @@ const VehicleModal: React.FC<VehicleModalProps> = ({
   useEffect(() => {
     // Filtrar vehículos según los filtros introducidos
     const filtered = availableVehicles.filter((vehicle) =>
-      vehicle.model.name.toLowerCase().includes(modelFilter.toLowerCase()) &&
-      vehicle.color.name.toLowerCase().includes(colorFilter.toLowerCase()) &&
-      vehicle.internal_serial?.toLowerCase().includes(serialFilter.toLowerCase())
+      vehicle.model.name.toUpperCase().includes(modelFilter.toUpperCase()) &&
+      vehicle.color.name.toUpperCase().includes(colorFilter.toUpperCase()) &&
+      vehicle.engineNumber?.toUpperCase().includes(motorFilter.toUpperCase()) &&
+      vehicle.internal_serial?.toUpperCase().includes(serialFilter.toUpperCase())
     );
     setFilteredVehicles(filtered);
-  }, [modelFilter, colorFilter, serialFilter, availableVehicles]);
+  }, [modelFilter, colorFilter, serialFilter, motorFilter, availableVehicles]);
 
   const handleSelectionChange = (ids: number[]) => {
     const selected = availableVehicles.filter(vehicle => ids.includes(vehicle.vehicleId));
@@ -64,7 +66,8 @@ const VehicleModal: React.FC<VehicleModalProps> = ({
     { field: "vehicleId", headerName: "ID", width: 30 },
     { field: "modelName", headerName: "Modelo", width: 100 },
     { field: "colorName", headerName: "Color", width: 100 },
-    { field: 'internal_serial', headerName: 'Serial', flex: 1 },
+    { field: 'internal_serial', headerName: 'Serial', width: 150 },
+    { field: 'engineNumber', headerName: 'Numero de Motor', flex: 1 },
   ];
 
   return (
@@ -102,6 +105,13 @@ const VehicleModal: React.FC<VehicleModalProps> = ({
             variant="outlined"
             value={serialFilter}
             onChange={(e) => setSerialFilter(e.target.value)}
+            fullWidth
+          />
+           <TextField
+            label="Filtrar por Motor"
+            variant="outlined"
+            value={motorFilter}
+            onChange={(e) => setMotorFilter(e.target.value)}
             fullWidth
           />
         </Box>

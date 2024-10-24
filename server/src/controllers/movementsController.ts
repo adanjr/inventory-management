@@ -128,6 +128,7 @@ export const getMovementById = async (req: Request, res: Response): Promise<void
               select: {
                 vehicleId: true,
                 internal_serial: true,
+                engineNumber: true,
                 model: {
                   select: { name: true }, // Solo el nombre del modelo
                 },
@@ -152,6 +153,7 @@ export const getMovementById = async (req: Request, res: Response): Promise<void
         vehicles: movement.MovementDetail.map(detail => ({
           vehicleId: detail.vehicle?.vehicleId,
           internal_serial: detail.vehicle?.internal_serial,
+          engineNumber: detail.vehicle?.engineNumber,
           modelName: detail.vehicle?.model?.name,
           colorName: detail.vehicle?.color?.name,
         })),
