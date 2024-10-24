@@ -685,7 +685,7 @@ export interface NewSaleDetail {
   modelId?: number;
   colorId?: number;
   isVehicle: boolean;
-  vehicleId?: number;
+  vehicleId?: number | null;
   quantity: number;
   unitPrice: number;
   subtotal: number;

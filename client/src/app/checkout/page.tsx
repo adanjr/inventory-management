@@ -129,7 +129,7 @@ const CheckoutPage = () => {
             // Llamar a la mutación para crear la venta
             const saleResponse = await createSale(newSale);
 
-            if (saleResponse.data.saleId) {                
+            if (saleResponse.data?.saleId) {                
                 alert("Venta creada exitosamente");
                 router.push(`/salesOrders/details?Id=${saleResponse.data.saleId}`); // Usa el ID recuperado aquí
             } else {
