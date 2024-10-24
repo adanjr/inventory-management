@@ -136,7 +136,7 @@ const CheckoutPage = () => {
 
             if (saleResponse.data?.saleId) {                
                 alert("Venta creada exitosamente");
-                await generateSendPdf(saleResponse.data.saleId); 
+                await generateSendPdf(saleResponse.data.saleId.toString()); 
                 router.push(`/salesOrders/details?Id=${saleResponse.data.saleId}`); // Usa el ID recuperado aquí
             } else {
                 alert("No se pudo recuperar el ID de la venta.");
