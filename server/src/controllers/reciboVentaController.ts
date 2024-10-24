@@ -3,8 +3,11 @@ import PDFDocument from "pdfkit";
 import { PrismaClient } from "@prisma/client";
 
 import nodemailer from 'nodemailer';
+import dotenv from "dotenv";
 
 const prisma = new PrismaClient();
+
+
 
 export const generateDownloadPdf = async (req: Request, res: Response): Promise<void> => {
   try {
@@ -176,14 +179,16 @@ export const generateDownloadPdf = async (req: Request, res: Response): Promise<
   }
 };
 
-export const generatePdf = async (req: Request, res: Response): Promise<void> => {
+export const generateSendPdf = async (req: Request, res: Response): Promise<void> => {
+  const { id } = req.params; // ID de la venta para la generación del PDF
+
+  const { format } = require('date-fns');
+  const { es } = require('date-fns/locale');
+
+  dotenv.config();
+
   try {
-    const { id } = req.params;
-
-    const { format } = require('date-fns');
-    const { es } = require('date-fns/locale');
-
-    // Busca la venta por ID
+    // Buscar la venta en la base de datos
     const sale = await prisma.sales.findUnique({
       where: { saleId: Number(id) },
       include: {
@@ -221,34 +226,31 @@ export const generatePdf = async (req: Request, res: Response): Promise<void> =>
       res.status(404).json({ message: "Organization not found" });
       return;
     }
-
-    const customerEmail = sale.customer!.email;
+    
+    const to = sale.customer!.email;
     const subject = "¡Gracias por su compra!";
     const text = "Agradecemos su compra en nuestra tienda. Pronto estará recibiendo más detalles.";
 
-    const fetch = (await import('node-fetch')).default;
+    // Crear el PDF en memoria
+    const doc = new PDFDocument({ size: 'A4', margin: 0 });
+    const pdfChunks: any[] = [];
 
-    // Crear el PDF
-    const PDFDocument = require('pdfkit');
-    const doc = new PDFDocument({
-      size: 'A4', // Tamaño de la página
-      margin: 0,  // Establece los márgenes de la página
-    });
-
-    // Almacenar el PDF en memoria
-    const buffers: Uint8Array[] = [];
-    doc.on('data', buffers.push.bind(buffers));
-    doc.on('end', async () => {
-      const pdfBuffer = Buffer.concat(buffers);
+    const port = Number(process.env.EMAIL_PORT) || 3001;
+    const host = process.env.EMAIL_HOST;
+    
+    // Almacenar el PDF en un buffer
+    doc.on('data', (chunk) => pdfChunks.push(chunk));
+    doc.on('end', () => {
+      const pdfBuffer = Buffer.concat(pdfChunks);
 
       // Configurar Nodemailer
       const transporter = nodemailer.createTransport({
-        host: process.env.EMAIL_HOST, // Servidor de correo saliente (SMTP)
-        port: 465, // Puerto SMTP recomendado para SSL
+        host: host, // Servidor de correo saliente (SMTP)
+        port: port,
         secure: true, // Utilizar SSL
         auth: {
-          user: process.env.EMAIL_USER, // Nombre de usuario de la cuenta
-          pass: process.env.EMAIL_PASS, // Contraseña de la cuenta de correo
+          user: process.env.EMAIL_USER, // Nombre de usuario
+          pass: process.env.EMAIL_PASS, // Contraseña
         },
         tls: {
           rejectUnauthorized: false, // Opción para aceptar certificados autofirmados
@@ -256,16 +258,26 @@ export const generatePdf = async (req: Request, res: Response): Promise<void> =>
       });
 
       // Enviar el correo con el PDF adjunto
-     
+      transporter.sendMail({
+        from: process.env.EMAIL_USER,
+        to,
+        subject,
+        text,
+        attachments: [
+          {
+            filename: `nota-venta-${id}.pdf`,
+            content: pdfBuffer, // El contenido del PDF como Buffer
+            contentType: 'application/pdf',
+          },
+        ],
+      }).then(() => {
+        res.status(200).json({ message: 'Correo enviado con éxito' });
+      }).catch((error) => {
+        console.error('Error enviando correo:', error);
+        res.status(500).json({ message: 'Error enviando el correo', error });
+      });
+    });
 
-    // Establecer los encabezados para la respuesta
-    res.setHeader('Content-Type', 'application/pdf');
-    res.setHeader('Content-Disposition', `attachment; filename="nota-venta-${id}.pdf"`);
-
-    // Pipe del documento PDF a la respuesta
-    doc.pipe(res);
-
-    // Agregar una imagen desde una URL (membrete)
     const logoUrl = "https://s3-yaiiinventory.s3.us-east-2.amazonaws.com/Logo_200X200.png";  
     const response = await fetch(logoUrl);
     const imageBuffer = await response.arrayBuffer();
@@ -365,26 +377,9 @@ export const generatePdf = async (req: Request, res: Response): Promise<void> =>
     doc.font('Helvetica').fontSize(9)
       .text('PAGO COMPLETADO', 250, 740, { width: columnWidth, align: 'left' });
 
-    // Finalizar el documento
-    doc.end();
-
-    await transporter.sendMail({
-      from: process.env.EMAIL_USER, // El remitente
-      to: customerEmail, // Correo del cliente
-      subject, // Asunto
-      text, // Mensaje
-      attachments: [
-        {
-          filename: `nota-venta-${id}.pdf`,
-          content: pdfBuffer,
-          contentType: 'application/pdf',
-        },
-      ],
-    });
-    res.status(200).json({ message: 'Correo con PDF enviado con éxito' });
-  });   
+    doc.end(); // Finaliza la creación del PDF
   } catch (error) {
-    console.error('Error generando PDF o enviando correo:', error);
-    res.status(500).json({ message: 'Error generando PDF o enviando correo', error });
+    console.error('Error al generar el PDF y enviar el correo:', error);
+    res.status(500).json({ message: 'Error al generar el PDF y enviar el correo', error });
   }
 };

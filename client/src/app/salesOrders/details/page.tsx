@@ -2,8 +2,10 @@
 
 import { useEffect } from "react";
 import { useRouter, useSearchParams  } from "next/navigation";
-import { useGeneratePdfQuery, useGetSaleByIdQuery } from "@/state/api"; // Asegúrate de tener un hook para obtener la venta por ID
-import { Sale } from "@/state/api"; // Importa tus interfaces
+import { useGenerateSendPdfMutation, 
+         useGetSaleByIdQuery, 
+         useGenerateDownloadPdfQuery } from "@/state/api";  
+import { Sale } from "@/state/api";  
 import { DataGrid, GridColDef } from "@mui/x-data-grid";
 
 const SaleDetailPage = () => {
@@ -11,26 +13,61 @@ const SaleDetailPage = () => {
   const searchParams = useSearchParams();
   const id = searchParams.get('Id')
   const { data: sale, isLoading, isError } = useGetSaleByIdQuery(id ?? ''); // Hook para obtener la venta por ID
+  
+  const fakeId = '';
 
-  const { data: pdfData, error: pdfError, isLoading: isLoadingPdf } = useGeneratePdfQuery(id ?? '', {
+  const { data: pdfData, error: pdfError, isLoading: isLoadingPdf } = useGenerateDownloadPdfQuery(id ?? '', {
     skip: !id,
   });
 
+  const [generateSendPdf, { data: sendPdfResponse, error: sendPdfError }] = useGenerateSendPdfMutation(); 
+
   const handleDownload = async () => {
-    if (pdfData) {
-      const url = window.URL.createObjectURL(pdfData);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `nota_venta_${id}.pdf`;
-      document.body.appendChild(a);
-      a.click();
-      a.remove();
-      window.URL.revokeObjectURL(url); // Limpia el objeto URL
+    try {
+      if (pdfData) {
+        const url = window.URL.createObjectURL(new Blob([pdfData], { type: 'application/pdf' }));
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `nota_venta_${id}.pdf`; // Nombre del archivo a descargar
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        window.URL.revokeObjectURL(url); // Limpia el objeto URL después de la descarga
+        alert('Exito descargando el correo');
+      }
+    } catch (error) {
+      console.error('Error al descargar el PDF:', error);
+      alert('Error descargando el PDF');
+    }
+  };
+
+  const handleSendEmail = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!id) {
+      alert('No hay ID disponible para enviar el correo.');
+      return;
+    }
+    
+    try {     
+      await generateSendPdf(id); // Asegúrate de que esta línea sea la correcta para tu caso
+      alert('Correo enviado exitosamente');
+    } catch (error) {
+      console.error('Error al enviar correo:', error);
+      alert('Error enviando el correo');
     }
   };
 
   if (isLoading) return <div>Cargando...</div>;
   if (isError) return <div>Error al cargar los detalles de la venta</div>;
+
+  
+  if (pdfError) {
+    console.log('PDF Error:', pdfError);
+  }
+
+
+  if (pdfError) return <div>Error al descargar los detalles de la venta</div>;
 
   if (!sale) {
     return <div>No se encontraron detalles para esta venta.</div>;
@@ -110,16 +147,23 @@ const SaleDetailPage = () => {
       {/* Botones de acción */}
       <div className="flex space-x-4 mt-5">
         <button
-          onClick={() => router.push("/salesOrders/page")}
+          onClick={() => router.push("/salesOrders")}
           className="bg-blue-500 text-white px-4 py-2 rounded shadow hover:bg-blue-600"
         >
           Regresar a Ventas
         </button>
         <button
-          onClick={handleDownload}  
+          onClick={handleSendEmail}  
           className="bg-green-500 text-white px-4 py-2 rounded shadow hover:bg-green-600"
         >
-           Descargar Nota de Venta
+           Enviar a Cliente
+        </button>
+        <button
+          onClick={handleDownload}
+          disabled={!pdfData || isLoadingPdf}
+          className="bg-green-500 text-white px-4 py-2 rounded shadow hover:bg-green-600"
+        >
+          {isLoadingPdf ? 'Descargando...' : 'Descargar Nota de Venta'}
         </button>
       </div>
     </div>

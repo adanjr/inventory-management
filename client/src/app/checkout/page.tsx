@@ -1,7 +1,8 @@
 'use client';
 
 import { useRouter, useSearchParams } from 'next/navigation';
-import { useGetVehicleSummaryByModelAndColorQuery, 
+import { useGetVehicleSummaryByModelAndColorQuery,
+         useGenerateSendPdfMutation, 
          VehicleModelSummary, 
          VehicleColor,
          useCreateSaleMutation } from "@/state/api";
@@ -35,6 +36,10 @@ const CheckoutPage = () => {
     const model = models.find((m) => m.modelId === Number(modelId));
 
     const [createSale] = useCreateSaleMutation();
+
+    const id = '';
+
+    const [generateSendPdf, { data: sendPdfResponse, error: sendPdfError }] = useGenerateSendPdfMutation(); 
     
     const [formData, setFormData] = useState({
         name: "",
@@ -131,6 +136,7 @@ const CheckoutPage = () => {
 
             if (saleResponse.data?.saleId) {                
                 alert("Venta creada exitosamente");
+                await generateSendPdf(saleResponse.data.saleId); 
                 router.push(`/salesOrders/details?Id=${saleResponse.data.saleId}`); // Usa el ID recuperado aquí
             } else {
                 alert("No se pudo recuperar el ID de la venta.");

@@ -1040,6 +1040,7 @@ export const api = createApi({
     "Purchases",
     "Movements",
     "Organizations",
+    "Notas",
   ],
   endpoints: (build) => ({
     getDashboardMetrics: build.query<DashboardMetrics, void>({
@@ -1899,9 +1900,18 @@ export const api = createApi({
       }),
     }),
 
-    generatePdf: build.query<Blob, string>({
+    generateDownloadPdf: build.query<Blob, string>({
       query: (id) => ({
         url: `/nota-pdf/${id}`,
+        responseHandler: (response) => response.blob(), // Esto asegura que se maneje como Blob
+        responseType: 'blob', // Asegura que sea binario
+      }),
+    }),
+
+    generateSendPdf: build.mutation<string, string>({
+      query: (id) => ({
+        url:  `/nota-pdf/send/${id}`,
+        method: 'GET', 
       }),
     }),
  
@@ -1912,7 +1922,8 @@ export const {
   useGetDashboardMetricsQuery,
 
   useSendMailMutation,
-  useGeneratePdfQuery,
+  useGenerateDownloadPdfQuery,
+  useGenerateSendPdfMutation,
 
   useGetOrganizationsQuery,
   useCreateOrganizationMutation,
