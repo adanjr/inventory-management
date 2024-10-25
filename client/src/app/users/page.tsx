@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useGetUsersQuery } from "@/state/api";
 import { DataGrid, GridColDef } from "@mui/x-data-grid";
 import Header from "@/app/(components)/Header";
 

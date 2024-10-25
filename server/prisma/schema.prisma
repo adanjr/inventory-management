@@ -13,13 +13,22 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model Users {
-  userId           String      @id @default(uuid())
+model User {
+  userId           String      @id @default(autoincrement())
+  cognitoId        String      @unique
+  username         String      @unique
   name             String
   email            String      @unique
   password         String
-  roles            UserRole[]
-  locations_managed Locations[]
+  profilePictureUrl String?
+
+  createdAt        DateTime    @default(now())
+  updatedAt        DateTime    @updatedAt
+  locationId       Int?
+
+  sales           Sales[]
+  purchases       Purchases[]
+  movement        Movements[]
 }
 
 model Roles {
@@ -279,7 +288,7 @@ model Sales {
   recogerEnTieda    Boolean
   compraOnline      Boolean
   locationId        Int?
-  userId            String?
+  userId            Int?
   
   customer        Customers?    @relation(fields: [customerId], references: [customerId])
   location        Locations?    @relation(fields: [locationId], references: [locationId])
@@ -311,13 +320,18 @@ model Locations {
   city              String?     // Ciudad opcional
   state             String?     // Estado opcional
   country           String?     // País opcional
-  created_at        DateTime    @default(now())
-  manager           Users?      @relation(fields: [managerId], references: [userId]) // Relación con User
-  managerId         String?
+  
+  
   latitude          Float?      // Coordenada de latitud para geolocalización
   longitude         Float?      // Coordenada de longitud para geolocalización  
   mainImageUrl      String?      
   additionalImages  String[]
+  manager           Users?      @relation(fields: [managerId], references: [userId]) // Relación con User
+  managerId         Int?
+  created_at        DateTime    @default(now())
+
+
+  users             User[]
 
   vehicles          Vehicles[]
   products          Products[]    
@@ -440,6 +454,7 @@ model Purchases {
   purchaseStatus        String // Borrador, En Proceso, Recibida, Completada
   notes                 String
   urlAttachments        String[]
+  createById            Int?
 
   supplier              Suppliers? @relation(fields: [supplierId], references: [supplierId])
 

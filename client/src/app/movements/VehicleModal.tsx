@@ -39,7 +39,7 @@ const VehicleModal: React.FC<VehicleModalProps> = ({
     const filtered = availableVehicles.filter((vehicle) =>
       vehicle.model.name.toUpperCase().includes(modelFilter.toUpperCase()) &&
       vehicle.color.name.toUpperCase().includes(colorFilter.toUpperCase()) &&
-      vehicle.engineNumber?.toUpperCase().includes(motorFilter.toUpperCase()) &&
+      (!motorFilter || vehicle.engineNumber?.toUpperCase().includes(motorFilter.toUpperCase())) &&
       vehicle.internal_serial?.toUpperCase().includes(serialFilter.toUpperCase())
     );
     setFilteredVehicles(filtered);
