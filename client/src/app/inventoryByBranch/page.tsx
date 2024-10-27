@@ -5,9 +5,8 @@ import { useRouter } from 'next/navigation';
 import { useGetGroupedVehiclesQuery, 
          GroupedVehicleData, 
          GetGroupedVehiclesResponse,
-         useGetLocationsByUsernameQuery , 
-         Location, 
-         useGetAuthUserQuery} from "@/state/api";
+         useGetLocationsQuery, 
+         Location } from "@/state/api";
 import { DataGrid, GridColDef, GridRowSelectionModel } from "@mui/x-data-grid";
 import Header from "@/app/(components)/Header";
 import { PlusCircleIcon, 
@@ -22,8 +21,6 @@ import { PlusCircleIcon,
 
 const InventoryByBranch = () => {
   const router = useRouter();
-  const { data: currentUser, isLoading: isLoadingUser } = useGetAuthUserQuery({});
-
   const [locationId, setLocationId] = useState<number | null>(null); // Estado para la ubicación
   const [rowSelectionModel, setRowSelectionModel] = useState<GridRowSelectionModel>([]);
 
@@ -31,17 +28,9 @@ const InventoryByBranch = () => {
   const { data: groupedVehiclesData, isError: isGroupedVehiclesError, isLoading: isGroupedVehiclesLoading } = useGetGroupedVehiclesQuery(locationId);
   
   // Consulta de ubicaciones
-  const { data: locations, isError: isLocationsError, isLoading: isLocationsLoading } = 
-  useGetLocationsByUsernameQuery(currentUser?.userDetails.username!, { skip: !currentUser });
-  
-  useEffect(() => {
-    if (currentUser && currentUser.userDetails) {
-      const currentLocationId = currentUser.userDetails.locationId;
-      setLocationId(currentLocationId !== undefined ? currentLocationId : null);
-    }
-  }, [currentUser]);
+  const { data: locations, isError: isLocationsError, isLoading: isLocationsLoading } = useGetLocationsQuery();
 
-  if (isLoadingUser || isGroupedVehiclesLoading) return <div>Cargando...</div>;
+  if (isGroupedVehiclesLoading) return <div>Cargando...</div>;
   if (isGroupedVehiclesError || !groupedVehiclesData) return <div>Fallo al cargar datos agrupados</div>;
 
   const groupedData = groupedVehiclesData?.groupedData || [];
@@ -86,6 +75,7 @@ const InventoryByBranch = () => {
             value={locationId || ""}
             onChange={(e) => setLocationId(e.target.value ? parseInt(e.target.value) : null)}
           >
+            <option value="">Seleccionar Ubicación</option>
             {locations && locations.length > 0 ? (
               locations.map((location: Location) => (
                 <option key={location.locationId} value={location.locationId}>
