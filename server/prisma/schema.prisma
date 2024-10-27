@@ -14,27 +14,35 @@ datasource db {
 }
 
 model User {
-  userId           String      @id @default(autoincrement())
-  cognitoId        String      @unique
-  username         String      @unique
-  name             String
-  email            String      @unique
-  password         String
+  userId            Int        @id @default(autoincrement())
+  cognitoId         String     @unique
+  username          String     @unique
+  name              String
+  email             String     @unique
   profilePictureUrl String?
 
-  createdAt        DateTime    @default(now())
-  updatedAt        DateTime    @updatedAt
-  locationId       Int?
+  createdAt         DateTime   @default(now())
+  updatedAt         DateTime   @updatedAt
+  locationId        Int?
+  roleId            Int?
 
-  sales           Sales[]
-  purchases       Purchases[]
-  movement        Movements[]
+  Location          Locations?  @relation(fields: [locationId], references: [locationId])
+  Role              Roles?      @relation(fields: [roleId], references: [roleId])
+
+  Management        Locations[]  @relation("Manager")
+  sales             Sales[]
+  purchases         Purchases[]
+  movementsCreated  Movements[] @relation("CreatedBy")
+  movementsReceived Movements[] @relation("ReceivedBy")
+  users             UserRole[]   
 }
 
 model Roles {
-  roleId        String          @id @default(uuid())
-  name          String          @unique
-  users         UserRole[]      // Relación con la tabla intermedia UserRole
+  roleId        Int          @id @default(autoincrement())
+  name          String       @unique
+
+  users         User[]
+  usersInRole   UserRole[]      // Relación con la tabla intermedia UserRole
   permissions   RolePermission[] // Relación con la tabla intermedia RolePermission
 }
 
@@ -48,10 +56,10 @@ model Permissions {
 // Tabla intermedia para User <-> Role
 model UserRole {
   id        String @id @default(uuid())
-  user      Users  @relation(fields: [userId], references: [userId])
-  userId    String
+  user      User  @relation(fields: [userId], references: [userId])
+  userId    Int
   role      Roles  @relation(fields: [roleId], references: [roleId])
-  roleId    String
+  roleId    Int
 
   @@unique([userId, roleId])
 }
@@ -60,7 +68,7 @@ model UserRole {
 model RolePermission {
   id           String      @id @default(uuid())
   role         Roles       @relation(fields: [roleId], references: [roleId])
-  roleId       String
+  roleId       Int
   permission   Permissions @relation(fields: [permissionId], references: [permissionId])
   permissionId String
 
@@ -288,10 +296,11 @@ model Sales {
   recogerEnTieda    Boolean
   compraOnline      Boolean
   locationId        Int?
-  userId            Int?
+  createdBy         Int?
   
-  customer        Customers?    @relation(fields: [customerId], references: [customerId])
-  location        Locations?    @relation(fields: [locationId], references: [locationId])
+  customer          Customers?    @relation(fields: [customerId], references: [customerId])
+  location          Locations?    @relation(fields: [locationId], references: [locationId])
+  user              User?    @relation(fields: [createdBy], references: [userId])
   
   saleDetails SaleDetails[]
 }
@@ -320,21 +329,18 @@ model Locations {
   city              String?     // Ciudad opcional
   state             String?     // Estado opcional
   country           String?     // País opcional
-  
-  
   latitude          Float?      // Coordenada de latitud para geolocalización
   longitude         Float?      // Coordenada de longitud para geolocalización  
   mainImageUrl      String?      
   additionalImages  String[]
-  manager           Users?      @relation(fields: [managerId], references: [userId]) // Relación con User
   managerId         Int?
   created_at        DateTime    @default(now())
 
-
-  users             User[]
+  manager           User?      @relation("Manager", fields: [managerId], references: [userId]) 
 
   vehicles          Vehicles[]
-  products          Products[]    
+  products          Products[] 
+  users             User[]   
   inventoryLocation InventoryLocations[]
   unitLocation      VehicleInventoryLocations[]
   sales             Sales[]
@@ -377,15 +383,18 @@ model Movements {
   status            String      // Estado del movimiento (completed, in transit)
   notes             String?
   approved          Boolean
-  createdBy         String?
+  createdById       Int?
   approvedBy        String?
   lastUpdatedAt     DateTime    @updatedAt
   initialMovementId Int?      // Campo opcional para vincular movimientos iniciales en transferencias
 
   arrivalDate       DateTime?    // Fecha en la que el inventario llegó a la ubicación destino
-  receivedBy        String?      // Usuario que confirmó la recepción
+  receivedById      Int?      // Usuario que confirmó la recepción
   isReceived        Boolean?     // Confirmación de que el inventario llegó correctamente
   receptionNotes    String?      // Notas adicionales sobre la recepción (daños, diferencias, etc.)
+
+  createdBy         User?   @relation("CreatedBy", fields: [createdById], references: [userId])
+  receivedBy         User?   @relation("ReceivedBy", fields: [receivedById], references: [userId])
 
   fromLocation      Locations?   @relation("MovementFrom", fields: [fromLocationId], references: [locationId])
   toLocation        Locations?   @relation("MovementTo", fields: [toLocationId], references: [locationId])
@@ -454,9 +463,10 @@ model Purchases {
   purchaseStatus        String // Borrador, En Proceso, Recibida, Completada
   notes                 String
   urlAttachments        String[]
-  createById            Int?
+  createdById            Int?
 
   supplier              Suppliers? @relation(fields: [supplierId], references: [supplierId])
+  User                  User? @relation(fields: [createdById], references: [userId])
 
   purchaseDetails       PurchaseDetails[]
 }

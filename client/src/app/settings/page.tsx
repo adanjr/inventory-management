@@ -1,7 +1,8 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import Header from "@/app/(components)/Header";
+import { useGetAuthUserQuery } from "@/state/api";
 
 type UserSetting = {
   label: string;
@@ -19,6 +20,35 @@ const mockSettings: UserSetting[] = [
 
 const Settings = () => {
   const [userSettings, setUserSettings] = useState<UserSetting[]>(mockSettings);
+
+  const { data: currentUser } = useGetAuthUserQuery({});
+
+  //if (!currentUser) return null;
+  const currentUserDetails = currentUser?.userDetails;
+
+  useEffect(() => {
+    if (currentUser) {
+      // Map currentUser data to update settings
+      const updatedSettings = userSettings.map(setting => {
+        switch (setting.label) {
+          case "Username":
+            return { ...setting, value: currentUserDetails?.username };
+          case "Email":
+            return { ...setting, value: currentUserDetails?.email };
+          case "Notificacion":
+            return { ...setting, value: true };
+          case "Modo Oscuro":
+            return { ...setting, value: false };
+          case "Idioma":
+            return { ...setting, value: "Español" };
+          default:
+            return setting;
+        }
+      });
+
+      //setUserSettings(updatedSettings);
+    }
+  }, [currentUser]);
 
   const handleToggleChange = (index: number) => {
     const settingsCopy = [...userSettings];
@@ -67,11 +97,8 @@ const Settings = () => {
                       type="text"
                       className="px-4 py-2 border rounded-lg text-gray-500 focus:outline-none focus:border-blue-500"
                       value={setting.value as string}
-                      onChange={(e) => {
-                        const settingsCopy = [...userSettings];
-                        settingsCopy[index].value = e.target.value;
-                        setUserSettings(settingsCopy);
-                      }}
+                      readOnly
+                      
                     />
                   )}
                 </td>

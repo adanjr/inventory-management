@@ -2,6 +2,8 @@
 
 import { useAppDispatch, useAppSelector } from "@/app/redux";
 import { setIsDarkMode, setIsSidebarCollapsed } from "@/state";
+import { useGetAuthUserQuery } from "@/state/api";
+import { signOut } from "aws-amplify/auth";
 import { Bell, Menu, Moon, Settings, Sun } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
@@ -13,6 +15,18 @@ const Navbar = () => {
     (state) => state.global.isSidebarCollapsed
   );
   const isDarkMode = useAppSelector((state) => state.global.isDarkMode);
+
+  const { data: currentUser } = useGetAuthUserQuery({});
+  const handleSignOut = async () => {
+    try {
+      await signOut();
+    } catch (error) {
+      console.error("Error signing out: ", error);
+    }
+  };
+
+  if (!currentUser) return null;
+  const currentUserDetails = currentUser?.userDetails;
 
   const toggleSidebar = () => {
     dispatch(setIsSidebarCollapsed(!isSidebarCollapsed));
@@ -48,6 +62,7 @@ const Navbar = () => {
 
       {/* RIGHT SIDE */}
       <div className="flex justify-between items-center gap-5">
+        
         <div className="hidden md:flex justify-between items-center gap-5">
           <div>
             <button onClick={toggleDarkMode}>
@@ -64,21 +79,28 @@ const Navbar = () => {
               3
             </span>
           </div>
+          <Link href="/settings">
+            <Settings className="cursor-pointer text-gray-500" size={24} />
+          </Link>
           <hr className="w-0 h-7 border border-solid border-l border-gray-300 mx-3" />
           <div className="flex items-center gap-3 cursor-pointer">
             <Image
-              src="https://s3-yaiiinventory.s3.us-east-2.amazonaws.com/gerente_yaii.png"
-              alt="Profile"
+              src={`https://s3-yaiiinventory.s3.us-east-2.amazonaws.com/${currentUserDetails?.profilePictureUrl || "man.png"}`}
+              alt={currentUserDetails?.username || "User Profile Picture"}
               width={50}
               height={50}
               className="rounded-full h-full object-cover"
             />
-            <span className="font-semibold">Roberto Y. Ramirez</span>
+            <span className="font-semibold">{currentUserDetails?.name}</span>
           </div>
+          <button
+            className="hidden rounded bg-blue-400 px-4 py-2 text-xs font-bold text-white hover:bg-blue-500 md:block"
+            onClick={handleSignOut}
+          >
+            Cerrar Sesión
+          </button>
         </div>
-        <Link href="/settings">
-          <Settings className="cursor-pointer text-gray-500" size={24} />
-        </Link>
+        
       </div>
     </div>
   );

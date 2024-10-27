@@ -20,6 +20,40 @@ export const getLocations = async (req: Request, res: Response): Promise<void> =
   }
 };
 
+export const getLocationsByUsername = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { username } = req.params; // Obtiene el username de los parámetros de la solicitud
+
+    // Busca el usuario por su username
+    const user = await prisma.user.findUnique({
+      where: { username },
+      select: {
+        locationId: true, // Selecciona solo el locationId del usuario
+      },
+    });
+
+    // Si no se encuentra el usuario, retorna un error
+    if (!user) {
+      res.status(404).json({ message: "User not found" });
+      return;
+    }
+
+    const { locationId } = user;
+
+    // Busca las ubicaciones asociadas al locationId del usuario
+    const locations = await prisma.locations.findMany({
+      where: {
+        ...(locationId !== null && { locationId }), // Solo incluye locationId si no es null
+      },
+    });
+
+    res.json(locations); // Devuelve las ubicaciones encontradas
+  } catch (error) {
+    console.error(error); // Para ayudar a depurar si es necesario
+    res.status(500).json({ message: "Error retrieving locations" });
+  }
+};
+
 // Crear una nueva ubicación
 export const createLocation = async (req: Request, res: Response): Promise<void> => {
   try {

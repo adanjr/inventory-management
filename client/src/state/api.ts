@@ -1,4 +1,5 @@
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
+import { fetchAuthSession, getCurrentUser } from "aws-amplify/auth";
 import numeral from "numeral";
 
 export interface Product {
@@ -398,9 +399,52 @@ export interface DashboardMetrics {
 }
 
 export interface User {
-  userId: string;
+  userId?: number;
+  username: string;
   name: string;
   email: string;
+  profilePictureUrl?: string;
+  cognitoId?: string;
+  roleId?: number;
+  locationId?: number;
+  role: Role;
+  locationName: string;
+  roleName: string;
+}
+
+export interface NewUser {
+  username: string;
+  name: string;
+  email: string;
+  profilePictureUrl?: string;
+  cognitoId?: string;
+  roleId?: number;
+  locationId?: number;
+}
+
+export interface UpdatedUser {
+  userId?: number;
+  username: string;
+  name: string;
+  email: string;
+  profilePictureUrl?: string;
+  cognitoId?: string;
+  roleId?: number;
+  locationId?: number;
+}
+
+export interface Role {
+  roleId?: number;
+  name: string;
+}
+
+export interface NewRole {
+  name: string;
+}
+
+export interface UpdatedRole {
+  roleId?: number;
+  name: string;
 }
 
 export interface Manufacturer {
@@ -1019,7 +1063,7 @@ export interface SendMailResponse {
 export const api = createApi({
   baseQuery: fetchBaseQuery({ baseUrl: process.env.NEXT_PUBLIC_API_BASE_URL }),
   reducerPath: "api",
-  tagTypes: ["DashboardMetrics", "Products", "Users", "Expenses","Manufacturers","Customers","Suppliers","Categories","Locations",
+  tagTypes: ["DashboardMetrics", "Products", "Users", "Roles","Expenses","Manufacturers","Customers","Suppliers","Categories","Locations",
     "VehicleTypes",
     "Makes",
     "Models",
@@ -1043,6 +1087,26 @@ export const api = createApi({
     "Notas",
   ],
   endpoints: (build) => ({
+
+    getAuthUser: build.query({
+      queryFn: async (_, _queryApi, _extraoptions, fetchWithBQ) => {
+        try {
+          const user = await getCurrentUser();
+          const session = await fetchAuthSession();
+          if (!session) throw new Error("No session found");
+          const { userSub } = session;
+          const { accessToken } = session.tokens ?? {};
+
+          const userDetailsResponse = await fetchWithBQ(`users/${userSub}`);
+          const userDetails = userDetailsResponse.data as User;
+
+          return { data: { user, userSub, userDetails } };
+        } catch (error: any) {
+          return { error: error.message || "Could not fetch user data" };
+        }
+      },
+    }),
+
     getDashboardMetrics: build.query<DashboardMetrics, void>({
       query: () => "/dashboard",
       providesTags: ["DashboardMetrics"],
@@ -1106,10 +1170,57 @@ export const api = createApi({
       }),
       invalidatesTags: ["Products"],
     }),
+
     getUsers: build.query<User[], void>({
       query: () => "/users",
       providesTags: ["Users"],
     }),
+ 
+    createUser: build.mutation<User, NewUser>({
+      query: (newUser) => ({
+        url: "/users",
+        method: "POST",
+        body: newUser,
+      }),
+      invalidatesTags: ["Users"],
+    }),
+
+    updateUser: build.mutation<User, { id: string; data: UpdatedUser }>({
+      query: ({ id, data }) => ({
+        url: `/users/${id}`,
+        method: "PUT",
+        body: data,
+      }),
+      invalidatesTags: ["Users"],
+    }),
+
+    getRoles: build.query<Role[], void>({
+      query: () => "/roles",
+      providesTags: ["Roles"],
+    }),
+    getRoleById: build.query<Role, string>({
+      query: (id) => ({
+        url: `/roles/${id}`,
+      }),
+      providesTags: (result, error, id) => [{ type: "Roles", id }],
+    }),
+    createRole: build.mutation<Role, NewRole>({
+      query: (newRole) => ({
+        url: "/roles",
+        method: "POST",
+        body: newRole,
+      }),
+      invalidatesTags: ["Roles"],
+    }),
+    updateRole: build.mutation<Role, { id: string; data: UpdatedRole }>({
+      query: ({ id, data }) => ({
+        url: `/roles/${id}`,
+        method: "PUT",
+        body: data,
+      }),
+      invalidatesTags: ["Roles"],
+    }),
+
     getExpensesByCategory: build.query<ExpenseByCategorySummary[], void>({
       query: () => "/expenses",
       providesTags: ["Expenses"],
@@ -1391,6 +1502,10 @@ export const api = createApi({
       }),
       providesTags: ["Locations"],
     }),    
+    getLocationsByUsername: build.query<Location[], string>({
+      query: (username) => `/locations/byUser/${username}`,
+      providesTags: ['Locations'],
+    }),
     createLocation: build.mutation<Location, NewLocation>({
       query: (newLocation) => ({
         url: "/locations",
@@ -1919,6 +2034,18 @@ export const api = createApi({
 });
 
 export const {
+
+  useGetAuthUserQuery,
+
+  useGetUsersQuery,
+  useCreateUserMutation,
+  useUpdateUserMutation,
+ 
+  useGetRolesQuery,
+  useCreateRoleMutation,
+  useUpdateRoleMutation,
+  useGetRoleByIdQuery,
+
   useGetDashboardMetricsQuery,
 
   useSendMailMutation,
@@ -1934,8 +2061,6 @@ export const {
   useGetProductsQuery,
   useCreateProductMutation,
   useUpdateProductMutation,
-
-  useGetUsersQuery,
 
   useGetExpensesByCategoryQuery,
   
@@ -1985,6 +2110,7 @@ export const {
   useDeleteVehicleAvailabilityStatusMutation,
 
   useGetLocationsQuery,
+  useGetLocationsByUsernameQuery,
   useCreateLocationMutation,
   useUpdateLocationMutation,
   useDeleteLocationMutation,

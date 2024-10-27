@@ -39,6 +39,7 @@ import salesRoutes from "./routes/salesRoutes";
 import organizationRoutes from "./routes/organizationRoutes";
 import senderRoutes from "./routes/senderRoutes";
 import notaDeVentaRoutes from "./routes/notaDeVentaRoutes";
+import roleRoutes from "./routes/roleRoutes";
 
 /* CONFIGURATIONS */
 dotenv.config();
@@ -55,6 +56,7 @@ app.use(cors());
 app.use("/dashboard", dashboardRoutes); // http://localhost:8000/dashboard
 app.use("/products", productRoutes); // http://localhost:8000/products
 app.use("/users", userRoutes); // http://localhost:8000/users
+app.use("/roles", roleRoutes); // http://localhost:8000/roles
 app.use("/expenses", expenseRoutes); // http://localhost:8000/expenses
 app.use("/manufacturers", manufacturerRoutes); // http://localhost:8000/manufacturers
 app.use("/customers", customerRoutes); // http://localhost:8000/customers
