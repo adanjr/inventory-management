@@ -5,11 +5,16 @@ import { useGetVehicleSummaryByModelAndColorQuery,
          useGenerateSendPdfMutation, 
          VehicleModelSummary, 
          VehicleColor,
-         useCreateSaleMutation } from "@/state/api";
+         useCreateSaleMutation, 
+         Vehicle,
+         useGetVehiclesByLocationIdQuery,
+         useGetVehiclesForSaleQuery} from "@/state/api";
 import { ChangeEvent, FormEvent, useEffect, useState } from 'react';
+import SelectVehicleModal from './SelectVehicleModal';
 
 type CartItem = {
     modelId: string;
+    vehicleId: string;
     quantity: number;
     color: string;
     price: number;
@@ -30,10 +35,24 @@ const CheckoutPage = () => {
     const [quantity, setQuantity] = useState<number>(initialQuantity);
     const [paymentMethod, setPaymentMethod] = useState<string>('');
 
+    const search = ""; 
+
     const locationId = "2";
-    const { data: models = [], isLoading, isError } = useGetVehicleSummaryByModelAndColorQuery({ locationId, modelId });
+    const { data: models = [], isLoading, isError } = useGetVehicleSummaryByModelAndColorQuery(
+        { locationId, modelId }, 
+        { refetchOnMountOrArgChange: true }
+    );
+
+    const [selectedVehicles, setSelectedVehicles] = useState<Vehicle[]>([]);
+    const [availableVehicles, setAvailableVehicles] = useState<Vehicle[]>([]);
+    const [modalOpen, setModalOpen] = useState(false);
 
     const model = models.find((m) => m.modelId === Number(modelId));
+
+    const { data: vehicles } = useGetVehiclesForSaleQuery(
+        { locationId, modelId, colorId, search },
+        { skip: !locationId } // Evita la llamada si no hay locationId
+      );
 
     const [createSale] = useCreateSaleMutation();
 
@@ -52,14 +71,26 @@ const CheckoutPage = () => {
         country: "",
         postalCode: "",
     });
+
+    useEffect(() => {    
+        if (vehicles && vehicles.length > 0) {
+          setAvailableVehicles(vehicles);
+        } else {
+          setAvailableVehicles([]); // Limpia los vehículos si no hay selección
+          setSelectedVehicles([]);
+        }
+      }, [vehicles]);
    
     useEffect(() => {
         if (model && colorId) {
             const modelSelectedColor = model.colors.find(color => color.colorId === Number(colorId));
             const colorName = modelSelectedColor?.colorName ?? 'Color Desconocido';
 
+            const lastSelectedVehicle = selectedVehicles.length > 0 ? selectedVehicles[selectedVehicles.length - 1] : null;
+
             const item: CartItem = {
                 modelId: modelId || '',
+                vehicleId: lastSelectedVehicle ? lastSelectedVehicle.vehicleId.toString() : '',
                 quantity: quantity,
                 color: colorId || '',
                 price: model?.basePrice ?? 0,
@@ -70,7 +101,7 @@ const CheckoutPage = () => {
             };
             setCartItems([item]);
         }
-    }, [modelId, quantity, colorId, model]); // Incluye 'quantity' en las dependencias
+    }, [modelId, quantity, colorId, model, selectedVehicles]); // Incluye 'quantity' en las dependencias
 
     const subtotal = cartItems.reduce((acc, item) => acc + item.price * item.quantity, 0);
     const total = subtotal;
@@ -85,6 +116,10 @@ const CheckoutPage = () => {
     function handlePaymentChange(event: ChangeEvent<HTMLInputElement>): void {
         setPaymentMethod(event.target.value);
     }
+
+    const handleVehicleSelection = (selected: Vehicle[]) => {
+    setSelectedVehicles(selected);
+  };
 
     async function handlePayment() {
 
@@ -120,7 +155,7 @@ const CheckoutPage = () => {
                     modelId: Number(item.modelId),
                     colorId: Number(item.color),
                     isVehicle: true,
-                    vehicleId: null,  // Si aplica
+                    vehicleId: selectedVehicles.length > 0 ? selectedVehicles[0].vehicleId : null,  // Si aplica
                     quantity: item.quantity,
                     unitPrice: item.price,
                     subtotal: item.price * item.quantity,
@@ -337,6 +372,23 @@ const CheckoutPage = () => {
                     </div>
                 ))}
 
+                {/* Mostrar el serial del vehículo seleccionado */}
+                {selectedVehicles.length > 0 && (
+                        <div className="mb-2 text-center text-lg font-semibold">
+                            Vehículo: {selectedVehicles[0]?.internal_serial}
+                        </div>
+                    )}
+
+                <div className="flex justify-center mb-6">
+                    <button
+                        type="button"
+                        onClick={() => setModalOpen(true)}
+                        className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-700"
+                    >
+                        {selectedVehicles.length > 0 ? 'Modificar Elección' : 'Elegir Número de Serie'}
+                    </button>                           
+                </div>
+
                 <hr className="my-4 border-gray-600" />
                 <div className="flex justify-between mb-6">
                     <h3 className="text-xl font-semibold">Subtotal:</h3>
@@ -386,6 +438,14 @@ const CheckoutPage = () => {
             </div>
         </div>
         </div>
+
+        <SelectVehicleModal
+        open={modalOpen}
+        onClose={() => setModalOpen(false)}
+        availableVehicles={availableVehicles}
+        selectedVehicles={selectedVehicles}
+        onSelect={handleVehicleSelection}
+      />
     </div>
 
     );

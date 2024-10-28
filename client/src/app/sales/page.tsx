@@ -106,7 +106,7 @@ const ModelsPage = () => {
             <div className="w-1/3 flex flex-col justify-between px-4">
               {/* Model Name */}
               <div>
-                <h3 className="text-2xl text-gray-900 font-bold">{model.vehicleType} {model.modelName}</h3>
+                <p className="text-lg text-gray-700 font-bold">{model.vehicleType} {model.modelName}</p>                
               </div>
 
               {/* Battery Duration */}

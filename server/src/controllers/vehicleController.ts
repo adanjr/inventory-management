@@ -169,6 +169,88 @@ export const getVehicleById = async (req: Request, res: Response): Promise<void>
   }
 };
 
+export const getVehiclesByLocationModelColorStatus = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const search = req.query.search?.toString() || '';
+    const locationId = req.query.locationId ? Number(req.query.locationId) : null;
+    const modelId = req.query.modelId ? Number(req.query.modelId) : null;
+    const colorId = req.query.colorId ? Number(req.query.colorId) : null;
+
+    // Validar que locationId, modelId y colorId son números válidos
+    if (locationId !== null && isNaN(locationId)) {
+      res.status(400).json({ message: 'Invalid locationId' });
+      return;
+    }
+    if (modelId !== null && isNaN(modelId)) {
+      res.status(400).json({ message: 'Invalid modelId' });
+      return;
+    }
+    if (colorId !== null && isNaN(colorId)) {
+      res.status(400).json({ message: 'Invalid colorId' });
+      return;
+    }
+
+    // Construir la condición del filtro
+    const filters: any = {
+      ...(locationId && { locationId }), // Filtrar por locationId si está presente
+      ...(modelId && { modelId }), // Filtrar por modelId si está presente
+      ...(colorId && { colorId }), // Filtrar por colorId si está presente
+      availabilityStatus: { name: 'DISPONIBLE' }, // Filtrar por disponibilidad
+      OR: [
+        { vin: { contains: search, mode: 'insensitive' } },
+        { stockNumber: { contains: search, mode: 'insensitive' } },
+        { internal_serial: { contains: search, mode: 'insensitive' } },
+        { engineNumber: { contains: search, mode: 'insensitive' } },
+      ],
+    };
+
+    // Realizar la consulta con los filtros
+    const vehicles = await prisma.vehicles.findMany({
+      where: filters,
+      include: {
+        model: {
+          include: {
+            make: true,
+            family: true,
+          },
+        },
+        color: true,
+        condition: true,
+        availabilityStatus: true,
+        status: true,
+        location: true,
+        warranty: true,
+        batteryWarranty: true,
+      },
+    });
+
+    if (vehicles.length === 0) {
+      res.status(200).json([]); // Respuesta vacía
+      return;
+    }
+
+    const vehiclesWithDetails = vehicles.map(vehicle => ({
+      ...vehicle,
+      modelName: vehicle.model?.name || 'N/A',
+      makeName: vehicle.model?.make?.name || 'N/A',
+      familyName: vehicle.model?.family?.name || 'N/A',
+      colorName: vehicle.color?.name || 'N/A',
+      condition: vehicle.condition?.name || 'N/A',
+      availabilityStatusName: vehicle.availabilityStatus?.name || 'N/A',
+      statusName: vehicle.status?.name || 'N/A',
+      locationName: vehicle.location?.name || 'N/A',
+      warrantyInfo: vehicle.warranty?.description || 'N/A',
+      batteryWarrantyInfo: vehicle.batteryWarranty?.description || 'N/A',
+    }));
+
+    res.json(vehiclesWithDetails);
+  } catch (error) {
+    console.error('Error retrieving vehicles:', error); // Log del error para depuración
+    res.status(500).json({ message: "Error retrieving vehicles" });
+  }
+};
+
+
 export const getVehicleSummaryByModelAndColor = async (req: Request, res: Response): Promise<void> => {
   try {
     const { locationId } = req.query; // Obtener el locationId desde los parámetros de consulta

@@ -108,6 +108,8 @@ export const getSaleById = async (req: Request, res: Response): Promise<void> =>
         locationId,
         saleDetails,
       } = req.body;
+
+      console.log("body de create sale",req.body);
   
       // Validación básica de datos
       if (!totalAmount || !paymentMethod || !saleDetails || saleDetails.length === 0) {
@@ -163,18 +165,41 @@ export const getSaleById = async (req: Request, res: Response): Promise<void> =>
         const saleDetailsWithVehicle = await Promise.all(
           saleDetails.map(async (detail: any) => {
             if (detail.isVehicle) {
-              const vehicle = await prisma.vehicles.findFirst({
-                where: {
-                  modelId: detail.modelId,
-                  colorId: detail.colorId,
-                  locationId: locationId, // LocationId proporcionado en el detalle
-                },
-              });
-  
-              if (!vehicle) {
-                throw new Error(`Vehicle not found with modelId ${detail.modelId}, colorId ${detail.colorId}, locationId ${detail.locationId}`);
+              let vehicle;
+              
+              if(detail.vehicleId){
+                
+                vehicle = await prisma.vehicles.findFirst({
+                  where: {
+                    vehicleId: detail.vehicleId, // Suponiendo que 'id' es el campo del vehículo
+                    locationId: locationId, // LocationId proporcionado en el detalle
+                  },
+                });
+          
+                if (!vehicle) {
+                  throw new Error(`Vehicle not found with vehicleId ${detail.vehicleId} and locationId ${locationId}`);
+                }
+              } else{
+                
+                vehicle = await prisma.vehicles.findFirst({
+                  where: {
+                    modelId: detail.modelId,
+                    colorId: detail.colorId,
+                    locationId: locationId, // LocationId proporcionado en el detalle
+                  },
+                });
+    
+                if (!vehicle) {
+                  throw new Error(`Vehicle not found with modelId ${detail.modelId}, colorId ${detail.colorId}, locationId ${detail.locationId}`);
+                }
               }
-  
+
+              if (!vehicle) {
+                throw new Error(`Vehicle not found and locationId ${locationId}`);
+              }
+
+              
+
               return {
                 productId: detail.productId,
                 vehicleId: vehicle.vehicleId,

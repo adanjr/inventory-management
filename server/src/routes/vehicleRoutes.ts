@@ -7,7 +7,8 @@ import {
     createVehicleFromCSV,
     getVehicleById, 
     updateVehicle, 
-    deleteVehicle 
+    deleteVehicle, 
+    getVehiclesByLocationModelColorStatus
 } from '../controllers/vehicleController';
 
 const router = Router();
@@ -15,6 +16,7 @@ const router = Router();
 router.get("/", getVehicles);
 router.get("/modelsBySucursal", getVehicleSummaryByModelAndColor);
 router.get("/vehiclesByLocation", getVehiclesByLocation);
+router.get("/vehiclesForSale", getVehiclesByLocationModelColorStatus);
 router.post("/", createVehicle);
 router.post("/csv", createVehicleFromCSV);
 router.get("/:id", getVehicleById);

@@ -1856,6 +1856,22 @@ export const api = createApi({
       }),
       providesTags: (result, error, locationId) => [{ type: "Vehicles", locationId }],
     }),
+
+    getVehiclesForSale: build.query<Vehicle[], { locationId: string, modelId?: string, colorId?: string, search?: string }>({
+      query: ({ locationId, modelId, colorId, search }) => {
+        const params = new URLSearchParams();
+        params.append("locationId", locationId);
+        if (modelId) params.append("modelId", modelId);
+        if (colorId) params.append("colorId", colorId);
+        if (search) params.append("search", search);
+    
+        return {
+          url: `/vehicles/vehiclesForSale?${params.toString()}`,
+        };
+      },
+      providesTags: (result, error, { locationId }) => [{ type: "Vehicles", locationId }],
+    }),
+
     getVehicleSummaryByModelAndColor: build.query<VehicleModelSummary[], { locationId: string, modelId?: string }>({
       query: ({ locationId, modelId }) => {
         let url = `/vehicles/modelsBySucursal?locationId=${locationId}`;
@@ -2188,6 +2204,7 @@ export const {
    useGetVehicleByIdQuery,
    useGetVehicleSummaryByModelAndColorQuery,
    useGetVehiclesByLocationIdQuery,
+   useGetVehiclesForSaleQuery,
    useCreateVehicleMutation,
    useCreateVehicleFromCSVMutation,
    useUpdateVehicleMutation,

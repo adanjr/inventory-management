@@ -21,6 +21,8 @@ const ColorSelector = ({ models, colorId, modelId }: ColorSelectorProps) => {
   // Encontrar el modelo actual solo si models no es null
   const model = models?.find((m) => m.modelId === Number(modelId));
 
+  console.log("model:",model);
+
   // Lógica para manejar el color inicial
   useEffect(() => {
     if (model) {
