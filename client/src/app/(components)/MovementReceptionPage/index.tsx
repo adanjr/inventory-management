@@ -48,6 +48,8 @@ const MovementReceptionPage = ({ movementId }: { movementId: string }) => {
 
     try {
 
+      console.log("user details:",currentUserDetails);
+
       await updateMovement({ id: movementId, data: updatedMovement });  
       alert('Recepción confirmada con éxito');
       router.push('/inventoryMovements');
