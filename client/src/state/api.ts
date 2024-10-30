@@ -913,6 +913,7 @@ export interface Movement {
   toLocation?: { name: string };
   fromLocationName: string;
   toLocationName: string;
+  receivedByName: string;
 
   details: MovementDetail[];   
   

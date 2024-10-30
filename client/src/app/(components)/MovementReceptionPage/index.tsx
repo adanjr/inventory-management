@@ -1,6 +1,6 @@
 import React, { useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { useGetMovementByIdQuery, useUpdateMovementMutation } from '@/state/api';
+import { useGetMovementByIdQuery, useUpdateMovementMutation, useGetAuthUserQuery } from '@/state/api';
 import Header from '@/app/(components)/Header';
 import { useReactToPrint } from 'react-to-print';
 
@@ -15,6 +15,8 @@ const MovementReceptionPage = ({ movementId }: { movementId: string }) => {
   const { data: movement, isLoading, isError } = useGetMovementByIdQuery(movementId);
   const router = useRouter();
   const printRef = useRef<HTMLDivElement | null>(null);
+
+  const { data: currentUser } = useGetAuthUserQuery({});
 
   // Estado inicializado con valores predeterminados
   const [arrivalDate, setArrivalDate] = useState<Date>(new Date());
@@ -31,9 +33,15 @@ const MovementReceptionPage = ({ movementId }: { movementId: string }) => {
   });
 
   const handleConfirmReception = async () => {
+
+    if (!currentUserDetails || !currentUserDetails.userId) {
+      alert('Error: usuario no encontrado.');
+      return; 
+    }
+
     const updatedMovement = {
       arrivalDate,
-      receivedBy,
+      receivedBy: currentUserDetails.userId.toString() ,
       isReceived,
       receptionNotes,
     };
@@ -48,6 +56,9 @@ const MovementReceptionPage = ({ movementId }: { movementId: string }) => {
       alert('Error al confirmar la recepción');
     }
   };
+
+  if (!currentUser) return null;
+  const currentUserDetails = currentUser?.userDetails;
 
   if (isLoading) return <div>Cargando...</div>;
   if (isError || !movement) return <div>Error al cargar los detalles del movimiento.</div>;
@@ -121,17 +132,6 @@ const MovementReceptionPage = ({ movementId }: { movementId: string }) => {
             value={arrivalDate.toISOString().split('T')[0]}
             onChange={(e) => setArrivalDate(new Date(e.target.value))}
             className="border border-gray-300 rounded p-2"
-          />
-        </div>
-
-        <div className="flex flex-col mt-4">
-          <label className="text-gray-700 font-medium">Recibido Por</label>
-          <input
-            type="text"
-            value={receivedBy}
-            onChange={(e) => setReceivedBy(e.target.value)}
-            className="border border-gray-300 rounded p-2"
-            placeholder="Nombre del receptor"
           />
         </div>
 

@@ -7,6 +7,7 @@ import {
   useGetVehiclesByLocationIdQuery,
   useGetProductsQuery,
   useCreateMovementMutation,
+  useGetAuthUserQuery,
 } from '@/state/api';
 import Header from '@/app/(components)/Header';
 import { Product, Location, Vehicle } from '@/state/api';
@@ -27,6 +28,8 @@ type MovementFormData = {
 
 const InventoryMovementsPage = () => {
   const router = useRouter();
+
+  const { data: currentUser } = useGetAuthUserQuery({});
   const { data: products = [] } = useGetProductsQuery();
   const { data: locations = [] } = useGetLocationsQuery();
 

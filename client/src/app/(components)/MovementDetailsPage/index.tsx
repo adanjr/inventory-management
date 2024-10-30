@@ -97,7 +97,7 @@ const MovementDetailsPage = ({ movementId }: { movementId: string }) => {
               <div className="flex flex-col">
                 <label className="text-gray-700 font-medium">Recibido Por</label>
                 <p className="border border-gray-300 rounded p-2">
-                    {movement.receivedBy || ''}
+                    {movement.receivedByName || ''}
                 </p>
               </div>
 

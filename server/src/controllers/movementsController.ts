@@ -120,7 +120,8 @@ export const getMovementById = async (req: Request, res: Response): Promise<void
       where: { movementId: Number(id) },
       include: {
         fromLocation: true,    // Incluye la ubicación de origen
-        toLocation: true,      // Incluye la ubicación de destino
+        toLocation: true, 
+        receivedBy: true,     // Incluye la ubicación de destino
         MovementDetail: {      // Incluye los detalles del movimiento
           include: {
             product: true,    // Incluye productos relacionados en el detalle
@@ -148,8 +149,9 @@ export const getMovementById = async (req: Request, res: Response): Promise<void
       // Transforma el movimiento para incluir los nombres de las ubicaciones
       const transformedMovement = {
         ...movement,
-        fromLocationName: movement.fromLocation?.name || null,  // Transforma la ubicación de origen en su nombre
-        toLocationName: movement.toLocation?.name || null,      // Transforma la ubicación de destino en su nombre
+        fromLocationName: movement.fromLocation?.name || null,  
+        toLocationName: movement.toLocation?.name || null,  
+        receivedByName: movement.receivedBy?.name || null,     
         vehicles: movement.MovementDetail.map(detail => ({
           vehicleId: detail.vehicle?.vehicleId,
           internal_serial: detail.vehicle?.internal_serial,
@@ -171,35 +173,36 @@ export const updateMovement = async (req: Request, res: Response): Promise<void>
   try {
     const { id } = req.params;
     const {
-      arrivalDate,    
-      receivedBy,     
-      isReceived,     
-      receptionNotes, 
+      arrivalDate,
+      receivedBy,
+      isReceived,
+      receptionNotes,
     } = req.body;
 
-    // Actualizar el movimiento
-    const movement = await prisma.movements.update({
-      where: { movementId: Number(id) },
-      data: {
-        arrivalDate,     
-        receivedBy,      
-        isReceived,      
-        receptionNotes,
-        status: "COMPLETADO"
-      },
-    });
+    await prisma.$transaction(async (prisma) => {
+      // Actualizar el movimiento
+      const movement = await prisma.movements.update({
+        where: { movementId: Number(id) },
+        data: {
+          arrivalDate,
+          receivedBy: { connect: { userId: Number(receivedBy) } },
+          isReceived,
+          receptionNotes,
+          status: "COMPLETADO"
+        },
+      });
 
-    const movementUpdated = await prisma.movements.findFirst({
+      const movementUpdated = await prisma.movements.findFirst({
         where: {
-          movementId: Number(id), // Convertir a número
+          movementId: Number(id),
         },
       });
 
       const movementDetails = await prisma.movementDetail.findMany({
         where: {
-          movementId: Number(id), // Convertir a número
+          movementId: Number(id),
         },
-      });  
+      });
 
       const inTransitStatus = await prisma.vehicleAvailabilityStatus.findFirst({
         where: {
@@ -208,23 +211,26 @@ export const updateMovement = async (req: Request, res: Response): Promise<void>
       });
 
       if (!inTransitStatus) {
-        throw new Error('No se encontró el estado de "EN TRANSITO"');
+        throw new Error('No se encontró el estado de "DISPONIBLE"');
       }
-  
-    await prisma.vehicles.updateMany({
-      where: {
-        vehicleId: {
-          in: movementDetails.map((detail: any) => detail.vehicleId), // Los IDs de los vehículos a actualizar
-        },
-      },
-      data: {
-        locationId: movementUpdated?.toLocationId, // Asignar Ubicacion Destino
-        availabilityStatusId: inTransitStatus.statusId, // Lo pone en DISPONIBLE
-      },
-    });
 
-    res.json(movement);
+      // Actualizar la ubicación y el estado de disponibilidad de los vehículos relacionados
+      await prisma.vehicles.updateMany({
+        where: {
+          vehicleId: {
+            in: movementDetails.map((detail: any) => detail.vehicleId),
+          },
+        },
+        data: {
+          locationId: movementUpdated?.toLocationId,
+          availabilityStatusId: inTransitStatus.statusId,
+        },
+      });
+
+      res.json(movement); // Enviar respuesta solo si la transacción fue exitosa
+    });
   } catch (error) {
+    console.error("Error updating movement:", error);
     res.status(500).json({ message: "Error updating movement" });
   }
 };

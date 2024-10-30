@@ -34,7 +34,8 @@ model User {
   purchases         Purchases[]
   movementsCreated  Movements[] @relation("CreatedBy")
   movementsReceived Movements[] @relation("ReceivedBy")
-  users             UserRole[]   
+  users             UserRole[]
+  ReturnSale        SalesReturns[]
 }
 
 model Roles {
@@ -99,6 +100,7 @@ model Products {
   saleDetails        SaleDetails[]
   purchaseDetails    PurchaseDetails[]
   movementDetail     MovementDetail[]
+  ReturnSaleDetail   SaleDetailsReturns[]
 }
 
 model Categories {
@@ -157,6 +159,7 @@ model Vehicles {
   saleDetail                SaleDetails[]
   purchaseDetail            PurchaseDetails[]
   movementDetail            MovementDetail[] 
+  ReturnSaleDetail          SaleDetailsReturns[]
 }
 
 model Models {
@@ -302,7 +305,8 @@ model Sales {
   location          Locations?    @relation(fields: [locationId], references: [locationId])
   user              User?    @relation(fields: [createdBy], references: [userId])
   
-  saleDetails SaleDetails[]
+  saleDetails       SaleDetails[]
+  ReturnSale        SalesReturns[]
 }
 
 model SaleDetails {
@@ -346,6 +350,7 @@ model Locations {
   sales             Sales[]
   movementFrom      Movements[] @relation("MovementFrom")
   movementTo        Movements[] @relation("MovementTo")
+  ReturnSale        SalesReturns[]
 }
 
 model InventoryLocations {
@@ -572,4 +577,35 @@ model Organization {
   startingPurchaseOrderNumber Int   // Número inicial para órdenes de compra
   responsiblePerson       String?  // Persona responsable
   logoUrl                 String?  // Persona responsable
+}
+
+model SalesReturns {
+  returnId            Int           @id @default(autoincrement())
+  originalSaleId      Int           // Relación a la venta original
+  timestamp           DateTime
+  totalAmount         Float
+  reason              String?       // Motivo de la devolución
+  processedBy         Int?          // Usuario que procesa la devolución
+  locationId          Int?
+
+  sale                Sales         @relation(fields: [originalSaleId], references: [saleId])
+  location            Locations?    @relation(fields: [locationId], references: [locationId])
+  user                User?         @relation(fields: [processedBy], references: [userId])
+
+  returnDetails       SaleDetailsReturns[]
+}
+
+model SaleDetailsReturns {
+  returnDetailId                Int       @id @default(autoincrement())
+  returnId                      Int
+  productId                     Int?
+  vehicleId                     Int?
+  quantity                      Int        // Cantidad devuelta
+  unitPrice                     Float
+  subtotal                      Float
+  restockingFee                 Float?     // Costo de reposición
+
+  returnSale                    SalesReturns  @relation(fields: [returnId], references: [returnId])
+  product                       Products?    @relation(fields: [productId], references: [productId])
+  vehicle                       Vehicles?    @relation(fields: [vehicleId], references: [vehicleId])
 }

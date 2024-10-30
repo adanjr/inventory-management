@@ -43,9 +43,27 @@ export const getUser = async (req: Request, res: Response): Promise<void> => {
       where: {
         cognitoId: cognitoId,
       },
+      include: {
+        Location: {
+          select: {
+            name: true, // Solo selecciona el campo 'name' de Location
+          },
+        },
+        Role: {
+          select: {
+            name: true, // Solo selecciona el campo 'roleName' de Role
+          },
+        },
+      },
     });
 
-    res.json(user);
+    const formattedUser = {
+      ...user,
+      locationName: user?.Location?.name || null, // Agrega el nombre de la ubicación
+      roleName: user?.Role?.name || null,         // Agrega el nombre del rol
+    };
+
+    res.json(formattedUser);
   } catch (error: any) {
     res
       .status(500)

@@ -2,6 +2,7 @@
 
 import { useAppDispatch, useAppSelector } from "@/app/redux";
 import { setIsSidebarCollapsed } from "@/state";
+import { useGetAuthUserQuery } from "@/state/api";
 import {
   Archive,
   BadgeDollarSign,
@@ -88,11 +89,25 @@ const SidebarLink = ({
   );
 };
 
+const roleBasedMenu: {
+  ADMINISTRADOR: string[];
+  GERENTE: string[];
+  VENDEDOR: string[];
+  ALMACENISTA: string[];
+} = {
+  ADMINISTRADOR: ["Dashboard", "Inventario", "Ventas", "Compras", "Catálogos", "Finanzas", "Reportes", "Administracion"],
+  GERENTE: ["Dashboard", "Inventario", "Ventas", "Compras", "Reportes"],
+  VENDEDOR: ["Dashboard", "Ventas"],
+  ALMACENISTA: ["Dashboard", "Inventario"],
+};
+
 const Sidebar = () => {
   const dispatch = useAppDispatch();
   const isSidebarCollapsed = useAppSelector(
     (state) => state.global.isSidebarCollapsed
   );
+
+  const { data: currentUser } = useGetAuthUserQuery({});
 
   const [filterText, setFilterText] = useState(""); // Estado del filtro de búsqueda
   const [isCatalogOpen, setIsCatalogOpen] = useState(false);
@@ -107,6 +122,10 @@ const Sidebar = () => {
     dispatch(setIsSidebarCollapsed(!isSidebarCollapsed));
   };
 
+  if (!currentUser) return null;
+  const currentUserDetails = currentUser?.userDetails;
+
+ 
   const toggleCatalog = () => setIsCatalogOpen(!isCatalogOpen);
   const toggleInventory = () => setIsInventoryOpen(!isInventoryOpen);
   const toggleSales = () => setIsSalesOpen(!isSalesOpen);
@@ -142,6 +161,7 @@ const Sidebar = () => {
       href: "",
       subItems: [
         { label: "Punto de Venta", href: "/sales", icon: BadgeDollarSign },    
+        { label: "Punto de Venta 2", href: "/pointOfSale", icon: BadgeDollarSign },  
         { label: "Ordenes de Venta", href: "/salesOrders", icon: BadgeDollarSign },       
         { label: "Clientes", href: "/customers", icon: SquareUser },
       ],
@@ -226,6 +246,13 @@ const Sidebar = () => {
     })
     .filter(Boolean);
 
+    console.log("user:",currentUserDetails);
+    const roleName = currentUserDetails.roleName as keyof typeof roleBasedMenu;
+
+    const authorizedMenuItems = menuItems.filter((item) =>
+      roleBasedMenu[roleName]?.includes(item.label)
+    );
+
   const sidebarClassNames = `fixed flex flex-col ${
     isSidebarCollapsed ? "w-0 md:w-16" : "w-72 md:w-64"
   } bg-white transition-all duration-300 overflow-hidden h-full shadow-md z-40`;
@@ -276,7 +303,7 @@ const Sidebar = () => {
 
       {/* LINKS */}
       <div className="flex-grow mt-4 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-400 scrollbar-track-gray-200">
-      {filteredMenuItems.map((item, index) => (
+      {authorizedMenuItems.map((item, index) => (
         <div key={index}>
           {/* Menú de nivel 1 */}
           <div
