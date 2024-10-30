@@ -41,7 +41,7 @@ const MovementReceptionPage = ({ movementId, currentUserDetails }: MovementRecep
 
     const updatedMovement = {
       arrivalDate,
-      receivedBy: currentUserDetails.userId.toString() ,
+      receivedBy: currentUserDetails?.userId ? currentUserDetails.userId.toString() : '3',
       isReceived,
       receptionNotes,
     };
