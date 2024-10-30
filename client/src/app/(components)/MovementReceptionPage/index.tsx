@@ -27,7 +27,6 @@ const MovementReceptionPage = ({ movementId }: { movementId: string }) => {
   // Mutación para actualizar el movimiento
   const [updateMovement] = useUpdateMovementMutation();
 
-  console.log("user details:",currentUserDetails);
 
   const handlePrint = useReactToPrint({
     contentRef: printRef,
@@ -62,6 +61,8 @@ const MovementReceptionPage = ({ movementId }: { movementId: string }) => {
 
   if (!currentUser) return null;
   const currentUserDetails = currentUser?.userDetails;
+
+  console.log("user details:",currentUserDetails);
 
   if (isLoading) return <div>Cargando...</div>;
   if (isError || !movement) return <div>Error al cargar los detalles del movimiento.</div>;
