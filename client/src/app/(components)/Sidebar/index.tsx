@@ -303,7 +303,7 @@ const Sidebar = () => {
 
       {/* LINKS */}
       <div className="flex-grow mt-4 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-400 scrollbar-track-gray-200">
-      {authorizedMenuItems.map((item, index) => (
+      {menuItems.map((item, index) => (
         <div key={index}>
           {/* Menú de nivel 1 */}
           <div
