@@ -1,6 +1,6 @@
 import React, { useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { useGetMovementByIdQuery, useUpdateMovementMutation, useGetAuthUserQuery } from '@/state/api';
+import { useGetMovementByIdQuery, useUpdateMovementMutation, User } from '@/state/api';
 import Header from '@/app/(components)/Header';
 import { useReactToPrint } from 'react-to-print';
 
@@ -11,12 +11,16 @@ type MovementReceptionData = {
   receptionNotes?: string | null;
 };
 
-const MovementReceptionPage = ({ movementId }: { movementId: string }) => {
+interface MovementReceptionPageProps {
+  movementId: string;
+  currentUserDetails: User
+};
+
+
+const MovementReceptionPage = ({ movementId, currentUserDetails }: MovementReceptionPageProps) => {
   const { data: movement, isLoading, isError } = useGetMovementByIdQuery(movementId);
   const router = useRouter();
   const printRef = useRef<HTMLDivElement | null>(null);
-
-  const { data: currentUser } = useGetAuthUserQuery({});
 
   // Estado inicializado con valores predeterminados
   const [arrivalDate, setArrivalDate] = useState<Date>(new Date());
@@ -34,11 +38,6 @@ const MovementReceptionPage = ({ movementId }: { movementId: string }) => {
   });
 
   const handleConfirmReception = async () => {
-
-    if (!currentUserDetails || !currentUserDetails.userId) {
-      alert('Error: usuario no encontrado.');
-      return; 
-    }
 
     const updatedMovement = {
       arrivalDate,
@@ -58,11 +57,6 @@ const MovementReceptionPage = ({ movementId }: { movementId: string }) => {
       alert('Error al confirmar la recepción');
     }
   };
-
-  if (!currentUser) return null;
-  const currentUserDetails = currentUser?.userDetails;
-
-  console.log("user details:",currentUserDetails);
 
   if (isLoading) return <div>Cargando...</div>;
   if (isError || !movement) return <div>Error al cargar los detalles del movimiento.</div>;
