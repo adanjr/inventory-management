@@ -27,6 +27,8 @@ const MovementReceptionPage = ({ movementId }: { movementId: string }) => {
   // Mutación para actualizar el movimiento
   const [updateMovement] = useUpdateMovementMutation();
 
+  console.log("user details:",currentUserDetails);
+
   const handlePrint = useReactToPrint({
     contentRef: printRef,
     documentTitle: `Detalle_Movimiento_${movementId}`,
@@ -48,7 +50,6 @@ const MovementReceptionPage = ({ movementId }: { movementId: string }) => {
 
     try {
 
-      console.log("user details:",currentUserDetails);
 
       await updateMovement({ id: movementId, data: updatedMovement });  
       alert('Recepción confirmada con éxito');
