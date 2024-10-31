@@ -905,7 +905,7 @@ export interface Movement {
   status: string;  // Estados posibles del movimiento
   notes?: string | null;           // Notas adicionales
   approved: boolean;               // Indica si el movimiento fue aprobado
-  createdBy: string;               // Usuario que creó el movimiento
+  createdById: string;               // Usuario que creó el movimiento
   approvedBy?: string | null;      // Usuario que aprobó el movimiento, puede ser opcional
   lastUpdatedAt: string;           // Fecha de la última actualización en formato ISO
 
@@ -913,6 +913,7 @@ export interface Movement {
   toLocation?: { name: string };
   fromLocationName: string;
   toLocationName: string;
+  createdByName: string;
   receivedByName: string;
 
   details: MovementDetail[];   
@@ -935,7 +936,7 @@ export interface NewMovement {
   status: string;
   notes?: string | null;
   approved?: boolean;        // Puede ser opcional al crear un nuevo movimiento
-  createdBy: string;
+  createdById: string;
   details: NewMovementDetail[];  // Colección de detalles del movimiento que se está creando
 }
 

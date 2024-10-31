@@ -1,7 +1,15 @@
 "use client";
 
 import { useState } from "react";
-import { useGetUsersQuery, useGetRolesQuery, NewUser, useCreateUserMutation, Role, useCreateRoleMutation, NewRole, User } from "@/state/api";
+import { useRouter } from 'next/navigation';
+import { useGetUsersQuery, 
+         useGetRolesQuery, 
+         NewUser, 
+         useCreateUserMutation, 
+         Role, 
+         useCreateRoleMutation, 
+         NewRole, 
+         User } from "@/state/api";
 import { DataGrid, GridColDef } from "@mui/x-data-grid";
 import Header from "@/app/(components)/Header";
 import CreateUserModal from "./CreateUserModal";
@@ -18,13 +26,8 @@ const userColumns: GridColDef[] = [
   { field: "locationName", headerName: "Ubicacion", width: 200 },
 ];
 
-// Columnas para la tabla de roles
-const roleColumns: GridColDef[] = [
-  { field: "roleId", headerName: "ID", width: 90 },
-  { field: "name", headerName: "Nombre del Rol", width: 200 },
-];
-
 const UsersAndRolesPage = () => {
+  const router = useRouter();
   const [activeTab, setActiveTab] = useState("users");
   const { data: users = [], isLoading: usersLoading } = useGetUsersQuery();
   const { data: roles = [], isLoading: rolesLoading } = useGetRolesQuery();
@@ -64,6 +67,28 @@ const UsersAndRolesPage = () => {
     setIsCreateRoleModalOpen(false);
   };
 
+  const handleEdit = (roleId: string) => {
+    router.push(`/users/roles/edit/${roleId}`)
+  };
+  // Columnas para la tabla de roles
+  const roleColumns: GridColDef[] = [
+    { field: "roleId", headerName: "ID", width: 90 },
+    { field: "name", headerName: "Nombre del Rol", width: 200 },
+    {
+      field: 'actions',
+      headerName: 'Acciones',
+      width: 150,
+      renderCell: (params) => (
+        <button
+          onClick={() => handleEdit(params.row.roleId)}
+          className="text-blue-500 hover:underline"
+        >
+          Editar
+        </button>
+      ),
+      },
+    ];
+
   return (
     <div className="flex flex-col">
       {/* Header */}
@@ -84,7 +109,6 @@ const UsersAndRolesPage = () => {
           Roles
         </button>
       </div>
-
       {/* Contenido de Usuarios */}
       {activeTab === "users" && (
         <div>
@@ -115,7 +139,7 @@ const UsersAndRolesPage = () => {
             <Header name="Roles" />
             <button
               className="flex items-center bg-blue-500 hover:bg-blue-700 text-gray-200 font-bold py-2 px-4 rounded"
-              onClick={() => setIsCreateRoleModalOpen(true)}
+              onClick={() => router.push("/users/roles/create")}
             >
               <PlusCircleIcon className="w-5 h-5 mr-2 !text-gray-200" /> Crear Rol 
               </button>
@@ -123,8 +147,7 @@ const UsersAndRolesPage = () => {
           <DataGrid
             rows={roles}
             columns={roleColumns}
-            getRowId={(row) => row.roleId}
-            checkboxSelection
+            getRowId={(row) => row.roleId}             
             loading={rolesLoading}
             className="bg-white shadow rounded-lg border border-gray-200 mt-5 !text-gray-700"
           />

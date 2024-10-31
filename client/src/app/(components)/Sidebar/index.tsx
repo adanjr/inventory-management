@@ -246,12 +246,11 @@ const Sidebar = () => {
     })
     .filter(Boolean);
 
-    console.log("user:",currentUserDetails);
-    const roleName = currentUserDetails.roleName as keyof typeof roleBasedMenu;
+    //const roleName = currentUserDetails.roleName as keyof typeof roleBasedMenu;
 
-    const authorizedMenuItems = menuItems.filter((item) =>
-      roleBasedMenu[roleName]?.includes(item.label)
-    );
+    //const authorizedMenuItems = menuItems.filter((item) =>
+    //  roleBasedMenu[roleName]?.includes(item.label)
+    // );
 
   const sidebarClassNames = `fixed flex flex-col ${
     isSidebarCollapsed ? "w-0 md:w-16" : "w-72 md:w-64"

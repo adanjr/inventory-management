@@ -47,7 +47,8 @@ export const createMovement = async (req: Request, res: Response): Promise<void>
       notes,
       approved,
       orderReference,
-      details, // Array de detalles del movimiento
+      createdById,
+      details, 
     } = req.body;
 
     const movementDateObj = new Date(movementDate);
@@ -55,15 +56,20 @@ export const createMovement = async (req: Request, res: Response): Promise<void>
     // Crear el movimiento original
     const movement = await prisma.movements.create({
       data: {
-        fromLocationId,
-        toLocationId,
+        fromLocation: {
+          connect: { locationId: fromLocationId }
+        },
+        toLocation: {
+          connect: { locationId: toLocationId }
+        },
         quantity,
         movementType,
         movementDate: movementDateObj,
         status,
         notes,
         approved,
-        orderReference,
+        orderReference,       
+        createdBy: { connect: { userId: Number(createdById) } },
       },
     });
 
@@ -121,6 +127,7 @@ export const getMovementById = async (req: Request, res: Response): Promise<void
       include: {
         fromLocation: true,    // Incluye la ubicación de origen
         toLocation: true, 
+        createdBy: true,  
         receivedBy: true,     // Incluye la ubicación de destino
         MovementDetail: {      // Incluye los detalles del movimiento
           include: {
@@ -151,6 +158,7 @@ export const getMovementById = async (req: Request, res: Response): Promise<void
         ...movement,
         fromLocationName: movement.fromLocation?.name || null,  
         toLocationName: movement.toLocation?.name || null,  
+        createdByName: movement.createdBy?.name || null,  
         receivedByName: movement.receivedBy?.name || null,     
         vehicles: movement.MovementDetail.map(detail => ({
           vehicleId: detail.vehicle?.vehicleId,

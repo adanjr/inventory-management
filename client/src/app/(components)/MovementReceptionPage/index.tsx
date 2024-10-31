@@ -91,6 +91,11 @@ const MovementReceptionPage = ({ movementId, currentUserDetails }: MovementRecep
           <p className="border border-gray-300 rounded p-2">{new Date(movement.movementDate).toLocaleDateString()}</p>
         </div>
 
+        <div className="flex flex-col">
+          <label className="text-gray-700 font-medium">Creado Por</label>
+          <p className="border border-gray-300 rounded p-2">{movement.createdByName}</p>
+        </div>
+
         <div className="col-span-2">
           <label className="text-gray-700 font-medium">Vehículos Transferidos</label>
           <table className="min-w-full table-auto border-collapse border border-gray-400">

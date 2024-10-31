@@ -10,7 +10,7 @@ import {
 } from '@/state/api';
 import Header from '@/app/(components)/Header';
 import { Product, Location, Vehicle } from '@/state/api';
-import VehicleModal from '../VehicleModal';
+import VehicleModal from '@/app/(components)/VehicleModal';
 
 type MovementFormData = {
   productId?: number | null; // Cambia a number o null
@@ -85,7 +85,7 @@ const CreateMovementPage = () => {
       status: formData.status,
       notes: formData.notes,
       approved: false,
-      createdBy: 'userdemo',
+      createdById: '3',
       details: movementDetails,
     };
   
