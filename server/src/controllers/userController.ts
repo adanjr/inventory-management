@@ -28,6 +28,7 @@ export const getUsers = async (req: Request, res: Response): Promise<void> => {
       ...user,
       locationName: user.Location?.name, // Agrega el nombre de la ubicación
       roleName: user.Role?.name,     // Agrega el nombre del rol
+      active: true,
     }));
 
     res.json(formattedUsers);
@@ -42,6 +43,41 @@ export const getUser = async (req: Request, res: Response): Promise<void> => {
     const user = await prisma.user.findUnique({
       where: {
         cognitoId: cognitoId,
+      },
+      include: {
+        Location: {
+          select: {
+            name: true, // Solo selecciona el campo 'name' de Location
+          },
+        },
+        Role: {
+          select: {
+            name: true, // Solo selecciona el campo 'roleName' de Role
+          },
+        },
+      },
+    });
+
+    const formattedUser = {
+      ...user,
+      locationName: user?.Location?.name || null, // Agrega el nombre de la ubicación
+      roleName: user?.Role?.name || null,         // Agrega el nombre del rol
+    };
+
+    res.json(formattedUser);
+  } catch (error: any) {
+    res
+      .status(500)
+      .json({ message: `Error retrieving user: ${error.message}` });
+  }
+};
+
+export const getUserById = async (req: Request, res: Response): Promise<void> => {
+  const { userId } = req.params;
+  try {
+    const user = await prisma.user.findUnique({
+      where: {
+        userId: Number(userId),
       },
       include: {
         Location: {

@@ -410,6 +410,7 @@ export interface User {
   role: Role;
   locationName: string;
   roleName: string;
+  active: boolean;
 }
 
 export interface NewUser {
@@ -1191,7 +1192,14 @@ export const api = createApi({
       query: () => "/users",
       providesTags: ["Users"],
     }),
- 
+
+    getUserById: build.query<User, string>({
+      query: (id) => ({
+        url: `/users/byUserId/${id}`,
+      }),
+      providesTags: (result, error, id) => [{ type: "Users", id }],
+    }),
+    
     createUser: build.mutation<User, NewUser>({
       query: (newUser) => ({
         url: "/users",
@@ -1209,6 +1217,14 @@ export const api = createApi({
       }),
       invalidatesTags: ["Users"],
     }),
+
+    deleteUser: build.mutation<void, string>({
+      query: (id) => ({
+        url: `/users/${id}`,
+        method: "DELETE",       
+      }),
+      invalidatesTags: ["Users"],
+    }), 
 
     getRoles: build.query<Role[], void>({
       query: () => "/roles",
@@ -2070,8 +2086,10 @@ export const {
   useGetAuthUserQuery,
 
   useGetUsersQuery,
+  useGetUserByIdQuery,
   useCreateUserMutation,
   useUpdateUserMutation,
+  useDeleteUserMutation,
  
   useGetRolesQuery,
   useCreateRoleMutation,

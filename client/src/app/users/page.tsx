@@ -3,27 +3,26 @@
 import { useState } from "react";
 import { useRouter } from 'next/navigation';
 import { useGetUsersQuery, 
-         useGetRolesQuery, 
-         NewUser, 
-         useCreateUserMutation, 
-         Role, 
-         useCreateRoleMutation, 
-         NewRole, 
-         User } from "@/state/api";
-import { DataGrid, GridColDef } from "@mui/x-data-grid";
+         useGetRolesQuery,          
+         useCreateUserMutation,   
+         useUpdateUserMutation,      
+         NewUser,         
+         User, 
+         useDeleteUserMutation} from "@/state/api";
+import { DataGrid, GridColDef, GridRowSelectionModel } from "@mui/x-data-grid";
 import Header from "@/app/(components)/Header";
-import CreateUserModal from "./CreateUserModal";
-import CreateRoleModal from "./CreateRoleModal";
-import { PlusCircleIcon } from "lucide-react";
+import CreateUserModal from "@/app/users/modals/CreateUserModal";
+import { PlusCircleIcon, EditIcon, Ban } from "lucide-react";
 
 // Columnas para la tabla de usuarios
 const userColumns: GridColDef[] = [
-  { field: "userId", headerName: "ID", width: 90 },
-  { field: "username", headerName: "UserName", width: 200 },
-  { field: "name", headerName: "Nombre", width: 200 },
+  { field: "userId", headerName: "ID", width: 30 },
+  { field: "username", headerName: "UserName", width: 100 },
+  { field: "name", headerName: "Nombre", width: 180 },
   { field: "email", headerName: "Email", width: 200 },
-  { field: "roleName", headerName: "Rol", width: 200 },
-  { field: "locationName", headerName: "Ubicacion", width: 200 },
+  { field: "roleName", headerName: "Rol", width: 150 },
+  { field: "locationName", headerName: "Ubicacion", width: 180 },
+  { field: "active", headerName: "Activo", width: 180 },
 ];
 
 const UsersAndRolesPage = () => {
@@ -33,18 +32,18 @@ const UsersAndRolesPage = () => {
   const { data: roles = [], isLoading: rolesLoading } = useGetRolesQuery();
 
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
-  const [isCreateRoleModalOpen, setIsCreateRoleModalOpen] = useState(false);
-  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-  const [isEditRoleModalOpen, setIsEditRoleModalOpen] = useState(false);
+  const [deleteUser] = useDeleteUserMutation();
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
-  const [selectedRole, setSelectedRole] = useState<Role | null>(null);
+  const [rowSelectionModel, setRowSelectionModel] = useState<GridRowSelectionModel>([]);
 
   const [createUser] = useCreateUserMutation();
-  const [createRole] = useCreateRoleMutation();
+  const [updateUser] = useUpdateUserMutation();
 
   const handleTabChange = (tab: string) => {
     setActiveTab(tab);
   };
+
+  const isSelectionEmpty = rowSelectionModel.length === 0;
 
   const handleCreateUser = async (newUserData: NewUser) => {
     try {
@@ -62,14 +61,23 @@ const UsersAndRolesPage = () => {
     }
   };
 
-  const handleCreateRole = async (roleData: NewRole) => {
-    await createRole(roleData);
-    setIsCreateRoleModalOpen(false);
-  };
-
   const handleEdit = (roleId: string) => {
     router.push(`/users/roles/edit/${roleId}`)
-  };
+  };  
+
+ const handleDisable = async () => {
+      const selectedUserId = rowSelectionModel[0];
+    
+      if (window.confirm("¿Estás seguro de que deseas dehabilitar este usuario?")) {
+        try {
+          await deleteUser(String(selectedUserId));
+          alert("Usuario deshabilitado con éxito.");
+        } catch (error) {
+          console.error("Error deshabilitando el usuario:", error);         
+        }
+      }
+    };
+
   // Columnas para la tabla de roles
   const roleColumns: GridColDef[] = [
     { field: "roleId", headerName: "ID", width: 90 },
@@ -113,21 +121,42 @@ const UsersAndRolesPage = () => {
       {activeTab === "users" && (
         <div>
           <div className="flex justify-between items-center mb-6">
-            <Header name="Usuarios" />
-            <button
+            <Header name="Usuarios" />                    
+          </div>
+          <div className="flex space-x-4 mt-4">
+          <button
               className="flex items-center bg-blue-500 hover:bg-blue-700 text-gray-200 font-bold py-2 px-4 rounded"
               onClick={() => setIsCreateModalOpen(true)}
             >
               <PlusCircleIcon className="w-5 h-5 mr-2 !text-gray-200" /> Crear Usuario 
-              </button>
-          </div>
+          </button>      
+          <button
+            className="flex items-center bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+            onClick={() => router.push(`/users/edit/${rowSelectionModel[0]}`)}
+            disabled={isSelectionEmpty}
+          >
+            <EditIcon className="w-5 h-5 mr-2" />
+            Editar Usuario
+          </button>
+          <button
+            className="flex items-center bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded"
+            onClick={handleDisable}
+            disabled={isSelectionEmpty}
+          >
+            <Ban className="w-5 h-5 mr-2" />
+            Deshabilitar Usuario
+          </button>
+           
+        </div>
           <DataGrid
             rows={users}
             columns={userColumns}
-            getRowId={(row) => row.userId}
-            checkboxSelection
+            getRowId={(row) => row.userId}      
             loading={usersLoading}
+            disableMultipleRowSelection
             className="bg-white shadow rounded-lg border border-gray-200 mt-5 !text-gray-700"
+            onRowSelectionModelChange={(newRowSelectionModel) => setRowSelectionModel(newRowSelectionModel)}
+            rowSelectionModel={rowSelectionModel}
           />
         </div>
       )}
@@ -142,7 +171,7 @@ const UsersAndRolesPage = () => {
               onClick={() => router.push("/users/roles/create")}
             >
               <PlusCircleIcon className="w-5 h-5 mr-2 !text-gray-200" /> Crear Rol 
-              </button>
+              </button>             
           </div>
           <DataGrid
             rows={roles}
@@ -158,13 +187,8 @@ const UsersAndRolesPage = () => {
       <CreateUserModal
         isOpen={isCreateModalOpen}
         onClose={() => setIsCreateModalOpen(false)}
-        onCreate={handleCreateUser} />
-
-      <CreateRoleModal
-        isOpen={isCreateRoleModalOpen}
-        onClose={() => setIsCreateRoleModalOpen(false)}
-        onCreate={handleCreateRole}            
-      />
+        onCreate={handleCreateUser} />       
+      
     </div>
   );
 };
