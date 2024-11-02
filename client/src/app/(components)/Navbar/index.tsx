@@ -20,6 +20,7 @@ const Navbar = () => {
   const handleSignOut = async () => {
     try {
       await signOut();
+      window.location.href = "/"; // Refresca la página
     } catch (error) {
       console.error("Error signing out: ", error);
     }
