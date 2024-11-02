@@ -26,6 +26,8 @@ model User {
   locationId        Int?
   roleId            Int?
 
+  isActive          Boolean     @default(true)
+
   Location          Locations?  @relation(fields: [locationId], references: [locationId])
   Role              Roles?      @relation(fields: [roleId], references: [roleId])
 

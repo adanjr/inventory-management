@@ -1,122 +1,19 @@
- "use client";
-
 import { useAppDispatch, useAppSelector } from "@/app/redux";
 import { setIsSidebarCollapsed } from "@/state";
 import { useGetAuthUserQuery } from "@/state/api";
-import {
-  Archive,
-  BadgeDollarSign,
-  BatteryCharging,
-  Blocks,
-  Boxes,
-  Building,
-  Building2,   
-  Car,
-  CircleDollarSign,
-  Clipboard,
-  Copyright,
-  CreditCard,
-  DatabaseBackup,
-  DollarSign,  
-  Factory,
-  FileBox, 
-  FileText,
-  FolderTree,
-  Layout,
-  LucideIcon,
-  Map,
-  Mail,
-  Menu,
-  MonitorDot,
-  Package,
-  Percent,
-  Plug,
-  CheckCircle,
-  NotebookPen,
-  SlidersHorizontal,
-  ShoppingBag,
-  SquareUser,
-  User,
-  ChevronDown,
-  ChevronUp,
-  HandCoins,
-  Warehouse,
-} from "lucide-react";
+import MenuBuilder from "@/app/(components)/MenuBuilder";
 import Image from "next/image";
-import Link from "next/link";
-import { usePathname } from "next/navigation";
-import React, { useState } from "react";
-
-interface SidebarLinkProps {
-  href: string;
-  icon: LucideIcon;
-  label: string;
-  isCollapsed: boolean;
-}
-
-const SidebarLink = ({
-  href,
-  icon: Icon,
-  label,
-  isCollapsed,
-}: SidebarLinkProps) => {
-  const pathname = usePathname();
-  const isActive =
-    pathname === href || (pathname === "/" && href === "/dashboard");
-
-  return (
-    <Link href={href}>
-      <div
-        className={`cursor-pointer flex items-center ${
-          isCollapsed ? "justify-center py-4" : "justify-start px-8 py-4"
-        }
-        hover:text-blue-500 hover:bg-blue-100 gap-3 transition-colors ${
-          isActive ? "bg-blue-200 text-white" : ""
-        }
-      }`}
-      >
-        <Icon className="w-6 h-6 !text-gray-700" />
-
-        <span
-          className={`${
-            isCollapsed ? "hidden" : "block"
-          } font-medium text-gray-700`}
-        >
-          {label}
-        </span>
-      </div>
-    </Link>
-  );
-};
-
-const roleBasedMenu: {
-  ADMINISTRADOR: string[];
-  GERENTE: string[];
-  VENDEDOR: string[];
-  ALMACENISTA: string[];
-} = {
-  ADMINISTRADOR: ["Dashboard", "Inventario", "Ventas", "Compras", "Catálogos", "Finanzas", "Reportes", "Administracion"],
-  GERENTE: ["Dashboard", "Inventario", "Ventas", "Compras", "Reportes"],
-  VENDEDOR: ["Dashboard", "Ventas"],
-  ALMACENISTA: ["Dashboard", "Inventario"],
-};
+import { Menu, Layout, Archive, FileText, Car, Package, FileBox, FolderTree, BadgeDollarSign,
+  SquareUser, ShoppingBag, Building, Boxes, Factory, CheckCircle, BatteryCharging, Copyright,
+  NotebookPen , Plug , HandCoins, CircleDollarSign, CreditCard, MonitorDot, Building2, User,
+  Warehouse, DollarSign, Percent, Mail, Blocks, DatabaseBackup, Clipboard,LucideProps
+  } from "lucide-react";
+import { ForwardRefExoticComponent, RefAttributes, useState } from "react";
 
 const Sidebar = () => {
   const dispatch = useAppDispatch();
-  const isSidebarCollapsed = useAppSelector(
-    (state) => state.global.isSidebarCollapsed
-  );
-
+  const isSidebarCollapsed = useAppSelector((state) => state.global.isSidebarCollapsed);
   const { data: currentUser } = useGetAuthUserQuery({});
-
-  const [filterText, setFilterText] = useState(""); // Estado del filtro de búsqueda
-  const [isCatalogOpen, setIsCatalogOpen] = useState(false);
-  const [isInventoryOpen, setIsInventoryOpen] = useState(false);
-  const [isSalesOpen, setIsSalesOpen] = useState(false);
-  const [isPurchasesOpen, setIsPurchasesOpen] = useState(false);
-  const [isManagementOpen, setIsManagementOpen] = useState(false);
-  const [isFinanceOpen, setIsFinanceOpen] = useState(false);
-  const [isReportsOpen, setIsReportsOpen] = useState(false);
 
   const toggleSidebar = () => {
     dispatch(setIsSidebarCollapsed(!isSidebarCollapsed));
@@ -124,18 +21,18 @@ const Sidebar = () => {
 
   if (!currentUser) return null;
   const currentUserDetails = currentUser?.userDetails;
+  
+  const userRole = currentUserDetails?.roleName || 'NO ROLE';
 
- 
-  const toggleCatalog = () => setIsCatalogOpen(!isCatalogOpen);
-  const toggleInventory = () => setIsInventoryOpen(!isInventoryOpen);
-  const toggleSales = () => setIsSalesOpen(!isSalesOpen);
-  const togglePurchases = () => setIsPurchasesOpen(!isPurchasesOpen);
-  const toggleManagement = () => setIsManagementOpen(!isManagementOpen);
-  const toggleFinance = () => setIsFinanceOpen(!isFinanceOpen);
-  const toggleReports = () => setIsReportsOpen(!isReportsOpen);
+  interface MenuItem {
+    label: string;
+    icon: ForwardRefExoticComponent<Omit<LucideProps, "ref"> & RefAttributes<SVGSVGElement>>;
+    href: string;
+    subItems?: MenuItem[]; // Asegúrate de que subItems sea del tipo correcto
+  }
  
   // Lista completa del menú
-  const menuItems = [
+  const adminMenuItems: MenuItem[] =  [
     {
       label: "Dashboard",
       icon: Layout,
@@ -230,40 +127,71 @@ const Sidebar = () => {
     },
   ];
 
-  // Filtrar elementos del menú con base en el texto de búsqueda
-  const filteredMenuItems = menuItems
-    .map((item) => {
-      const filteredSubItems = item.subItems.filter((subItem) =>
-        subItem.label.toLowerCase().includes(filterText.toLowerCase())
-      );
-      if (
-        item.label.toLowerCase().includes(filterText.toLowerCase()) ||
-        filteredSubItems.length > 0
-      ) {
-        return { ...item, subItems: filteredSubItems };
-      }
-      return null;
-    })
-    .filter(Boolean);
+  const salesMenuItems: MenuItem[] = [
+    {
+      label: "Dashboard",
+      icon: Layout,
+      href: "/dashboard",
+      subItems: [],
+    },
+    {
+      label: "Ventas",
+      icon: BadgeDollarSign,
+      href: "",
+      subItems: [
+        { label: "Punto de Venta", href: "/sales", icon: BadgeDollarSign },
+        { label: "Ordenes de Venta", href: "/salesOrders", icon: BadgeDollarSign },
+        { label: "Clientes", href: "/customers", icon: SquareUser },
+      ],
+    },
+    {
+      label: "Reportes",
+      icon: Clipboard,
+      href: "",
+      subItems: [
+        { label: "Ventas", href: "/reports/sales", icon: CircleDollarSign },
+      ],
+    },   
+  ];
 
-    //const roleName = currentUserDetails.roleName as keyof typeof roleBasedMenu;
+  const warehouseMenuItems: MenuItem[] = [    
+    {
+      label: "Inventario",
+      icon: Archive,
+      href: "",
+      subItems: [
+        { label: "Inventario Detalle", href: "/inventoryByBranch", icon: FileText },
+        { label: "Vehículos", href: "/vehicles", icon: Car },
+        { label: "Productos", href: "/products", icon: Package },
+        { label: "Modelos", href: "/models", icon: FileBox },
+        { label: "Familias de Modelos", href: "/families", icon: FolderTree },        
+      ],
+    },
+    {
+      label: "Compras",
+      icon: ShoppingBag,
+      href: "",
+      subItems: [
+        { label: "Proveedores", href: "/suppliers", icon: Building },
+      ],
+    },
+  ];
 
-    //const authorizedMenuItems = menuItems.filter((item) =>
-    //  roleBasedMenu[roleName]?.includes(item.label)
-    // );
+  let menuItems: MenuItem[];
 
-  const sidebarClassNames = `fixed flex flex-col ${
-    isSidebarCollapsed ? "w-0 md:w-16" : "w-72 md:w-64"
-  } bg-white transition-all duration-300 overflow-hidden h-full shadow-md z-40`;
+  if (userRole === 'ADMINISTRADOR') {
+    menuItems = adminMenuItems;  
+  } else if (userRole === 'ALMACENISTA') {
+    menuItems = warehouseMenuItems;
+  } else if (userRole === 'VENDEDOR') {
+    menuItems = salesMenuItems;
+  } else {
+    menuItems = [];  
+  }
 
   return (
-    <div className={sidebarClassNames}>
-      {/* TOP LOGO */}
-      <div
-        className={`flex gap-3 justify-between md:justify-normal items-center pt-8 ${
-          isSidebarCollapsed ? "px-5" : "px-8"
-        }`}
-      >
+    <div className={`fixed flex flex-col ${isSidebarCollapsed ? "w-0 md:w-16" : "w-72 md:w-64"} bg-white transition-all duration-300 overflow-hidden h-full shadow-md z-40`}>
+      <div className={`flex gap-3 justify-between md:justify-normal items-center pt-8 ${isSidebarCollapsed ? "px-5" : "px-8"}`}>
         <Image
           src="https://s3-yaiiinventory.s3.us-east-2.amazonaws.com/yaii+logo.png"
           alt="yaii-logo"
@@ -271,127 +199,12 @@ const Sidebar = () => {
           height={50}
           className="rounded w-8"
         />
-        <h1
-          className={`${
-            isSidebarCollapsed ? "hidden" : "block"
-          } font-extrabold text-2xl`}
-        >
-          ERP
-        </h1>
-
-        <button
-          className="md:hidden px-3 py-3 bg-gray-100 rounded-full hover:bg-blue-100"
-          onClick={toggleSidebar}
-        >
+        <h1 className={`${isSidebarCollapsed ? "hidden" : "block"} font-extrabold text-2xl`}>ERP</h1>
+        <button className="md:hidden px-3 py-3 bg-gray-100 rounded-full hover:bg-blue-100" onClick={toggleSidebar}>
           <Menu className="w-4 h-4" />
         </button>
       </div>
-
-      {/* SEARCH INPUT */}
-      {!isSidebarCollapsed && (
-        <div className="px-8 mt-4">
-          <input
-            type="text"
-            placeholder="Buscar..."
-            className="w-full p-2 border border-gray-300 rounded-md"
-            value={filterText}
-            onChange={(e) => setFilterText(e.target.value)}
-          />
-        </div>
-      )}
-
-      {/* LINKS */}
-      <div className="flex-grow mt-4 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-400 scrollbar-track-gray-200">
-      {menuItems.map((item, index) => (
-        <div key={index}>
-          {/* Menú de nivel 1 */}
-          <div
-            className={`cursor-pointer flex items-center px-8 py-4 hover:bg-blue-100 gap-3 ${
-              isSidebarCollapsed ? "justify-center" : "justify-start"
-            }`}
-            onClick={
-              (item?.subItems?.length || 0) > 0 // Verifica si subItems existe y tiene elementos
-                ? item?.label === "Catálogos"
-                  ? toggleCatalog
-                  : item?.label === "Inventario"
-                  ? toggleInventory
-                  : item?.label === "Ventas"
-                  ? toggleSales
-                  : item?.label === "Compras"
-                  ? togglePurchases
-                  : item?.label === "Finanzas"
-                  ? toggleFinance
-                  : item?.label === "Administracion"
-                  ? toggleManagement
-                  : toggleReports
-                : undefined
-            }
-          >
-            {/* Verificar si 'item.icon' es un componente válido */}
-            {item?.icon && <item.icon className="w-6 h-6 !text-gray-700" />}
-            
-            {!isSidebarCollapsed && (
-              <span className="font-medium text-gray-700">{item?.label}</span>
-            )}
-
-            {!isSidebarCollapsed && (item?.subItems?.length || 0) > 0 && (
-              <span>
-                {item?.label === "Catálogos" && isCatalogOpen ? (
-                  <ChevronUp />
-                ) : item?.label === "Inventario" && isInventoryOpen ? (
-                  <ChevronUp />
-                ) : item?.label === "Ventas" && isSalesOpen ? (
-                  <ChevronUp />
-                ) : item?.label === "Compras" && isPurchasesOpen ? (
-                  <ChevronUp />
-                ) : item?.label === "Finanzas" && isFinanceOpen ? (
-                  <ChevronUp />
-                ) : item?.label === "Administracion" && isManagementOpen ? (
-                  <ChevronUp />
-                ) : item?.label === "Reportes" && isReportsOpen ? (
-                  <ChevronUp />
-                ) : (
-                  <ChevronDown />
-                )}
-              </span>
-            )}
-          </div>
-          {/* Menú de nivel 2 */}
-          {(item?.subItems?.length || 0) > 0 && !isSidebarCollapsed && (
-            <div
-              className={`ml-8 ${
-                item?.label === "Catálogos" && isCatalogOpen
-                  ? "block"
-                  : item?.label === "Inventario" && isInventoryOpen
-                  ? "block"
-                  : item?.label === "Ventas" && isSalesOpen
-                  ? "block"
-                  : item?.label === "Compras" && isPurchasesOpen
-                  ? "block"
-                  : item?.label === "Finanzas" && isFinanceOpen
-                  ? "block"
-                  : item?.label === "Administracion" && isManagementOpen
-                  ? "block"
-                  : item?.label === "Reportes" && isReportsOpen
-                  ? "block"
-                  : "hidden"
-              }`}
-            >
-              {item?.subItems?.map((subItem, subIndex) => (
-                <SidebarLink
-                  key={subIndex}
-                  href={subItem.href}
-                  icon={subItem.icon}
-                  label={subItem.label}
-                  isCollapsed={isSidebarCollapsed}
-                />
-              ))}
-            </div>
-          )}
-        </div>
-      ))}
-
-      </div>
+      <MenuBuilder menuItems={menuItems} isCollapsed={isSidebarCollapsed} />
     </div>
   );
 };

@@ -91,7 +91,7 @@ const Navbar = () => {
               height={50}
               className="rounded-full h-full object-cover"
             />
-            <span className="font-semibold">{currentUserDetails?.name}</span>
+            <span className="font-semibold">{currentUserDetails?.name} ({currentUserDetails?.roleName})</span>
           </div>
           <button
             className="hidden rounded bg-blue-400 px-4 py-2 text-xs font-bold text-white hover:bg-blue-500 md:block"
