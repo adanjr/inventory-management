@@ -12,6 +12,30 @@ import { PlusCircleIcon, EditIcon, DeleteIcon, UploadIcon, DownloadIcon  } from 
 import ImportVehiclesModal from "./ImportVehicles";
 import * as XLSX from 'xlsx';
 
+const rolePermissions = {
+  ADMINISTRADOR: {
+    canAddVehicle: true,
+    canEditVehicle: true,
+    canDeleteVehicle: true,
+    canImportVehicles: true,
+    canExportVehicles: true,
+  },
+  VENDEDOR: {
+    canAddVehicle: false,
+    canEditVehicle: true,
+    canDeleteVehicle: false,
+    canImportVehicles: false,
+    canExportVehicles: true,
+  },
+  ALMACEN: {
+    canAddVehicle: true,
+    canEditVehicle: false,
+    canDeleteVehicle: true,
+    canImportVehicles: true,
+    canExportVehicles: false,
+  },
+};
+
 // Formato de moneda para México
 const formatCurrency = (value: number | null | undefined) => {
   if (value == null || isNaN(value)) {
@@ -53,6 +77,10 @@ const Vehicles = () => {
   const [selectedLocationId, setSelectedLocationId] = useState<number | string>("");
   const [isModalOpen, setIsModalOpen] = useState(false); // Estado para el modal
   const [deleteVehicle] = useDeleteVehicleMutation();
+
+  const currentUserRole = "VENDEDOR";
+
+  const userPermissions = rolePermissions[currentUserRole as keyof typeof rolePermissions];
 
   useEffect(() => {
     const handler = setTimeout(() => {
@@ -114,37 +142,53 @@ const Vehicles = () => {
           <Header name="Vehículos" />
         </div>
         <div className="flex space-x-4 mt-4">
-          <button
-            className="flex items-center bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
-            onClick={() => router.push("/vehicles/create")}
-          >
-            <PlusCircleIcon className="w-5 h-5 mr-2" />
-            Agregar Vehículo
-          </button>
-          <button
-            className="flex items-center bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
-            onClick={() => router.push(`/vehicles/edit/${rowSelectionModel[0]}`)}
-            disabled={isSelectionEmpty}
-          >
-            <EditIcon className="w-5 h-5 mr-2" />
-            Editar Vehículo
-          </button>
-          <button
-            className="flex items-center bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded"
-            onClick={handleDelete}
-            disabled={isSelectionEmpty}
-          >
-            <DeleteIcon className="w-5 h-5 mr-2" />
-            Eliminar Vehículo
-          </button>
-          <button className="flex items-center bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded" onClick={handleImportClick}>
-            <UploadIcon className="w-5 h-5 mr-2" />
-            Importar
-          </button>   
-          <button className="flex items-center bg-yellow-500 hover:bg-yellow-700 text-white font-bold py-2 px-4 rounded" onClick={exportToExcel}>
-            <DownloadIcon className="w-5 h-5 mr-2" />
-            Exportar a Excel
-          </button>           
+        {userPermissions.canAddVehicle && (
+            <button
+              className="flex items-center bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+              onClick={() => router.push("/vehicles/create")}
+            >
+              <PlusCircleIcon className="w-5 h-5 mr-2" />
+              Agregar Vehículo
+            </button>
+          )}
+          {userPermissions.canEditVehicle && (
+            <button
+              className="flex items-center bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+              onClick={() => router.push(`/vehicles/edit/${rowSelectionModel[0]}`)}
+              disabled={isSelectionEmpty}
+            >
+              <EditIcon className="w-5 h-5 mr-2" />
+              Editar Vehículo
+            </button>
+          )}
+          {userPermissions.canDeleteVehicle && (
+            <button
+              className="flex items-center bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded"
+              onClick={handleDelete}
+              disabled={isSelectionEmpty}
+            >
+              <DeleteIcon className="w-5 h-5 mr-2" />
+              Eliminar Vehículo
+            </button>
+          )}
+          {userPermissions.canImportVehicles && (
+            <button
+              className="flex items-center bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded"
+              onClick={handleImportClick}
+            >
+              <UploadIcon className="w-5 h-5 mr-2" />
+              Importar
+            </button>
+          )}
+          {userPermissions.canExportVehicles && (
+            <button
+              className="flex items-center bg-yellow-500 hover:bg-yellow-700 text-white font-bold py-2 px-4 rounded"
+              onClick={exportToExcel}
+            >
+              <DownloadIcon className="w-5 h-5 mr-2" />
+              Exportar a Excel
+            </button>
+          )}      
         </div>
       </div>
       <div className="flex justify-between items-center mb-2">
