@@ -14,6 +14,6 @@ router.get("/:cognitoId", getUser);
 router.get("/byUserId/:userId", getUserById);
 router.post("/", createUser);
 router.put("/:cognitoId", updateUser);
-router.delete("/:cognitoId", deleteUser);
+router.delete("/:userId", deleteUser);
 
 export default router;

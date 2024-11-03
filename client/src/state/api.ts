@@ -410,7 +410,7 @@ export interface User {
   role: Role;
   locationName: string;
   roleName: string;
-  active: boolean;
+  isActive: boolean;
 }
 
 export interface NewUser {

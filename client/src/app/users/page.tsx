@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useGetUsersQuery, 
          useGetRolesQuery,          
          useCreateUserMutation,   
-         useUpdateUserMutation,      
+         useUpdateUserMutation,  
          NewUser,         
          User, 
          useDeleteUserMutation} from "@/state/api";
@@ -22,7 +22,7 @@ const userColumns: GridColDef[] = [
   { field: "email", headerName: "Email", width: 200 },
   { field: "roleName", headerName: "Rol", width: 150 },
   { field: "locationName", headerName: "Ubicacion", width: 180 },
-  { field: "active", headerName: "Activo", width: 180 },
+  { field: "isActive", headerName: "Activo", width: 180 },
 ];
 
 const UsersAndRolesPage = () => {
@@ -32,12 +32,12 @@ const UsersAndRolesPage = () => {
   const { data: roles = [], isLoading: rolesLoading } = useGetRolesQuery();
 
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
-  const [deleteUser] = useDeleteUserMutation();
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [rowSelectionModel, setRowSelectionModel] = useState<GridRowSelectionModel>([]);
 
   const [createUser] = useCreateUserMutation();
   const [updateUser] = useUpdateUserMutation();
+  const [deleteUser] = useDeleteUserMutation();
 
   const handleTabChange = (tab: string) => {
     setActiveTab(tab);
@@ -67,13 +67,24 @@ const UsersAndRolesPage = () => {
 
  const handleDisable = async () => {
       const selectedUserId = rowSelectionModel[0];
+      const selectedUser = users.find(user => user.userId === selectedUserId);
+
+      if (!selectedUser) {
+        alert("Usuario no encontrado.");
+        return;
+      }
+
+      if (!selectedUser.isActive) {
+        alert("Este usuario ya está desactivado.");
+        return;
+      }
     
-      if (window.confirm("¿Estás seguro de que deseas dehabilitar este usuario?")) {
+      if (window.confirm(`¿Estás seguro de que deseas desactivar el usuario ${selectedUserId}?`)) {
         try {
           await deleteUser(String(selectedUserId));
-          alert("Usuario deshabilitado con éxito.");
+          alert("Usuario desactivado con éxito.");
         } catch (error) {
-          console.error("Error deshabilitando el usuario:", error);         
+          console.error("Error desactivando el usuario:", error);         
         }
       }
     };
@@ -144,7 +155,7 @@ const UsersAndRolesPage = () => {
             disabled={isSelectionEmpty}
           >
             <Ban className="w-5 h-5 mr-2" />
-            Deshabilitar Usuario
+            Desactivar Usuario
           </button>
            
         </div>

@@ -1,6 +1,10 @@
 import { Request, Response } from "express";
 import { PrismaClient } from "@prisma/client";
-import { CognitoIdentityProviderClient, SignUpCommand } from "@aws-sdk/client-cognito-identity-provider";
+import { CognitoIdentityProviderClient, 
+  SignUpCommand, 
+  AdminSetUserPasswordCommand,
+  AdminDisableUserCommand 
+ } from "@aws-sdk/client-cognito-identity-provider";
 
 const cognitoClient = new CognitoIdentityProviderClient({ region: process.env.AWS_REGION });
 
@@ -27,8 +31,7 @@ export const getUsers = async (req: Request, res: Response): Promise<void> => {
     const formattedUsers = users.map(user => ({
       ...user,
       locationName: user.Location?.name, // Agrega el nombre de la ubicación
-      roleName: user.Role?.name,     // Agrega el nombre del rol
-      active: true,
+      roleName: user.Role?.name,     // Agrega el nombre del rol    
     }));
 
     res.json(formattedUsers);
@@ -109,10 +112,8 @@ export const getUserById = async (req: Request, res: Response): Promise<void> =>
 
 // Crear un nuevo usuario
 export const createUser = async (req: Request, res: Response): Promise<void> => {
-  const { cognitoId, username, name, email, profilePictureUrl, locationId, roleId } = req.body;
+  const { cognitoId, username, name, email, profilePictureUrl, locationId, roleId, password } = req.body;
   try {
-
-    const password = "p@55W0rd2024";
 
     const { userConfirmed, userSub } = await registerUserInCognito(username, password, email);
 
@@ -164,8 +165,45 @@ export const updateUser = async (req: Request, res: Response): Promise<void> => 
   }
 };
 
-// Eliminar un usuario
 export const deleteUser = async (req: Request, res: Response): Promise<void> => {
+  const { userId } = req.params;
+
+  try {
+    
+    const user = await prisma.user.findUnique({
+      where: {
+        userId: Number(userId),
+      },
+    });
+
+    if (!user) {
+      res.status(404).json({ message: "User not found" });
+    }
+
+    // Deshabilitar el usuario en Cognito
+    const params = {
+      UserPoolId: process.env.COGNITO_USER_POOL_ID as string,
+      Username: user!.username,  
+    };
+
+    const command = new AdminDisableUserCommand(params);
+    await cognitoClient.send(command);
+
+    // Opcional: Actualiza el estado del usuario en tu base de datos si es necesario
+    await prisma.user.update({
+      where: { userId: Number(userId) },
+      data: { isActive: false }, // Actualiza el estado en la base de datos
+    });
+
+    res.status(204).send();
+  } catch (error: any) {
+    console.error("Error disabling user in Cognito:", error);
+    res.status(500).json({ message: `Error disabling user: ${error.message}` });
+  }
+};
+
+// Eliminar un usuario
+export const deleteUser2 = async (req: Request, res: Response): Promise<void> => {
   const { cognitoId } = req.params;
 
   try {
@@ -211,6 +249,10 @@ export const registerUserInCognito = async (
     const userConfirmed = response.UserConfirmed || false;
     const userSub = response.UserSub;
 
+    if (userSub && !userConfirmed) {
+      await forceChangePassword(username,password);
+    }
+
     return {
       userConfirmed,
       userSub,
@@ -218,5 +260,22 @@ export const registerUserInCognito = async (
   } catch (error) {
     console.error("Error al registrar el usuario en Cognito:", error);
     throw new Error(`Error registering user: ${error}`);
+  }
+};
+
+export const forceChangePassword = async (username: string, password: string): Promise<void> => {
+  const command = new AdminSetUserPasswordCommand({
+    UserPoolId: process.env.COGNITO_USER_POOL_ID as string, // Asegúrate de definir este valor en tu .env
+    Username: username,
+    Password: password, // Contraseña temporal
+    Permanent: false, // Esto indicará que el usuario debe cambiar la contraseña en el primer inicio de sesión
+  });
+
+  try {
+    await cognitoClient.send(command);
+    console.log("Se ha solicitado el cambio de contraseña en el primer inicio de sesión.");
+  } catch (error) {
+    console.error("Error al forzar cambio de contraseña en Cognito:", error);
+    throw new Error(`Error forcing password change: ${error}`);
   }
 };
