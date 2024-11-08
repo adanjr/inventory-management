@@ -1,11 +1,14 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
+  useGetAuthUserQuery, 
+  useGetRolePermissionsByModuleQuery,
   useGetCategoriesQuery,
   useCreateCategoryMutation,
   useUpdateCategoryMutation,
-  useDeleteCategoryMutation
+  useDeleteCategoryMutation,
+  PermissionPage
 } from "@/state/api";
 import { PlusCircleIcon, SearchIcon, PencilIcon, TrashIcon } from "lucide-react";
 import Header from "@/app/(components)/Header";
@@ -14,15 +17,36 @@ import EditCategoryModal from "./EditCategoryModal";
 import { Category } from "@/state/api";
 
 const Categories = () => {
+  const { data: currentUser } = useGetAuthUserQuery({});
   const [searchTerm, setSearchTerm] = useState("");
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState<Category | null>(null);
+  const [roleId, setRoleId] = useState<string | undefined>(undefined);
+  const [moduleName, setModuleName] = useState("Inventory");
+  const [subModuleName, setSubModuleName] = useState("Categorias");
+
+  useEffect(() => {
+    if (currentUser?.userDetails?.roleId) {
+      setRoleId(currentUser.userDetails.roleId.toString());
+    }
+  }, [currentUser]);
+
+  const { data: permissionsData, isLoading: permissionsLoading } = useGetRolePermissionsByModuleQuery(
+    {
+      roleId: roleId || "",  // Si roleId no está disponible, pasamos una cadena vacía o un valor adecuado
+      moduleName,
+      subModuleName,
+    },
+    { skip: !roleId }  // Esto evita la consulta cuando no tenemos roleId
+  );
 
   const { data: categories, isLoading, isError } = useGetCategoriesQuery("");
   const [createCategory] = useCreateCategoryMutation();
   const [updateCategory] = useUpdateCategoryMutation();
   const [deleteCategory] = useDeleteCategoryMutation();
+
+  const userPermissions = permissionsData?.permissions || [];
 
   const handleCreateCategory = async (categoryData: Category) => {
     await createCategory(categoryData);
@@ -61,6 +85,20 @@ const Categories = () => {
     );
   }
 
+  const transformPermissions = (userPermissions: string[]): PermissionPage => {
+    return {      
+      canAccess: userPermissions.includes("ACCESS"),    
+      canAdd: userPermissions.includes("ADD"),    
+      canEdit: userPermissions.includes("EDIT"),    
+      canDelete: userPermissions.includes("DELETE"),    
+      canImport: userPermissions.includes("IMPORT"),    
+      canExport: userPermissions.includes("EXPORT"),    
+      canViewDetail: userPermissions.includes("VIEW_DETAIL"),    
+    };
+  };
+
+  const permissions = transformPermissions(userPermissions);
+
   return (
     <div className="mx-auto pb-5 w-full">
       {/* SEARCH BAR */}
@@ -79,12 +117,14 @@ const Categories = () => {
       {/* HEADER BAR */}
       <div className="flex justify-between items-center mb-6">
         <Header name="Categorias" />
-        <button
-          className="flex items-center bg-blue-500 hover:bg-blue-700 text-gray-200 font-bold py-2 px-4 rounded"
-          onClick={() => setIsCreateModalOpen(true)}
-        >
-          <PlusCircleIcon className="w-5 h-5 mr-2 !text-gray-200" /> Crear Categoria
-        </button>
+        {permissions.canAdd && ( 
+          <button
+            className="flex items-center bg-blue-500 hover:bg-blue-700 text-gray-200 font-bold py-2 px-4 rounded"
+            onClick={() => setIsCreateModalOpen(true)}
+          >
+            <PlusCircleIcon className="w-5 h-5 mr-2 !text-gray-200" /> Crear Categoria
+          </button>
+          )}
       </div>
 
       {/* BODY CATEGORIES LIST */}
@@ -100,6 +140,7 @@ const Categories = () => {
               </h3>
               <p className="text-gray-800">Descripción: {category.description}</p>
               <div className="flex mt-4">
+              {permissions.canEdit && ( 
                 <button
                   className="text-blue-500 hover:text-blue-700 flex items-center mr-4"
                   onClick={() => {
@@ -109,12 +150,14 @@ const Categories = () => {
                 >
                   <PencilIcon className="w-5 h-5 mr-2" /> Editar
                 </button>
+              )}
+              {permissions.canDelete && ( 
                 <button
                   className="text-red-500 hover:text-red-700 flex items-center"
                   onClick={() => handleDeleteCategory(category.categoryId)}
                 >
                   <TrashIcon className="w-5 h-5 mr-2" /> Eliminar
-                </button>
+                </button> )}
               </div>
             </div>
           </div>

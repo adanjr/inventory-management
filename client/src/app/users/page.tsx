@@ -1,14 +1,18 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from 'next/navigation';
-import { useGetUsersQuery, 
+import { useGetAuthUserQuery, 
+         useGetRolePermissionsByModuleQuery,
+         useGetUsersQuery, 
          useGetRolesQuery,          
          useCreateUserMutation,   
          useUpdateUserMutation,  
          NewUser,         
          User, 
-         useDeleteUserMutation} from "@/state/api";
+         useDeleteUserMutation,
+         PermissionPage,
+        } from "@/state/api";
 import { DataGrid, GridColDef, GridRowSelectionModel } from "@mui/x-data-grid";
 import Header from "@/app/(components)/Header";
 import CreateUserModal from "@/app/users/modals/CreateUserModal";
@@ -26,18 +30,38 @@ const userColumns: GridColDef[] = [
 ];
 
 const UsersAndRolesPage = () => {
+  const { data: currentUser } = useGetAuthUserQuery({});
   const router = useRouter();
   const [activeTab, setActiveTab] = useState("users");
   const { data: users = [], isLoading: usersLoading } = useGetUsersQuery();
   const { data: roles = [], isLoading: rolesLoading } = useGetRolesQuery();
-
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [rowSelectionModel, setRowSelectionModel] = useState<GridRowSelectionModel>([]);
+  const [roleId, setRoleId] = useState<string | undefined>(undefined);
+  const [moduleName, setModuleName] = useState("Administration");
+  const [subModuleName, setSubModuleName] = useState("Usuarios");
+
+  useEffect(() => {
+    if (currentUser?.userDetails?.roleId) {
+      setRoleId(currentUser.userDetails.roleId.toString());
+    }
+  }, [currentUser]);
+
+  const { data: permissionsData, isLoading: permissionsLoading } = useGetRolePermissionsByModuleQuery(
+    {
+      roleId: roleId || "",  // Si roleId no está disponible, pasamos una cadena vacía o un valor adecuado
+      moduleName,
+      subModuleName,
+    },
+    { skip: !roleId }  // Esto evita la consulta cuando no tenemos roleId
+  );
 
   const [createUser] = useCreateUserMutation();
   const [updateUser] = useUpdateUserMutation();
   const [deleteUser] = useDeleteUserMutation();
+
+  const userPermissions = permissionsData?.permissions || [];
 
   const handleTabChange = (tab: string) => {
     setActiveTab(tab);
@@ -89,6 +113,20 @@ const UsersAndRolesPage = () => {
       }
     };
 
+    const transformPermissions = (userPermissions: string[]): PermissionPage => {
+      return {      
+        canAccess: userPermissions.includes("ACCESS"),
+        canAdd: userPermissions.includes("ADD"),    
+        canEdit: userPermissions.includes("EDIT"),    
+        canDelete: userPermissions.includes("DELETE"),    
+        canImport: userPermissions.includes("IMPORT"),    
+        canExport: userPermissions.includes("EXPORT"),    
+        canViewDetail: userPermissions.includes("VIEW_DETAIL"),    
+      };
+    };
+  
+    const permissions = transformPermissions(userPermissions);
+
   // Columnas para la tabla de roles
   const roleColumns: GridColDef[] = [
     { field: "roleId", headerName: "ID", width: 90 },
@@ -135,12 +173,14 @@ const UsersAndRolesPage = () => {
             <Header name="Usuarios" />                    
           </div>
           <div className="flex space-x-4 mt-4">
+          {permissions.canAdd && ( 
           <button
               className="flex items-center bg-blue-500 hover:bg-blue-700 text-gray-200 font-bold py-2 px-4 rounded"
               onClick={() => setIsCreateModalOpen(true)}
             >
               <PlusCircleIcon className="w-5 h-5 mr-2 !text-gray-200" /> Crear Usuario 
-          </button>      
+          </button>     )}
+          {permissions.canEdit && (  
           <button
             className="flex items-center bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
             onClick={() => router.push(`/users/edit/${rowSelectionModel[0]}`)}
@@ -148,7 +188,8 @@ const UsersAndRolesPage = () => {
           >
             <EditIcon className="w-5 h-5 mr-2" />
             Editar Usuario
-          </button>
+          </button> )}
+          {permissions.canDelete && (  
           <button
             className="flex items-center bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded"
             onClick={handleDisable}
@@ -156,7 +197,7 @@ const UsersAndRolesPage = () => {
           >
             <Ban className="w-5 h-5 mr-2" />
             Desactivar Usuario
-          </button>
+          </button> )}
            
         </div>
           <DataGrid
@@ -177,12 +218,13 @@ const UsersAndRolesPage = () => {
         <div>
           <div className="flex justify-between items-center mb-6">
             <Header name="Roles" />
+            {permissions.canAdd && ( 
             <button
               className="flex items-center bg-blue-500 hover:bg-blue-700 text-gray-200 font-bold py-2 px-4 rounded"
               onClick={() => router.push("/users/roles/create")}
             >
               <PlusCircleIcon className="w-5 h-5 mr-2 !text-gray-200" /> Crear Rol 
-              </button>             
+              </button> )}             
           </div>
           <DataGrid
             rows={roles}

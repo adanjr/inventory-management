@@ -61,10 +61,54 @@ export const getUser = async (req: Request, res: Response): Promise<void> => {
       },
     });
 
+    const rolePermissions = await prisma.rolePermission.findMany({
+      where: {
+        roleId: Number(user?.roleId),
+        permission: {
+          name: String("ACCESS"),
+        },
+      },
+      include: {
+        permission: {
+          include: {
+            module: true,
+            subModule: true,
+          },
+        },
+      },
+    });
+
+    const modulesMap = new Map<number, { name: string, subModules: { name: string }[] }>();
+
+    // Organizar los permisos en módulos y submódulos
+    rolePermissions.forEach((rolePermission) => {
+      const { module, subModule } = rolePermission.permission;
+
+      if (module) {
+        // Si el módulo aún no está en el mapa, lo agregamos
+        if (!modulesMap.has(module.moduleId)) {
+          modulesMap.set(module.moduleId, {
+            name: module.name,
+            subModules: subModule ? [{ name: subModule.name }] : [], // Si hay submódulos, los agregamos
+          });
+        } else {
+          const currentModule = modulesMap.get(module.moduleId);
+          if (currentModule && subModule) {
+            // Si ya existe el módulo y hay submódulos, los agregamos
+            currentModule.subModules.push({ name: subModule.name });
+          }
+        }
+      }
+    });
+
+      // Convertir el mapa a un arreglo de módulos
+      const menuModules = Array.from(modulesMap.values());  
+
     const formattedUser = {
       ...user,
       locationName: user?.Location?.name || null, // Agrega el nombre de la ubicación
       roleName: user?.Role?.name || null,         // Agrega el nombre del rol
+      menuModules: menuModules
     };
 
     res.json(formattedUser);
@@ -96,10 +140,54 @@ export const getUserById = async (req: Request, res: Response): Promise<void> =>
       },
     });
 
+    const rolePermissions = await prisma.rolePermission.findMany({
+      where: {
+        roleId: Number(user?.roleId),
+        permission: {
+          name: String("ACCESS"),
+        },
+      },
+      include: {
+        permission: {
+          include: {
+            module: true,
+            subModule: true,
+          },
+        },
+      },
+    });
+
+    const modulesMap = new Map<number, { name: string, submodules: { name: string }[] }>();
+
+    // Organizar los permisos en módulos y submódulos
+    rolePermissions.forEach((rolePermission) => {
+      const { module, subModule } = rolePermission.permission;
+
+      if (module) {
+        // Si el módulo aún no está en el mapa, lo agregamos
+        if (!modulesMap.has(module.moduleId)) {
+          modulesMap.set(module.moduleId, {
+            name: module.name,
+            submodules: subModule ? [{ name: subModule.name }] : [], // Si hay submódulos, los agregamos
+          });
+        } else {
+          const currentModule = modulesMap.get(module.moduleId);
+          if (currentModule && subModule) {
+            // Si ya existe el módulo y hay submódulos, los agregamos
+            currentModule.submodules.push({ name: subModule.name });
+          }
+        }
+      }
+    });
+
+      // Convertir el mapa a un arreglo de módulos
+      const menuModules = Array.from(modulesMap.values());  
+
     const formattedUser = {
       ...user,
       locationName: user?.Location?.name || null, // Agrega el nombre de la ubicación
-      roleName: user?.Role?.name || null,         // Agrega el nombre del rol
+      roleName: user?.Role?.name || null, 
+      menuModules: menuModules
     };
 
     res.json(formattedUser);

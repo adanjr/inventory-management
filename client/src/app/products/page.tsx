@@ -1,8 +1,12 @@
 "use client";
 
-import { useCreateProductMutation, useGetProductsQuery } from "@/state/api";
+import { useCreateProductMutation, 
+  useGetProductsQuery,
+  useGetAuthUserQuery, 
+  useGetRolePermissionsByModuleQuery,
+  PermissionPage} from "@/state/api";
 import { PlusCircleIcon, SearchIcon, EditIcon } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Header from "@/app/(components)/Header";
 import Rating from "@/app/(components)/Rating";
 import CreateProductModal from "./CreateProductModal";
@@ -20,12 +24,33 @@ type ProductFormData = {
 };
 
 const Products = () => {
+  const { data: currentUser } = useGetAuthUserQuery({});
   const [searchTerm, setSearchTerm] = useState("");
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState<ProductFormData | null>(null);
+  const [roleId, setRoleId] = useState<string | undefined>(undefined);
+  const [moduleName, setModuleName] = useState("Inventory");
+  const [subModuleName, setSubModuleName] = useState("Productos");
+
+  useEffect(() => {
+    if (currentUser?.userDetails?.roleId) {
+      setRoleId(currentUser.userDetails.roleId.toString());
+    }
+  }, [currentUser]);
+
+  const { data: permissionsData, isLoading: permissionsLoading } = useGetRolePermissionsByModuleQuery(
+    {
+      roleId: roleId || "",  // Si roleId no está disponible, pasamos una cadena vacía o un valor adecuado
+      moduleName,
+      subModuleName,
+    },
+    { skip: !roleId }  // Esto evita la consulta cuando no tenemos roleId
+  );
 
   const { data: products, isLoading, isError } = useGetProductsQuery(searchTerm);
   const [createProduct] = useCreateProductMutation();
+
+  const userPermissions = permissionsData?.permissions || [];
   
   const handleCreateProduct = async (productData: ProductFormData) => {
     const productToCreate = {
@@ -48,6 +73,20 @@ const Products = () => {
     );
   }
 
+  const transformPermissions = (userPermissions: string[]): PermissionPage => {
+    return {      
+      canAccess: userPermissions.includes("ACCESS"),    
+      canAdd: userPermissions.includes("ADD"),    
+      canEdit: userPermissions.includes("EDIT"),    
+      canDelete: userPermissions.includes("DELETE"),    
+      canImport: userPermissions.includes("IMPORT"),    
+      canExport: userPermissions.includes("EXPORT"),    
+      canViewDetail: userPermissions.includes("VIEW_DETAIL"),    
+    };
+  };
+
+  const permissions = transformPermissions(userPermissions);
+
   return (
     <div className="mx-auto pb-5 w-full">
       {/* SEARCH BAR */}
@@ -66,13 +105,15 @@ const Products = () => {
       {/* HEADER BAR */}
       <div className="flex justify-between items-center mb-6">
         <Header name="Productos" />
-        <button
-          className="flex items-center bg-blue-500 hover:bg-blue-700 text-gray-200 font-bold py-2 px-4 rounded"
-          onClick={() => setIsCreateModalOpen(true)}
-        >
-          <PlusCircleIcon className="w-5 h-5 mr-2 !text-gray-200" /> Crear
-          Producto
-        </button>
+        {permissions.canAdd && (
+          <button
+            className="flex items-center bg-blue-500 hover:bg-blue-700 text-gray-200 font-bold py-2 px-4 rounded"
+            onClick={() => setIsCreateModalOpen(true)}
+          >
+            <PlusCircleIcon className="w-5 h-5 mr-2 !text-gray-200" /> Crear
+            Producto
+          </button>
+        )}
       </div>
 
       {/* BODY PRODUCTS LIST */}

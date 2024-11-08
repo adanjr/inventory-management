@@ -13,7 +13,7 @@ const CreateRole = () => {
 
   const [formData, setFormData] = useState({
     name: "",
-    //description: "",
+    description: "",
   });
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
@@ -49,7 +49,7 @@ const CreateRole = () => {
             type="text"
             name="name"
             value={formData.name}
-            onChange={handleInputChange}
+            onChange={(e) => setFormData({ ...formData, name: e.target.value })}
             className="w-full border border-gray-200 rounded-lg px-4 py-2 focus:outline-none focus:border-gray-500 focus:ring-2 focus:ring-gray-200"
           />
         </div>
@@ -62,56 +62,13 @@ const CreateRole = () => {
           <textarea
             name="description"
             rows={4}
-            onChange={handleInputChange}
+            value={formData.description}
+            onChange={(e) => setFormData({ ...formData, description: e.target.value })}
             className="w-full border border-gray-200 rounded-lg px-4 py-2 focus:outline-none focus:border-gray-500 focus:ring-2 focus:ring-gray-200"
           />
         </div>
       </div>
-
-      {/* Secciones de Permisos */}
-      <div className="mt-8 space-y-8">
-        {[
-          { section: "Contactos", categories: ["Clientes", "Proveedores"] },
-          { section: "Items", categories: ["Vehiculos", "Productos", "Modelos", "Familias", "Inventario", "Categorías"] },
-          { section: "Ventas", categories: ["Órdenes de Venta", "Devoluciones"] },
-          { section: "Compras", categories: ["Órdenes de Compra", "Recibir Producto"] },
-          { section: "Gastos", categories: ["Grafico", "Recibir Producto"] },
-          { section: "Administración", categories: ["Organizacion", "Usuarios", "Roles", "Email", "Monedas", "Impuestos"] },
-        ].map(({ section, categories }) => (
-          <div key={section} className="p-6 bg-white shadow-lg rounded-lg">
-            <h3 className="text-2xl font-semibold text-gray-700 border-b border-gray-300 mb-4">{section}</h3>
-            <div className="overflow-x-auto">
-              <table className="min-w-full border border-gray-200">
-                <thead>
-                  <tr>
-                    <th className="px-4 py-2 border border-gray-200 text-left">Categoría</th>
-                    {["Acceso Total", "Ver", "Agregar", "Editar", "Eliminar", "Aprobar"].map((perm) => (
-                      <th key={perm} className="px-4 py-2 border border-gray-200 text-center">{perm}</th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody>
-                  {categories.map((category) => (
-                    <tr key={category}>
-                      <td className="px-4 py-2 border border-gray-200 text-left font-semibold">{category}</td>
-                      {["Acceso Total", "Ver", "Agregar", "Editar", "Eliminar", "Aprobar"].map((perm) => (
-                        <td key={perm} className="px-4 py-2 border border-gray-200 text-center">
-                          <input
-                            type="checkbox"
-                            name={`${section}-${category}-${perm}`}
-                            className="form-checkbox h-4 w-4 text-blue-600"
-                          />
-                        </td>
-                      ))}
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </div>
-        ))}
-      </div>
-
+ 
       {/* Botones de Acción */}
       <div className="flex justify-start mt-6 space-x-4">
         <button

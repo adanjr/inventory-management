@@ -411,6 +411,7 @@ export interface User {
   locationName: string;
   roleName: string;
   isActive: boolean;
+  menuModules: ModuleItem[];
 }
 
 export interface NewUser {
@@ -437,15 +438,48 @@ export interface UpdatedUser {
 export interface Role {
   roleId?: number;
   name: string;
+  description: string;
+  permissions: Module[];
 }
 
 export interface NewRole {
   name: string;
+  description: string;
 }
 
 export interface UpdatedRole {
   roleId?: number;
   name: string;
+  description: string;
+  permissions: UpdatedRolePermission[]
+}
+
+export interface Permission {
+  permissionId: number;
+  name: string;
+  description?: string;
+  subModuleId: number | null; // Será null si es un permiso a nivel de módulo
+}
+
+export interface UpdatedRolePermission {
+  moduleId: number; 
+  subModuleId: number | null;
+  name: string;
+}
+
+// Interface para el submódulo
+export interface SubModule {
+  subModuleId: number;
+  subModuleName: string;
+  permissions: Permission[];
+}
+
+// Interface para el módulo, que contiene permisos a nivel de módulo y una colección de submódulos
+export interface Module {
+  moduleId: number;
+  moduleName: string;
+  permissions: Permission[]; // Permisos directos del módulo (subModuleId es null)
+  subModules: SubModule[];   // Submódulos asociados al módulo
 }
 
 export interface Manufacturer {
@@ -1063,6 +1097,33 @@ export interface SendMailResponse {
   message: string;
 }
 
+export interface MenuModules {
+  modules: ModuleItem[]; 
+}
+
+export interface SubModuleItem {
+  name: string;
+}
+
+export interface ModuleItem {
+  name: string;
+  subModules: SubModuleItem[];  
+}
+
+export interface PermissionByRole {
+  permissions: string[];  
+}
+
+export interface PermissionPage {
+  canAccess: boolean;
+  canAdd: boolean;
+  canEdit: boolean;
+  canDelete: boolean;
+  canImport: boolean;
+  canExport: boolean;
+  canViewDetail: boolean;
+}
+
 export const api = createApi({
   baseQuery: fetchBaseQuery({ 
   baseUrl: process.env.NEXT_PUBLIC_API_BASE_URL,
@@ -1081,6 +1142,7 @@ export const api = createApi({
   }),
   reducerPath: "api",
   tagTypes: ["DashboardMetrics", "Products", "Users", "Roles","Expenses","Manufacturers","Customers","Suppliers","Categories","Locations",
+    "Permissions",
     "VehicleTypes",
     "Makes",
     "Models",
@@ -1230,12 +1292,34 @@ export const api = createApi({
       query: () => "/roles",
       providesTags: ["Roles"],
     }),
+
     getRoleById: build.query<Role, string>({
       query: (id) => ({
         url: `/roles/${id}`,
       }),
       providesTags: (result, error, id) => [{ type: "Roles", id }],
     }),
+
+    getRolePermissionsByName: build.query<MenuModules, { roleId: string, permissionName: string }>({
+      query: ({ roleId, permissionName }) => ({
+        url: `/roles/getPermissionsByName/${roleId}`,
+        params: { permissionName }, // Enviar el nombre del permiso como parámetro de consulta
+      }),
+      providesTags: (result, error, { roleId, permissionName }) => [
+        { type: "Permissions", roleId, permissionName },
+      ],
+    }),
+
+    getRolePermissionsByModule: build.query<PermissionByRole, { roleId: string, moduleName: string, subModuleName: string }>({
+      query: ({ roleId, moduleName, subModuleName }) => ({
+        url: `/roles/getPermissionsByModule/${roleId}`,
+        params: { moduleName, subModuleName },
+      }),
+      providesTags: (result, error, { roleId, moduleName, subModuleName }) => [
+        { type: "Permissions", roleId, moduleName, subModuleName },
+      ],
+    }),
+
     createRole: build.mutation<Role, NewRole>({
       query: (newRole) => ({
         url: "/roles",
@@ -1251,6 +1335,11 @@ export const api = createApi({
         body: data,
       }),
       invalidatesTags: ["Roles"],
+    }),
+
+    getPermissions: build.query<Module[], void>({
+      query: () => "/permissions",
+      providesTags: ["Permissions"],
     }),
 
     getExpensesByCategory: build.query<ExpenseByCategorySummary[], void>({
@@ -2095,6 +2184,10 @@ export const {
   useCreateRoleMutation,
   useUpdateRoleMutation,
   useGetRoleByIdQuery,
+  useGetRolePermissionsByNameQuery,
+  useGetRolePermissionsByModuleQuery,
+
+  useGetPermissionsQuery,
 
   useGetDashboardMetricsQuery,
 

@@ -7,7 +7,7 @@ import { DataGrid, GridColDef, GridRowSelectionModel } from "@mui/x-data-grid";
 import { PlusCircleIcon, EditIcon, DeleteIcon, UploadIcon, DownloadIcon, Eye } from "lucide-react";
 import ImportVehiclesModal from "./ImportVehicles";
 import * as XLSX from 'xlsx';
-import { Vehicle } from "@/state/api";
+import { PermissionPage, Vehicle } from "@/state/api";
 
 // Formato de moneda para México
 const formatCurrency = (value: number | null | undefined) => {
@@ -42,14 +42,7 @@ interface VehiclesGridProps {
   vehicles: Vehicle[];
   locations: any[];
   role: string;
-  permissions: {
-    canAddVehicle: boolean;
-    canEditVehicle: boolean;
-    canDeleteVehicle: boolean;
-    canImportVehicles: boolean;
-    canExportVehicles: boolean;
-    canViewVehicleDetail: boolean;
-  };
+  permissions: string[]; 
 }
 
 const VehiclesGrid: React.FC<VehiclesGridProps> = ({ vehicles, locations, role, permissions }) => {
@@ -57,6 +50,21 @@ const VehiclesGrid: React.FC<VehiclesGridProps> = ({ vehicles, locations, role, 
   const [rowSelectionModel, setRowSelectionModel] = useState<GridRowSelectionModel>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedLocationId, setSelectedLocationId] = useState<number | string>("");
+
+  const transformPermissions = (permissionsArray: string[]): PermissionPage => {
+    return {
+      canAccess: permissionsArray.includes("ACCESS"),
+      canAdd: permissionsArray.includes("ADD"),
+      canEdit: permissionsArray.includes("EDIT"),
+      canDelete: permissionsArray.includes("DELETE"),
+      canImport: permissionsArray.includes("IMPORT"),
+      canExport: permissionsArray.includes("EXPORT"),
+      canViewDetail: permissionsArray.includes("VIEW_DETAIL"),
+    };
+  };
+
+  // Transformar los permisos a booleanos
+  const userPermissions = transformPermissions(permissions);
 
   const handleDelete = () => {
     const selectedVehicleId = rowSelectionModel[0];
@@ -75,7 +83,7 @@ const VehiclesGrid: React.FC<VehiclesGridProps> = ({ vehicles, locations, role, 
   return (
     <div>
       <div className="flex space-x-4 mt-4">
-        {permissions.canAddVehicle && (
+        {userPermissions.canAdd && (
           <button
             className="flex items-center bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
             onClick={() => router.push("/vehicles/create")}
@@ -84,7 +92,7 @@ const VehiclesGrid: React.FC<VehiclesGridProps> = ({ vehicles, locations, role, 
             Agregar Vehículo
           </button>
         )}
-        {permissions.canViewVehicleDetail && (
+        {userPermissions.canViewDetail && (
           <button
             className="flex items-center bg-indigo-500 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded"
             onClick={() => router.push(`/vehicles/detail/${rowSelectionModel[0]}`)}
@@ -94,7 +102,7 @@ const VehiclesGrid: React.FC<VehiclesGridProps> = ({ vehicles, locations, role, 
             Ver Detalle
           </button>
         )}
-        {permissions.canEditVehicle && (
+        {userPermissions.canEdit && (
           <button
             className="flex items-center bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
             onClick={() => router.push(`/vehicles/edit/${rowSelectionModel[0]}`)}
@@ -104,7 +112,7 @@ const VehiclesGrid: React.FC<VehiclesGridProps> = ({ vehicles, locations, role, 
             Editar Vehículo
           </button>
         )}
-        {permissions.canDeleteVehicle && (
+        {userPermissions.canDelete && (
           <button
             className="flex items-center bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded"
             onClick={handleDelete}
@@ -114,7 +122,7 @@ const VehiclesGrid: React.FC<VehiclesGridProps> = ({ vehicles, locations, role, 
             Eliminar Vehículo
           </button>
         )}
-        {permissions.canImportVehicles && (
+        {userPermissions.canImport && (
           <button
             className="flex items-center bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded"
             onClick={() => setIsModalOpen(true)}
@@ -123,7 +131,7 @@ const VehiclesGrid: React.FC<VehiclesGridProps> = ({ vehicles, locations, role, 
             Importar
           </button>
         )}
-        {permissions.canExportVehicles && (
+        {userPermissions.canExport && (
           <button
             className="flex items-center bg-yellow-500 hover:bg-yellow-700 text-white font-bold py-2 px-4 rounded"
             onClick={exportToExcel}

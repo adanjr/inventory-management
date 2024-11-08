@@ -1,28 +1,54 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
+  useGetAuthUserQuery, 
+  useGetRolePermissionsByModuleQuery,
   useGetWarrantiesQuery,
   useCreateWarrantyMutation,
   useUpdateWarrantyMutation,
   useDeleteWarrantyMutation,
+  PermissionPage,
 } from "@/state/api";
 import { PlusCircleIcon, SearchIcon, PencilIcon, TrashIcon } from "lucide-react";
 import Header from "@/app/(components)/Header";
 import CreateWarrantyModal from "./CreateWarrantyModal";
 import EditWarrantyModal from "./EditWarrantyModal";
 import { Warranty } from "@/state/api";
+import { useRouter } from 'next/navigation';
 
 const Warranties = () => {
+  const { data: currentUser } = useGetAuthUserQuery({});
+  const router = useRouter();
   const [searchTerm, setSearchTerm] = useState("");
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [selectedWarranty, setSelectedWarranty] = useState<Warranty | null>(null);
+  const [roleId, setRoleId] = useState<string | undefined>(undefined);
+  const [moduleName, setModuleName] = useState("Catalogs");
+  const [subModuleName, setSubModuleName] = useState("Todos");
+
+  useEffect(() => {
+    if (currentUser?.userDetails?.roleId) {
+      setRoleId(currentUser.userDetails.roleId.toString());
+    }
+  }, [currentUser]);
+
+  const { data: permissionsData, isLoading: permissionsLoading } = useGetRolePermissionsByModuleQuery(
+    {
+      roleId: roleId || "",  // Si roleId no está disponible, pasamos una cadena vacía o un valor adecuado
+      moduleName,
+      subModuleName,
+    },
+    { skip: !roleId }  // Esto evita la consulta cuando no tenemos roleId
+  );
 
   const { data: warranties, isLoading, isError } = useGetWarrantiesQuery("");
   const [createWarranty] = useCreateWarrantyMutation();
   const [updateWarranty] = useUpdateWarrantyMutation();
   const [deleteWarranty] = useDeleteWarrantyMutation();
+
+  const userPermissions = permissionsData?.permissions || [];
 
   const handleCreateWarranty = async (warrantyData: Warranty) => {
     await createWarranty(warrantyData);
@@ -60,6 +86,24 @@ const Warranties = () => {
       </div>
     );
   }
+
+  const transformPermissions = (userPermissions: string[]): PermissionPage => {
+    return {      
+      canAccess: userPermissions.includes("ACCESS"),
+      canAdd: userPermissions.includes("ADD"),    
+      canEdit: userPermissions.includes("EDIT"),    
+      canDelete: userPermissions.includes("DELETE"),    
+      canImport: userPermissions.includes("IMPORT"),    
+      canExport: userPermissions.includes("EXPORT"),    
+      canViewDetail: userPermissions.includes("VIEW_DETAIL"),    
+    };
+  };
+
+  const permissions = transformPermissions(userPermissions);
+
+    if (!permissions.canAccess) {
+      router.push('/accessDenied');  
+    }
 
   return (
     <div className="mx-auto pb-5 w-full">

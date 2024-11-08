@@ -36,46 +36,49 @@ model User {
   purchases         Purchases[]
   movementsCreated  Movements[] @relation("CreatedBy")
   movementsReceived Movements[] @relation("ReceivedBy")
-  users             UserRole[]
   ReturnSale        SalesReturns[]
 }
 
 model Roles {
-  roleId        Int          @id @default(autoincrement())
-  name          String       @unique
-
-  users         User[]
-  usersInRole   UserRole[]      // Relación con la tabla intermedia UserRole
-  permissions   RolePermission[] // Relación con la tabla intermedia RolePermission
+  roleId          Int           @id @default(autoincrement())
+  name            String        @unique
+  description     String?       @default("")
+  users           User[]
+  rolePermissions RolePermission[] // Relación con la tabla intermedia RolePermission
 }
 
-model Permissions {
-  permissionId String           @id @default(uuid())
-  name         String           @unique
-  description  String?
-  roles        RolePermission[] // Relación con la tabla intermedia RolePermission
+model Module {
+  moduleId         Int              @id @default(autoincrement())
+  name             String           @unique
+  permissions      Permission[]     @relation("ModulePermissions")
+  subModules       SubModule[]      
 }
 
-// Tabla intermedia para User <-> Role
-model UserRole {
-  id        String @id @default(uuid())
-  user      User  @relation(fields: [userId], references: [userId])
-  userId    Int
-  role      Roles  @relation(fields: [roleId], references: [roleId])
-  roleId    Int
-
-  @@unique([userId, roleId])
+model SubModule {
+  subModuleId      Int              @id @default(autoincrement())
+  name             String
+  module           Module           @relation(fields: [moduleId], references: [moduleId])
+  moduleId         Int
+  permissions      Permission[]     @relation("SubModulePermissions")
 }
 
-// Tabla intermedia para Role <-> Permission
+model Permission {
+  permissionId     Int              @id @default(autoincrement())
+  name             String           
+  description      String?
+  module           Module?          @relation("ModulePermissions", fields: [moduleId], references: [moduleId])
+  moduleId         Int?
+  subModule        SubModule?       @relation("SubModulePermissions", fields: [subModuleId], references: [subModuleId])
+  subModuleId      Int?
+  rolePermissions  RolePermission[]
+}
+
 model RolePermission {
-  id           String      @id @default(uuid())
-  role         Roles       @relation(fields: [roleId], references: [roleId])
-  roleId       Int
-  permission   Permissions @relation(fields: [permissionId], references: [permissionId])
-  permissionId String
-
-  @@unique([roleId, permissionId])
+  id               Int              @id @default(autoincrement())
+  role             Roles             @relation(fields: [roleId], references: [roleId])
+  roleId           Int
+  permission       Permission       @relation(fields: [permissionId], references: [permissionId])
+  permissionId     Int
 }
 
 model Products {

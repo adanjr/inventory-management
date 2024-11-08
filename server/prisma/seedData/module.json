@@ -1,0 +1,24 @@
+[
+    {
+      "name": "Dashboard"
+    },
+    {
+      "name": "Inventory"
+    },
+    {
+      "name": "Sales"
+    },
+    {
+      "name": "Purchases"
+    },
+    {
+      "name": "Finance"
+    },
+    {
+      "name": "Catalogs"
+    },
+    {
+      "name": "Administration"
+    }
+  ]
+  

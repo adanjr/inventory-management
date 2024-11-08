@@ -1,37 +1,10 @@
 // page.tsx
 "use client";
 
-import { useGetVehiclesQuery, useGetLocationsQuery, useGetAuthUserQuery } from "@/state/api";
+import { useGetVehiclesQuery, useGetLocationsQuery, useGetAuthUserQuery, useGetRolePermissionsByModuleQuery } from "@/state/api";
 import Header from "@/app/(components)/Header";
 import VehiclesGrid from "@/app/(components)/Vehicles/VehiclesGrid";
-import { useState } from "react";
-
-const rolePermissions = {
-  ADMINISTRADOR: {
-    canAddVehicle: true,
-    canEditVehicle: true,
-    canDeleteVehicle: true,
-    canImportVehicles: true,
-    canExportVehicles: true,
-    canViewVehicleDetail: true,
-  },
-  VENDEDOR: {
-    canAddVehicle: false,
-    canEditVehicle: true,
-    canDeleteVehicle: false,
-    canImportVehicles: false,
-    canExportVehicles: true,
-    canViewVehicleDetail: true,
-  },
-  ALMACENISTA: {
-    canAddVehicle: false,
-    canEditVehicle: false,
-    canDeleteVehicle: false,
-    canImportVehicles: true,
-    canExportVehicles: true,
-    canViewVehicleDetail: true,
-  },
-};
+import { useState, useEffect } from "react";
 
 const Vehicles = () => {
   const { data: currentUser } = useGetAuthUserQuery({});
@@ -39,19 +12,32 @@ const Vehicles = () => {
   const { data: vehicles, isError, isLoading } = useGetVehiclesQuery("%");
 
   const [searchTerm, setSearchTerm] = useState("");
+  const [roleId, setRoleId] = useState<string | undefined>(undefined);
+  const [moduleName, setModuleName] = useState("Inventory");
+  const [subModuleName, setSubModuleName] = useState("Vehiculos");
+
+  useEffect(() => {
+    if (currentUser?.userDetails?.roleId) {
+      setRoleId(currentUser.userDetails.roleId.toString());
+    }
+  }, [currentUser]);
+
+  const { data: permissionsData, isLoading: permissionsLoading } = useGetRolePermissionsByModuleQuery(
+    {
+      roleId: roleId || "",  // Si roleId no está disponible, pasamos una cadena vacía o un valor adecuado
+      moduleName,
+      subModuleName,
+    },
+    { skip: !roleId }  // Esto evita la consulta cuando no tenemos roleId
+  );
 
   if (isLoading || locationsLoading) return <div>Cargando...</div>;
   if (isError || !vehicles) return <div>Fallo al cargar vehículos</div>;
+ 
+if (permissionsLoading) return <div>Cargando permisos...</div>;
 
-  const currentUserRole = currentUser?.userDetails?.roleName || "NO ROLE";
-  const userPermissions = rolePermissions[currentUserRole as keyof typeof rolePermissions] || {
-    canAddVehicle: false,
-    canEditVehicle: false,
-    canDeleteVehicle: false,
-    canImportVehicles: false,
-    canExportVehicles: false,
-  };
-
+const userPermissions = permissionsData?.permissions || [];
+  
   const filteredVehicles = vehicles.filter((vehicle) =>
     vehicle.internal_serial?.toLowerCase().includes(searchTerm.toLowerCase())
   );
@@ -70,7 +56,11 @@ const Vehicles = () => {
         />
       </div>
       
-      <VehiclesGrid vehicles={filteredVehicles} locations={locations} role={currentUserRole} permissions={userPermissions} />
+      <VehiclesGrid 
+            vehicles={filteredVehicles} 
+            locations={locations} 
+            role={currentUser?.userDetails?.roleName || "NO ROLE"}
+            permissions={userPermissions} />
     </div>
   );
 };

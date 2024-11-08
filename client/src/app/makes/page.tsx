@@ -1,28 +1,54 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
+  useGetAuthUserQuery, 
+  useGetRolePermissionsByModuleQuery,
   useGetMakesQuery,
   useCreateMakeMutation,
   useUpdateMakeMutation,
   useDeleteMakeMutation,
+  PermissionPage,
 } from "@/state/api";
 import { PlusCircleIcon, SearchIcon, PencilIcon, TrashIcon } from "lucide-react";
 import Header from "@/app/(components)/Header";
 import CreateMakeModal from "./CreateMakeModal";
 import EditMakeModal from "./EditMakeModal";
 import { Make } from "@/state/api";
+import { useRouter } from 'next/navigation';
 
 const Makes = () => {
+  const { data: currentUser } = useGetAuthUserQuery({});
+  const router = useRouter();
   const [searchTerm, setSearchTerm] = useState("");
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [selectedMake, setSelectedMake] = useState<Make | null>(null);
+  const [roleId, setRoleId] = useState<string | undefined>(undefined);
+  const [moduleName, setModuleName] = useState("Catalogs");
+  const [subModuleName, setSubModuleName] = useState("Todos");
+
+  useEffect(() => {
+    if (currentUser?.userDetails?.roleId) {
+      setRoleId(currentUser.userDetails.roleId.toString());
+    }
+  }, [currentUser]);
+
+  const { data: permissionsData, isLoading: permissionsLoading } = useGetRolePermissionsByModuleQuery(
+    {
+      roleId: roleId || "",  // Si roleId no está disponible, pasamos una cadena vacía o un valor adecuado
+      moduleName,
+      subModuleName,
+    },
+    { skip: !roleId }  // Esto evita la consulta cuando no tenemos roleId
+  );
 
   const { data: makes, isLoading, isError } = useGetMakesQuery(searchTerm);
   const [createMake] = useCreateMakeMutation();
   const [updateMake] = useUpdateMakeMutation();
   const [deleteMake] = useDeleteMakeMutation();
+
+  const userPermissions = permissionsData?.permissions || [];
 
   const handleCreateMake = async (makeData: Make) => {
     await createMake(makeData);
@@ -41,6 +67,20 @@ const Makes = () => {
       await deleteMake(makeId);
     }
   };
+
+  const transformPermissions = (userPermissions: string[]): PermissionPage => {
+    return {      
+      canAccess: userPermissions.includes("ACCESS"),
+      canAdd: userPermissions.includes("ADD"),    
+      canEdit: userPermissions.includes("EDIT"),    
+      canDelete: userPermissions.includes("DELETE"),    
+      canImport: userPermissions.includes("IMPORT"),    
+      canExport: userPermissions.includes("EXPORT"),    
+      canViewDetail: userPermissions.includes("VIEW_DETAIL"),    
+    };
+  };
+
+  const permissions = transformPermissions(userPermissions);
 
   if (isLoading) {
     return <div className="py-4">Loading...</div>;
@@ -72,12 +112,13 @@ const Makes = () => {
       {/* HEADER BAR */}
       <div className="flex justify-between items-center mb-6">
         <Header name="Fabricantes" />
+        {permissions.canAdd && ( 
         <button
           className="flex items-center bg-blue-500 hover:bg-blue-700 text-gray-200 font-bold py-2 px-4 rounded"
           onClick={() => setIsCreateModalOpen(true)}
         >
           <PlusCircleIcon className="w-5 h-5 mr-2 !text-gray-200" /> Crear Fabricante
-        </button>
+        </button> )}
       </div>
 
       {/* BODY MAKES LIST */}
@@ -104,6 +145,7 @@ const Makes = () => {
                 <p className="text-gray-600">Telefono: {make.phone}</p>
               )}
               <div className="flex mt-4">
+              {permissions.canEdit && ( 
                 <button
                   className="text-blue-500 hover:text-blue-700 flex items-center mr-4"
                   onClick={() => {
@@ -112,13 +154,14 @@ const Makes = () => {
                   }}
                 >
                   <PencilIcon className="w-5 h-5 mr-2" /> Editar
-                </button>
+                </button> )}
+                {permissions.canDelete && ( 
                 <button
                   className="text-red-500 hover:text-red-700 flex items-center"
                   onClick={() => handleDeleteMake(make.makeId)}
                 >
                   <TrashIcon className="w-5 h-5 mr-2" /> Eliminar
-                </button>
+                </button> )}
               </div>
             </div>
           </div>

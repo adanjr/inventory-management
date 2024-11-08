@@ -1,28 +1,54 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
+  useGetAuthUserQuery, 
+  useGetRolePermissionsByModuleQuery,
   useGetAuditTypesQuery,
   useCreateAuditTypeMutation,
   useUpdateAuditTypeMutation,
-  useDeleteAuditTypeMutation
+  useDeleteAuditTypeMutation,
+  PermissionPage
 } from "@/state/api";
 import { PlusCircleIcon, SearchIcon, PencilIcon, TrashIcon } from "lucide-react";
 import Header from "@/app/(components)/Header";
 import CreateAuditTypeModal from "./CreateAuditTypeModal";
 import EditAuditTypeModal from "./EditAuditTypeModal";
 import { AuditType } from "@/state/api";
+import { useRouter } from 'next/navigation';
 
 const AuditTypes = () => {
+  const { data: currentUser } = useGetAuthUserQuery({});
+  const router = useRouter();
   const [searchTerm, setSearchTerm] = useState("");
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [selectedAuditType, setSelectedAuditType] = useState<AuditType | null>(null);
+  const [roleId, setRoleId] = useState<string | undefined>(undefined);
+  const [moduleName, setModuleName] = useState("Catalogs");
+  const [subModuleName, setSubModuleName] = useState("Todos");
+
+  useEffect(() => {
+    if (currentUser?.userDetails?.roleId) {
+      setRoleId(currentUser.userDetails.roleId.toString());
+    }
+  }, [currentUser]);
+
+  const { data: permissionsData, isLoading: permissionsLoading } = useGetRolePermissionsByModuleQuery(
+    {
+      roleId: roleId || "",  // Si roleId no está disponible, pasamos una cadena vacía o un valor adecuado
+      moduleName,
+      subModuleName,
+    },
+    { skip: !roleId }  // Esto evita la consulta cuando no tenemos roleId
+  );
 
   const { data: auditTypes, isLoading, isError } = useGetAuditTypesQuery("");
   const [createAuditType] = useCreateAuditTypeMutation();
   const [updateAuditType] = useUpdateAuditTypeMutation();
   const [deleteAuditType] = useDeleteAuditTypeMutation();
+
+  const userPermissions = permissionsData?.permissions || [];
 
   const handleCreateAuditType = async (auditTypeData: AuditType) => {
     await createAuditType(auditTypeData);
@@ -61,6 +87,24 @@ const AuditTypes = () => {
     );
   }
 
+  const transformPermissions = (userPermissions: string[]): PermissionPage => {
+    return {      
+      canAccess: userPermissions.includes("ACCESS"),
+      canAdd: userPermissions.includes("ADD"),    
+      canEdit: userPermissions.includes("EDIT"),    
+      canDelete: userPermissions.includes("DELETE"),    
+      canImport: userPermissions.includes("IMPORT"),    
+      canExport: userPermissions.includes("EXPORT"),    
+      canViewDetail: userPermissions.includes("VIEW_DETAIL"),    
+    };
+  };
+
+  const permissions = transformPermissions(userPermissions);
+
+    if (!permissions.canAccess) {
+      router.push('/accessDenied');  
+    }
+
   return (
     <div className="mx-auto pb-5 w-full">
       {/* SEARCH BAR */}
@@ -79,12 +123,13 @@ const AuditTypes = () => {
       {/* HEADER BAR */}
       <div className="flex justify-between items-center mb-6">
         <Header name="Tipos de Auditoría" />
+        {permissions.canAdd && ( 
         <button
           className="flex items-center bg-blue-500 hover:bg-blue-700 text-gray-200 font-bold py-2 px-4 rounded"
           onClick={() => setIsCreateModalOpen(true)}
         >
           <PlusCircleIcon className="w-5 h-5 mr-2 !text-gray-200" /> Crear Tipo de Auditoría
-        </button>
+        </button> )}
       </div>
 
       {/* BODY AUDIT TYPES LIST */}
@@ -99,6 +144,7 @@ const AuditTypes = () => {
                 {auditType.name}
               </h3>
               <div className="flex mt-4">
+              {permissions.canEdit && ( 
                 <button
                   className="text-blue-500 hover:text-blue-700 flex items-center mr-4"
                   onClick={() => {
@@ -107,13 +153,14 @@ const AuditTypes = () => {
                   }}
                 >
                   <PencilIcon className="w-5 h-5 mr-2" /> Editar
-                </button>
+                </button> )}
+                {permissions.canDelete && ( 
                 <button
                   className="text-red-500 hover:text-red-700 flex items-center"
                   onClick={() => handleDeleteAuditType(auditType.auditTypeId)}
                 >
                   <TrashIcon className="w-5 h-5 mr-2" /> Eliminar
-                </button>
+                </button> )}
               </div>
             </div>
           </div>

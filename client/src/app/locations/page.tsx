@@ -1,22 +1,47 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { 
+  useGetAuthUserQuery, 
+  useGetRolePermissionsByModuleQuery,
   useGetLocationsQuery, 
   useCreateLocationMutation, 
   useUpdateLocationMutation, 
-  useDeleteLocationMutation } from "@/state/api";
+  useDeleteLocationMutation,
+  PermissionPage,
+ } from "@/state/api";
 import { PlusCircleIcon, SearchIcon, PencilIcon, TrashIcon } from "lucide-react";
 import { MapContainer, TileLayer, Marker } from 'react-leaflet'; 
 import Header from "@/app/(components)/Header";
 import CreateLocationModal from "./CreateLocationModal";
 import { Location } from "@/state/api";
+import { useRouter } from 'next/navigation';
 
 const Locations = () => {
+  const { data: currentUser } = useGetAuthUserQuery({});
+  const router = useRouter();
   const [searchTerm, setSearchTerm] = useState("");
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [selectedLocation, setSelectedLocation] = useState<Location | null>(null);
+  const [roleId, setRoleId] = useState<string | undefined>(undefined);
+  const [moduleName, setModuleName] = useState("Administration");
+  const [subModuleName, setSubModuleName] = useState("Almacenes");
+
+  useEffect(() => {
+    if (currentUser?.userDetails?.roleId) {
+      setRoleId(currentUser.userDetails.roleId.toString());
+    }
+  }, [currentUser]);
+
+  const { data: permissionsData, isLoading: permissionsLoading } = useGetRolePermissionsByModuleQuery(
+    {
+      roleId: roleId || "",  // Si roleId no está disponible, pasamos una cadena vacía o un valor adecuado
+      moduleName,
+      subModuleName,
+    },
+    { skip: !roleId }  // Esto evita la consulta cuando no tenemos roleId
+  );
 
   const { data: locations, isLoading, isError } = useGetLocationsQuery(searchTerm);
 
@@ -24,18 +49,32 @@ const Locations = () => {
   const [updateLocation] = useUpdateLocationMutation();
   const [deleteLocation] = useDeleteLocationMutation();
 
+  const userPermissions = permissionsData?.permissions || [];
+
   const handleCreateLocation = async (locationData: Location) => {
     await createLocation(locationData);
     setIsCreateModalOpen(false);
   };
-
- 
 
   const handleDeleteLocation = async (locationId: string) => {
     if (locationId) {
       await deleteLocation(locationId);
     }
   };
+
+  const transformPermissions = (userPermissions: string[]): PermissionPage => {
+    return {      
+      canAccess: userPermissions.includes("ACCESS"),
+      canAdd: userPermissions.includes("ADD"),    
+      canEdit: userPermissions.includes("EDIT"),    
+      canDelete: userPermissions.includes("DELETE"),    
+      canImport: userPermissions.includes("IMPORT"),    
+      canExport: userPermissions.includes("EXPORT"),    
+      canViewDetail: userPermissions.includes("VIEW_DETAIL"),    
+    };
+  };
+
+  const permissions = transformPermissions(userPermissions);
 
   if (isLoading) {
     return <div className="py-4">Loading...</div>;
@@ -67,13 +106,14 @@ const Locations = () => {
       {/* HEADER BAR */}
       <div className="flex justify-between items-center mb-6">
         <Header name="Almacenes y Sucursales" />
+        {permissions.canAdd && ( 
         <button
           className="flex items-center bg-blue-500 hover:bg-blue-700 text-gray-200 font-bold py-2 px-4 rounded"
           onClick={() => setIsCreateModalOpen(true)}
         >
           <PlusCircleIcon className="w-5 h-5 mr-2 !text-gray-200" /> Crear
           Ubicacion
-        </button>
+        </button> )}
       </div>
 
       {/* BODY LOCATIONS LIST */}
@@ -95,6 +135,7 @@ const Locations = () => {
             )}
 
             <div className="flex mt-4">
+            {permissions.canEdit && ( 
               <button
                 className="text-blue-500 hover:text-blue-700 flex items-center mr-4"
                 onClick={() => {
@@ -103,13 +144,14 @@ const Locations = () => {
                 }}
               >
                 <PencilIcon className="w-5 h-5 mr-2" /> Editar
-              </button>
+              </button> )}
+              {permissions.canDelete && ( 
               <button
                 className="text-red-500 hover:text-red-700 flex items-center"
                 onClick={() => handleDeleteLocation(location.locationId)}
               >
                 <TrashIcon className="w-5 h-5 mr-2" /> Eliminar
-              </button>
+              </button> )}
             </div>
           </div>
         </div>

@@ -2,6 +2,8 @@
 
 import { useState, useEffect } from "react";
 import {
+  useGetAuthUserQuery,
+  useGetRolePermissionsByModuleQuery,
   useGetModelsQuery,
   useCreateModelMutation,
   useUpdateModelMutation,
@@ -14,6 +16,7 @@ import {
   useGetTransmissionsQuery,
   NewModel,
   UpdatedModel,
+  PermissionPage,
 } from "@/state/api";
 import { PlusCircleIcon, SearchIcon, PencilIcon, TrashIcon } from "lucide-react";
 import Header from "@/app/(components)/Header";
@@ -23,12 +26,31 @@ import EditModelModal from "./EditModelModal";
 import { Model } from "@/state/api";
 
 const Models = () => {
+  const { data: currentUser } = useGetAuthUserQuery({});
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedMakeId, setSelectedMakeId] = useState<number | null>(null);
   const [selectedFamilyId, setSelectedFamilyId] = useState<number | null>(null);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [selectedModel, setSelectedModel] = useState<Model | null>(null);
+  const [roleId, setRoleId] = useState<string | undefined>(undefined);
+  const [moduleName, setModuleName] = useState("Inventory");
+  const [subModuleName, setSubModuleName] = useState("Modelos");
+
+  useEffect(() => {
+    if (currentUser?.userDetails?.roleId) {
+      setRoleId(currentUser.userDetails.roleId.toString());
+    }
+  }, [currentUser]);
+
+  const { data: permissionsData, isLoading: permissionsLoading } = useGetRolePermissionsByModuleQuery(
+    {
+      roleId: roleId || "",  // Si roleId no está disponible, pasamos una cadena vacía o un valor adecuado
+      moduleName,
+      subModuleName,
+    },
+    { skip: !roleId }  // Esto evita la consulta cuando no tenemos roleId
+  );
 
   const { data: makes = [] } = useGetMakesQuery();
   const { data: families = [] } = useGetFamiliesQuery({
@@ -43,6 +65,8 @@ const Models = () => {
     search: searchTerm,
     familyId: selectedFamilyId ?? 1,
   });
+
+  const userPermissions = permissionsData?.permissions || [];
 
   const [createModel] = useCreateModelMutation();
   const [updateModel] = useUpdateModelMutation();
@@ -175,17 +199,33 @@ const Models = () => {
     );
   }
 
+  const transformPermissions = (userPermissions: string[]): PermissionPage => {
+    return {     
+      canAccess: userPermissions.includes("ACCESS"),
+      canAdd: userPermissions.includes("ADD"),    
+      canEdit: userPermissions.includes("EDIT"),    
+      canDelete: userPermissions.includes("DELETE"),    
+      canImport: userPermissions.includes("IMPORT"),    
+      canExport: userPermissions.includes("EXPORT"),    
+      canViewDetail: userPermissions.includes("VIEW_DETAIL"),    
+    };
+  };
+
+  const permissions = transformPermissions(userPermissions);
+ 
   return (
     <div className="mx-auto pb-5 w-full">
   {/* HEADER BAR */}
   <div className="flex justify-between items-center mb-6">
     <Header name="Modelos" />
-    <button
-      className="flex items-center bg-blue-500 hover:bg-blue-700 text-gray-200 font-bold py-2 px-4 rounded"
-      onClick={() => setIsCreateModalOpen(true)}
-    >
-      <PlusCircleIcon className="w-5 h-5 mr-2 !text-gray-200" /> Crear Modelo
-    </button>
+    {permissions.canAdd && (
+            <button
+            className="flex items-center bg-blue-500 hover:bg-blue-700 text-gray-200 font-bold py-2 px-4 rounded"
+            onClick={() => setIsCreateModalOpen(true)}
+          >
+            <PlusCircleIcon className="w-5 h-5 mr-2 !text-gray-200" /> Crear Modelo
+          </button>
+          )}        
   </div>
 
   {/* FILTERS CONTAINER */}
@@ -292,21 +332,27 @@ const Models = () => {
 
         {/* Botones en el lado derecho */}
         <div className="flex mt-4 space-x-4">
-          <button
+        {permissions.canEdit && (
+            <button
             className="text-blue-500 hover:text-blue-700 flex items-center"
             onClick={() => {
               setSelectedModel(model);
               setIsEditModalOpen(true);
             }}
-          >
-            <PencilIcon className="w-5 h-5 mr-2" /> Editar
-          </button>
-          <button
-            className="text-red-500 hover:text-red-700 flex items-center"
-            onClick={() => handleDeleteModel(model.modelId)}
-          >
-            <TrashIcon className="w-5 h-5 mr-2" /> Eliminar
-          </button>
+            >
+              <PencilIcon className="w-5 h-5 mr-2" /> Editar
+            </button>
+          )}     
+
+          {permissions.canEdit && (
+             <button
+             className="text-red-500 hover:text-red-700 flex items-center"
+             onClick={() => handleDeleteModel(model.modelId)}
+              >
+             <TrashIcon className="w-5 h-5 mr-2" /> Eliminar
+           </button>
+          )}     
+          
         </div>
       </div>
     </div>

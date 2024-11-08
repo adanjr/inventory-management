@@ -1,28 +1,55 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
+  useGetAuthUserQuery, 
+  useGetRolePermissionsByModuleQuery,
   useGetBatteryWarrantiesQuery,
   useCreateBatteryWarrantyMutation,
   useUpdateBatteryWarrantyMutation,
   useDeleteBatteryWarrantyMutation,
+  PermissionPage,
 } from "@/state/api";
+import useAccessControl from "@/app/security/useAccessControl";
 import { PlusCircleIcon, SearchIcon, PencilIcon, TrashIcon } from "lucide-react";
 import Header from "@/app/(components)/Header";
 import CreateBatteryWarrantyModal from "./CreateBatteryWarrantyModal";
 import EditBatteryWarrantyModal from "./EditBatteryWarrantyModal";
 import { BatteryWarranty } from "@/state/api";
+import { useRouter } from 'next/navigation';
 
 const Warranties = () => {
+  const { data: currentUser } = useGetAuthUserQuery({});
+  const router = useRouter();
   const [searchTerm, setSearchTerm] = useState("");
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [selectedBatteryWarranty, setSelectedBatteryWarranty] = useState<BatteryWarranty | null>(null);
+  const [roleId, setRoleId] = useState<string | undefined>(undefined);
+  const [moduleName, setModuleName] = useState("Catalogs");
+  const [subModuleName, setSubModuleName] = useState("Todos");
+
+  useEffect(() => {
+    if (currentUser?.userDetails?.roleId) {
+      setRoleId(currentUser.userDetails.roleId.toString());
+    }
+  }, [currentUser]);
+
+  const { data: permissionsData, isLoading: permissionsLoading } = useGetRolePermissionsByModuleQuery(
+    {
+      roleId: roleId || "",  // Si roleId no está disponible, pasamos una cadena vacía o un valor adecuado
+      moduleName,
+      subModuleName,
+    },
+    { skip: !roleId }  // Esto evita la consulta cuando no tenemos roleId
+  );
 
   const { data: batteryWarranties, isLoading, isError } = useGetBatteryWarrantiesQuery("");
   const [createBatteryWarranty] = useCreateBatteryWarrantyMutation();
   const [updateBatteryWarranty] = useUpdateBatteryWarrantyMutation();
   const [deleteBatteryWarranty] = useDeleteBatteryWarrantyMutation();
+
+  const userPermissions = permissionsData?.permissions || [];
 
   const handleCreateBatteryWarranty = async (batteryWarrantyData: BatteryWarranty) => {
     await createBatteryWarranty(batteryWarrantyData);
@@ -41,6 +68,20 @@ const Warranties = () => {
       await deleteBatteryWarranty(batteryWarrantyId);
     }
   };
+
+  const transformPermissions = (userPermissions: string[]): PermissionPage => {
+    return {      
+      canAccess: userPermissions.includes("ACCESS"),
+      canAdd: userPermissions.includes("ADD"),    
+      canEdit: userPermissions.includes("EDIT"),    
+      canDelete: userPermissions.includes("DELETE"),    
+      canImport: userPermissions.includes("IMPORT"),    
+      canExport: userPermissions.includes("EXPORT"),    
+      canViewDetail: userPermissions.includes("VIEW_DETAIL"),    
+    };
+  };
+
+  const permissions = transformPermissions(userPermissions);
 
   // Filtrar y ordenar garantías
   const filteredAndSortedBatteryWarranties = batteryWarranties
@@ -79,12 +120,14 @@ const Warranties = () => {
       {/* HEADER BAR */}
       <div className="flex justify-between items-center mb-6">
         <Header name="Garantías de Baterías" />
+        {permissions.canAdd && ( 
         <button
           className="flex items-center bg-blue-500 hover:bg-blue-700 text-gray-200 font-bold py-2 px-4 rounded"
           onClick={() => setIsCreateModalOpen(true)}
         >
           <PlusCircleIcon className="w-5 h-5 mr-2 !text-gray-200" /> Crear Garantía de Batería
         </button>
+        )}
       </div>
 
       {/* BODY WARRANTIES LIST */}
@@ -101,6 +144,7 @@ const Warranties = () => {
               <p className="text-gray-800">Descripción: {batteryWarranty.description} </p>         
               <p className="text-gray-800">Duración: {batteryWarranty.durationMonths} meses</p>                        
               <div className="flex mt-4">
+              {permissions.canEdit && ( 
                 <button
                   className="text-blue-500 hover:text-blue-700 flex items-center mr-4"
                   onClick={() => {
@@ -110,12 +154,15 @@ const Warranties = () => {
                 >
                   <PencilIcon className="w-5 h-5 mr-2" /> Editar
                 </button>
+              )}
+              {permissions.canDelete && ( 
                 <button
                   className="text-red-500 hover:text-red-700 flex items-center"
                   onClick={() => handleDeleteBatteryWarranty(batteryWarranty.batteryWarrantyId)}
                 >
                   <TrashIcon className="w-5 h-5 mr-2" /> Eliminar
                 </button>
+              )}
               </div>
             </div>
           </div>

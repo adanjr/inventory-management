@@ -1,30 +1,53 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
+  useGetAuthUserQuery, 
+  useGetRolePermissionsByModuleQuery,
   useGetVehicleTypesQuery,
   useCreateVehicleTypeMutation,
   useUpdateVehicleTypeMutation,
   useDeleteVehicleTypeMutation,
+  PermissionPage,
 } from "@/state/api";
 import { PlusCircleIcon, SearchIcon, PencilIcon, TrashIcon } from "lucide-react";
 import Header from "@/app/(components)/Header";
 import CreateVehicleTypeModal from "./CreateVehicleTypeModal";
-
 import { VehicleType } from "@/state/api";
 import EditVehicleTypeModal from "./EditVehicleTypeModal";
 
 const VehicleTypes = () => {
+  const { data: currentUser } = useGetAuthUserQuery({});
   const [searchTerm, setSearchTerm] = useState("");
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false); 
   const [selectedVehicleType, setSelectedVehicleType] = useState<VehicleType | null>(null);
+  const [roleId, setRoleId] = useState<string | undefined>(undefined);
+  const [moduleName, setModuleName] = useState("Catalogs");
+  const [subModuleName, setSubModuleName] = useState("Todos");
+
+  useEffect(() => {
+    if (currentUser?.userDetails?.roleId) {
+      setRoleId(currentUser.userDetails.roleId.toString());
+    }
+  }, [currentUser]);
+
+  const { data: permissionsData, isLoading: permissionsLoading } = useGetRolePermissionsByModuleQuery(
+    {
+      roleId: roleId || "",  // Si roleId no está disponible, pasamos una cadena vacía o un valor adecuado
+      moduleName,
+      subModuleName,
+    },
+    { skip: !roleId }  // Esto evita la consulta cuando no tenemos roleId
+  );
 
   const { data: vehicleTypes, isLoading, isError } = useGetVehicleTypesQuery(searchTerm);
 
   const [createVehicleType] = useCreateVehicleTypeMutation();
   const [updateVehicleType] = useUpdateVehicleTypeMutation();
   const [deleteVehicleType] = useDeleteVehicleTypeMutation();
+
+  const userPermissions = permissionsData?.permissions || [];
 
   const handleCreateVehicleType = async (vehicleTypeData: VehicleType) => {
     await createVehicleType(vehicleTypeData);
@@ -38,12 +61,25 @@ const VehicleTypes = () => {
     }
   };
 
- 
   const handleDeleteVehicleType = async (vehicleTypeId: string) => {
     if (vehicleTypeId) {
       await deleteVehicleType(vehicleTypeId);
     }
   };
+
+  const transformPermissions = (userPermissions: string[]): PermissionPage => {
+    return {      
+      canAccess: userPermissions.includes("ACCESS"),
+      canAdd: userPermissions.includes("ADD"),    
+      canEdit: userPermissions.includes("EDIT"),    
+      canDelete: userPermissions.includes("DELETE"),    
+      canImport: userPermissions.includes("IMPORT"),    
+      canExport: userPermissions.includes("EXPORT"),    
+      canViewDetail: userPermissions.includes("VIEW_DETAIL"),    
+    };
+  };
+
+  const permissions = transformPermissions(userPermissions);
 
   if (isLoading) {
     return <div className="py-4">Loading...</div>;
@@ -75,12 +111,13 @@ const VehicleTypes = () => {
       {/* HEADER BAR */}
       <div className="flex justify-between items-center mb-6">
         <Header name="Tipos de Vehículo" />
+        {permissions.canAdd && ( 
         <button
           className="flex items-center bg-blue-500 hover:bg-blue-700 text-gray-200 font-bold py-2 px-4 rounded"
           onClick={() => setIsCreateModalOpen(true)}
         >
           <PlusCircleIcon className="w-5 h-5 mr-2 !text-gray-200" /> Crear Tipo
-        </button>
+        </button> )}
       </div>
 
       {/* BODY VEHICLE TYPE LIST */}
@@ -95,6 +132,7 @@ const VehicleTypes = () => {
                 {vehicleType.name}
               </h3>
               <div className="flex mt-4">
+              {permissions.canEdit && ( 
                 <button
                   className="text-blue-500 hover:text-blue-700 flex items-center mr-4"
                   onClick={() => {
@@ -103,13 +141,14 @@ const VehicleTypes = () => {
                   }}
                 >
                   <PencilIcon className="w-5 h-5 mr-2" /> Editar
-                </button>
+                </button> )}
+                {permissions.canDelete && ( 
                 <button
                   className="text-red-500 hover:text-red-700 flex items-center"
                   onClick={() => handleDeleteVehicleType(vehicleType.vehicleTypeId)}
                 >
                   <TrashIcon className="w-5 h-5 mr-2" /> Eliminar
-                </button>
+                </button> )}
               </div>
             </div>
           </div>

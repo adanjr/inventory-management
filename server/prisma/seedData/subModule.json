@@ -1,0 +1,86 @@
+[
+  {
+    "name": "Movimientos",
+    "moduleId": 2
+  },
+  {
+    "name": "Familias",
+    "moduleId": 2
+  },
+  {
+    "name": "Modelos",
+    "moduleId": 2
+  },
+  {
+    "name": "Vehiculos",
+    "moduleId": 2
+  },
+  {
+    "name": "Categorias",
+    "moduleId": 2
+  },
+  {
+    "name": "Productos",
+    "moduleId": 2
+  },
+  {
+    "name": "Ordenes",
+    "moduleId": 3
+  },
+  {
+    "name": "Devolucion",
+    "moduleId": 3
+  },
+  {
+    "name": "Clientes",
+    "moduleId": 3
+  },
+  {
+    "name": "Ordenes",
+    "moduleId": 4
+  },
+  {
+    "name": "Proveedores",
+    "moduleId": 4
+  },
+  {
+    "name": "Gastos",
+    "moduleId": 5
+  },
+  {
+    "name": "Todos",
+    "moduleId": 6
+  },
+  {
+    "name": "Organizacion",
+    "moduleId": 7
+  },
+  {
+    "name": "Usuarios",
+    "moduleId": 7
+  },
+  {
+    "name": "Roles",
+    "moduleId": 7
+  },
+  {
+    "name": "Almacenes",
+    "moduleId": 7
+  },
+  {
+    "name": "Monedas",
+    "moduleId": 7
+  },
+  {
+    "name": "Impuestos",
+    "moduleId": 7
+  },
+  {
+    "name": "Email",
+    "moduleId": 7
+  },
+  {
+    "name": "Backup",
+    "moduleId": 7
+  }
+]
