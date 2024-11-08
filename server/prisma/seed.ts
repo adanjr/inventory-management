@@ -30,7 +30,7 @@ async function main() {
     //"expenses.json",
     //"expenseByCategory.json",
     "module.json",     
-    "SubModule.json",
+    "subModule.json",
     "permission.json",
     "rolePermission.json",
   ];
