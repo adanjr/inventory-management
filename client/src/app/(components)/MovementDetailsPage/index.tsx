@@ -1,18 +1,51 @@
-import React, { useRef } from 'react';
+import React, { useState, useRef } from 'react';
 import { useRouter } from 'next/navigation';
-import { useGetMovementByIdQuery } from '@/state/api'; // Cambia esto según tu lógica
+import { useGetMovementByIdQuery,
+         useGetRolePermissionsByModuleQuery,
+         PermissionPage,
+         User } from '@/state/api'; // Cambia esto según tu lógica
 import Header from '@/app/(components)/Header';
 import { useReactToPrint } from 'react-to-print';
 
-const MovementDetailsPage = ({ movementId }: { movementId: string }) => {
+const MovementDetailsPage = ({ movementId, currentUserDetails }: { movementId: string, currentUserDetails: User }) => {
   const { data: movement, isLoading, isError } = useGetMovementByIdQuery(movementId);
   const router = useRouter();
+  const roleId = currentUserDetails.roleId ? currentUserDetails.roleId.toString(): '';
+  const [moduleName, setModuleName] = useState("Inventory");
+  const [subModuleName, setSubModuleName] = useState("Movimientos");
+
+  const { data: permissionsData, isLoading: permissionsLoading } = useGetRolePermissionsByModuleQuery(
+    {
+      roleId: roleId || "",  // Si roleId no está disponible, pasamos una cadena vacía o un valor adecuado
+      moduleName,
+      subModuleName,
+    },
+    { skip: !roleId }  // Esto evita la consulta cuando no tenemos roleId
+  );
+
+  const userPermissions = permissionsData?.permissions || [];
+
+
   const printRef = useRef<HTMLDivElement | null>(null); // Referencia al contenido a imprimir
 
   const handlePrint = useReactToPrint({     
     contentRef: printRef, // Usamos la referencia directamente
     documentTitle: `Detalle_Movimiento_${movementId}`,
   });
+
+  const transformPermissions = (userPermissions: string[]): PermissionPage => {
+    return {      
+      canAccess: userPermissions.includes("ACCESS"),    
+      canAdd: userPermissions.includes("ADD"),    
+      canEdit: userPermissions.includes("EDIT"),    
+      canDelete: userPermissions.includes("DELETE"),    
+      canImport: userPermissions.includes("IMPORT"),    
+      canExport: userPermissions.includes("EXPORT"),    
+      canViewDetail: userPermissions.includes("VIEW_DETAIL"),    
+    };
+  };
+
+  const permissions = transformPermissions(userPermissions);
 
   if (isLoading) return <div>Cargando...</div>;
   if (isError || !movement) return <div>Error al cargar los detalles del movimiento.</div>;

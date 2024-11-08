@@ -2,10 +2,14 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from 'next/navigation';
-import { useGetGroupedVehiclesQuery, 
+import { 
+        useGetAuthUserQuery, 
+        useGetRolePermissionsByModuleQuery,
+         useGetGroupedVehiclesQuery, 
          GroupedVehicleData, 
          GetGroupedVehiclesResponse,
          useGetLocationsQuery, 
+         PermissionPage,
          Location } from "@/state/api";
 import { DataGrid, GridColDef, GridRowSelectionModel } from "@mui/x-data-grid";
 import Header from "@/app/(components)/Header";
@@ -20,15 +24,36 @@ import { PlusCircleIcon,
  import * as XLSX from 'xlsx'; 
 
 const InventoryByBranch = () => {
+  const { data: currentUser } = useGetAuthUserQuery({});
   const router = useRouter();
   const [locationId, setLocationId] = useState<number | null>(null); // Estado para la ubicación
   const [rowSelectionModel, setRowSelectionModel] = useState<GridRowSelectionModel>([]);
+  const [roleId, setRoleId] = useState<string | undefined>(undefined);
+  const [moduleName, setModuleName] = useState("Inventory");
+  const [subModuleName, setSubModuleName] = useState("Movimientos");
+
+  useEffect(() => {
+    if (currentUser?.userDetails?.roleId) {
+      setRoleId(currentUser.userDetails.roleId.toString());
+    }
+  }, [currentUser]);
+
+  const { data: permissionsData, isLoading: permissionsLoading } = useGetRolePermissionsByModuleQuery(
+    {
+      roleId: roleId || "",  // Si roleId no está disponible, pasamos una cadena vacía o un valor adecuado
+      moduleName,
+      subModuleName,
+    },
+    { skip: !roleId }  // Esto evita la consulta cuando no tenemos roleId
+  );
 
   // Consulta de vehículos agrupados por modelo, color y estado
   const { data: groupedVehiclesData, isError: isGroupedVehiclesError, isLoading: isGroupedVehiclesLoading } = useGetGroupedVehiclesQuery(locationId);
   
   // Consulta de ubicaciones
   const { data: locations, isError: isLocationsError, isLoading: isLocationsLoading } = useGetLocationsQuery();
+
+  const userPermissions = permissionsData?.permissions || [];
 
   if (isGroupedVehiclesLoading) return <div>Cargando...</div>;
   if (isGroupedVehiclesError || !groupedVehiclesData) return <div>Fallo al cargar datos agrupados</div>;
@@ -57,6 +82,20 @@ const InventoryByBranch = () => {
     XLSX.utils.book_append_sheet(wb, ws, "Inventario"); // Agrega la hoja al libro
     XLSX.writeFile(wb, "inventario_vehiculos.xlsx"); // Descarga el archivo
   };
+
+  const transformPermissions = (userPermissions: string[]): PermissionPage => {
+    return {      
+      canAccess: userPermissions.includes("ACCESS"),    
+      canAdd: userPermissions.includes("ADD"),    
+      canEdit: userPermissions.includes("EDIT"),    
+      canDelete: userPermissions.includes("DELETE"),    
+      canImport: userPermissions.includes("IMPORT"),    
+      canExport: userPermissions.includes("EXPORT"),    
+      canViewDetail: userPermissions.includes("VIEW_DETAIL"),    
+    };
+  };
+
+  const permissions = transformPermissions(userPermissions);
 
   return (
     <div className="mx-auto pb-5 w-full">
@@ -89,28 +128,30 @@ const InventoryByBranch = () => {
         </div>
 
         <div className="flex space-x-4">
-         
+        {permissions.canAccess && ( 
           <button
             className="flex items-center bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
             onClick={() => router.push('/inventoryMovements')}
           >
             <PackagePlus className="w-5 h-5 mr-2" />  
             Gestión de Inventario    
-          </button>          
+          </button>  )}   
+          {permissions.canExport && (      
           <button
             className="flex items-center bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
             onClick={() => {}}
           >
             <Printer className="w-5 h-5 mr-2" />
             Imprimir Inventario
-          </button>        
+          </button>       )}    
+          {permissions.canExport && (      
           <button
             className="flex items-center bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
             onClick={exportToExcel}
           >
             <Download className="w-5 h-5 mr-2" />
             Exportar Inventario
-          </button>
+          </button> )} 
         </div>
       </div>
   

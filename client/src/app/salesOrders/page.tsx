@@ -3,18 +3,42 @@
 import { useState, useEffect } from "react";
 import { DataGrid, GridColDef, GridRowSelectionModel } from "@mui/x-data-grid";
 import Header from "@/app/(components)/Header";
-import { useGetSalesQuery } from "@/state/api";  
+import {  useGetAuthUserQuery, 
+          useGetRolePermissionsByModuleQuery,
+          useGetSalesQuery,
+          PermissionPage } from "@/state/api";  
 import { Sale } from "@/state/api";  
 import { useRouter } from "next/navigation";
 
 const SalesOrdersPage = () => {
+  const { data: currentUser } = useGetAuthUserQuery({});
   const router = useRouter();  
   const [rowSelectionModel, setRowSelectionModel] = useState<GridRowSelectionModel>([]);
   const [startDate, setStartDate] = useState<string>("");
   const [endDate, setEndDate] = useState<string>("");
   const [selectedCustomer, setSelectedCustomer] = useState<number | undefined>(undefined);
+  const [roleId, setRoleId] = useState<string | undefined>(undefined);
+  const [moduleName, setModuleName] = useState("Sales");
+  const [subModuleName, setSubModuleName] = useState("Ordenes");
+
+  useEffect(() => {
+    if (currentUser?.userDetails?.roleId) {
+      setRoleId(currentUser.userDetails.roleId.toString());
+    }
+  }, [currentUser]);
+
+  const { data: permissionsData, isLoading: permissionsLoading } = useGetRolePermissionsByModuleQuery(
+    {
+      roleId: roleId || "",  // Si roleId no está disponible, pasamos una cadena vacía o un valor adecuado
+      moduleName,
+      subModuleName,
+    },
+    { skip: !roleId }  // Esto evita la consulta cuando no tenemos roleId
+  );
 
    const { data: sales = [], isLoading, isError } = useGetSalesQuery();
+
+   const userPermissions = permissionsData?.permissions || [];
 
    if (isLoading) return <div>Cargando...</div>;
   if (isError) return <div>Error al cargar las ventas</div>;
@@ -58,6 +82,20 @@ const SalesOrdersPage = () => {
       router.push(`/salesOrders/details?Id=${rowSelectionModel[0]}`); // Redirige a la página de detalles de la venta
     }
   };
+
+  const transformPermissions = (userPermissions: string[]): PermissionPage => {
+    return {      
+      canAccess: userPermissions.includes("ACCESS"),    
+      canAdd: userPermissions.includes("ADD"),    
+      canEdit: userPermissions.includes("EDIT"),    
+      canDelete: userPermissions.includes("DELETE"),    
+      canImport: userPermissions.includes("IMPORT"),    
+      canExport: userPermissions.includes("EXPORT"),    
+      canViewDetail: userPermissions.includes("VIEW_DETAIL"),    
+    };
+  };
+
+  const permissions = transformPermissions(userPermissions);
 
   return (
     <div className="mx-auto py-5 w-full">
@@ -110,6 +148,7 @@ const SalesOrdersPage = () => {
       </div>
 
       <div className="flex space-x-4 ml-auto">
+      {permissions.canDelete && ( 
         <button
           disabled={rowSelectionModel.length === 0}
           className={`px-4 py-2 bg-yellow-500 text-white rounded ${
@@ -117,7 +156,8 @@ const SalesOrdersPage = () => {
           }`}
         >
           Devolución de Venta
-        </button>
+        </button> )}
+        {permissions.canViewDetail && ( 
         <button
           onClick={handleViewDetails}
           disabled={rowSelectionModel.length === 0}
@@ -126,7 +166,7 @@ const SalesOrdersPage = () => {
           }`}
         >
           Ver Detalles
-        </button>
+        </button> )}
       </div>    
     </div>
 

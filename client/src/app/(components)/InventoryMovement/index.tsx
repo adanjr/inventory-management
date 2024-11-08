@@ -6,6 +6,8 @@ import {
   useGetProductsQuery,
   useCreateMovementMutation,
   useGetAuthUserQuery,
+  useGetRolePermissionsByModuleQuery,
+  PermissionPage
 } from '@/state/api';
 import Header from '@/app/(components)/Header';
 import { Product, Location, Vehicle, User } from '@/state/api';
@@ -32,8 +34,21 @@ const InventoryMovement = ({ currentUserDetails }: InventoryMovementProps) => {
     const router = useRouter();
     const { data: products = [] } = useGetProductsQuery();
     const { data: locations = [] } = useGetLocationsQuery();
+    const [moduleName, setModuleName] = useState("Inventory");
+    const [subModuleName, setSubModuleName] = useState("Movimientos");
   
     const userId = currentUserDetails.userId ? currentUserDetails.userId.toString(): '';
+    const roleId = currentUserDetails.roleId ? currentUserDetails.roleId.toString(): '';
+
+    const { data: permissionsData, isLoading: permissionsLoading } = useGetRolePermissionsByModuleQuery(
+      {
+        roleId: roleId || "",  // Si roleId no está disponible, pasamos una cadena vacía o un valor adecuado
+        moduleName,
+        subModuleName,
+      },
+      { skip: !roleId }  // Esto evita la consulta cuando no tenemos roleId
+    );
+  
     const [createMovement] = useCreateMovementMutation();
   
     const [formData, setFormData] = useState<MovementFormData>({
@@ -55,6 +70,8 @@ const InventoryMovement = ({ currentUserDetails }: InventoryMovementProps) => {
     const { data: vehicles } = useGetVehiclesByLocationIdQuery(currentUserDetails.locationId ? currentUserDetails.locationId.toString() : '', {
       skip: !formData.fromLocationId, // Solo se llama si hay un fromLocationId
     });
+
+    const userPermissions = permissionsData?.permissions || [];
   
     useEffect(() => {    
       if (vehicles && vehicles.length > 0) {
@@ -122,6 +139,20 @@ const InventoryMovement = ({ currentUserDetails }: InventoryMovementProps) => {
         // Manejo de errores, por ejemplo, mostrar un mensaje de error
       }
     };
+
+    const transformPermissions = (userPermissions: string[]): PermissionPage => {
+      return {      
+        canAccess: userPermissions.includes("ACCESS"),    
+        canAdd: userPermissions.includes("ADD"),    
+        canEdit: userPermissions.includes("EDIT"),    
+        canDelete: userPermissions.includes("DELETE"),    
+        canImport: userPermissions.includes("IMPORT"),    
+        canExport: userPermissions.includes("EXPORT"),    
+        canViewDetail: userPermissions.includes("VIEW_DETAIL"),    
+      };
+    };
+  
+    const permissions = transformPermissions(userPermissions);
   
     return (
       <div className="mx-auto py-5 w-full">
@@ -224,6 +255,7 @@ const InventoryMovement = ({ currentUserDetails }: InventoryMovementProps) => {
           </div>              
   
           <div className="col-span-2">
+          {permissions.canAdd && ( 
             <button
               type="button"
               onClick={() => setModalOpen(true)}
@@ -231,6 +263,7 @@ const InventoryMovement = ({ currentUserDetails }: InventoryMovementProps) => {
             >
               Agregar Vehículos
             </button>
+          )}
           </div>     
   
           {/* Vehículos Seleccionados Grid */}
@@ -280,6 +313,7 @@ const InventoryMovement = ({ currentUserDetails }: InventoryMovementProps) => {
           </div>
   
           <div className="flex col-span-2 justify-end mt-4">
+          {permissions.canAdd && ( 
             <button
               type="submit"
               className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-700"
@@ -287,6 +321,7 @@ const InventoryMovement = ({ currentUserDetails }: InventoryMovementProps) => {
             >
               Registrar Movimiento
             </button>
+          )}
           </div>
         </form>
   

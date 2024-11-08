@@ -1,9 +1,12 @@
 "use client";
 
-import { useGetVehicleSummaryByModelAndColorQuery,  
+import { useGetAuthUserQuery, 
+         useGetRolePermissionsByModuleQuery,
+         useGetVehicleSummaryByModelAndColorQuery,  
          VehicleModelSummary, 
          VehicleColor,
-         useGetLocationsQuery,                 
+         useGetLocationsQuery,   
+         PermissionPage         
           } from "@/state/api";
 import { useState, useEffect } from "react";
 import { useRouter } from 'next/navigation';
@@ -18,15 +21,37 @@ interface Color {
 }
 
 const ModelsPage = () => {
+  const { data: currentUser } = useGetAuthUserQuery({});
   const router = useRouter();
-  
   const { data: locations= [] } = useGetLocationsQuery();
   const sucursal = locations.find(l=>l.type === 'Sucursal');
   const [locationId, setLocationId] = useState('0');
+
+  const [roleId, setRoleId] = useState<string | undefined>(undefined);
+  const [moduleName, setModuleName] = useState("Sales");
+  const [subModuleName, setSubModuleName] = useState("Ordenes");
+
+  useEffect(() => {
+    if (currentUser?.userDetails?.roleId) {
+      setRoleId(currentUser.userDetails.roleId.toString());
+    }
+  }, [currentUser]);
+
+  const { data: permissionsData, isLoading: permissionsLoading } = useGetRolePermissionsByModuleQuery(
+    {
+      roleId: roleId || "",  // Si roleId no está disponible, pasamos una cadena vacía o un valor adecuado
+      moduleName,
+      subModuleName,
+    },
+    { skip: !roleId }  // Esto evita la consulta cuando no tenemos roleId
+  );
+
   const { data: models= [], isLoading, isError } = useGetVehicleSummaryByModelAndColorQuery({locationId});
 
   // Estado para manejar el color seleccionado por modelo
   const [selectedColors, setSelectedColors] = useState<{ [modelId: number]: VehicleColor }>({});
+
+  const userPermissions = permissionsData?.permissions || [];
 
   useEffect(() => {
     if (sucursal) {
@@ -52,6 +77,20 @@ const ModelsPage = () => {
       [modelId]: color,
     }));
   };
+
+  const transformPermissions = (userPermissions: string[]): PermissionPage => {
+    return {      
+      canAccess: userPermissions.includes("ACCESS"),    
+      canAdd: userPermissions.includes("ADD"),    
+      canEdit: userPermissions.includes("EDIT"),    
+      canDelete: userPermissions.includes("DELETE"),    
+      canImport: userPermissions.includes("IMPORT"),    
+      canExport: userPermissions.includes("EXPORT"),    
+      canViewDetail: userPermissions.includes("VIEW_DETAIL"),    
+    };
+  };
+
+  const permissions = transformPermissions(userPermissions);
 
   if (isLoading) {
     return <div className="py-4">Cargando...</div>;
@@ -89,17 +128,18 @@ const ModelsPage = () => {
                 height={300}
                 className="rounded-2xl w-full h-full object-cover" // Imagen estirada
               />
-              {/* Botón ELEGIR sobre la imagen */}
-              <button 
-              className="absolute bottom-4 left-1/2 transform -translate-x-1/2 bg-blue-500 text-white py-2 px-6 rounded-lg hover:bg-blue-600 z-10"
-              onClick={() => {
-                localStorage.setItem('modelId', model.modelId.toString());
-                localStorage.setItem('colorId', selectedColors[model.modelId]?.colorId.toString());
-                router.push('/sales/salesDetails');
-              }}
-              >
-                ELEGIR
-              </button>
+               {permissions.canAdd && (            
+                <button 
+                className="absolute bottom-4 left-1/2 transform -translate-x-1/2 bg-blue-500 text-white py-2 px-6 rounded-lg hover:bg-blue-600 z-10"
+                onClick={() => {
+                  localStorage.setItem('modelId', model.modelId.toString());
+                  localStorage.setItem('colorId', selectedColors[model.modelId]?.colorId.toString());
+                  router.push('/sales/salesDetails');
+                }}
+                >
+                  ELEGIR
+                </button>
+               )}
             </div>
 
             {/* Right Section: Details - 25% width */}

@@ -1,24 +1,46 @@
 "use client";
 
-import { useEffect } from "react";
+import { useState, useEffect } from "react";
 import { useRouter, useSearchParams  } from "next/navigation";
-import { useGenerateSendPdfMutation, 
+import { useGetAuthUserQuery, 
+         useGetRolePermissionsByModuleQuery,
+         useGenerateSendPdfMutation, 
          useGetSaleByIdQuery, 
-         useGenerateDownloadPdfQuery } from "@/state/api";  
+         useGenerateDownloadPdfQuery,
+         PermissionPage } from "@/state/api";  
 import { Sale } from "@/state/api";  
 import { DataGrid, GridColDef } from "@mui/x-data-grid";
 
 const SaleDetailPage = () => {
+  const { data: currentUser } = useGetAuthUserQuery({});
   const router = useRouter();
   const searchParams = useSearchParams();
   const id = searchParams.get('Id')
   const { data: sale, isLoading, isError } = useGetSaleByIdQuery(id ?? ''); // Hook para obtener la venta por ID
+  const [roleId, setRoleId] = useState<string | undefined>(undefined);
+  const [moduleName, setModuleName] = useState("Sales");
+  const [subModuleName, setSubModuleName] = useState("Ordenes");
   
-  const fakeId = '';
+  useEffect(() => {
+    if (currentUser?.userDetails?.roleId) {
+      setRoleId(currentUser.userDetails.roleId.toString());
+    }
+  }, [currentUser]);
+
+  const { data: permissionsData, isLoading: permissionsLoading } = useGetRolePermissionsByModuleQuery(
+    {
+      roleId: roleId || "",  // Si roleId no está disponible, pasamos una cadena vacía o un valor adecuado
+      moduleName,
+      subModuleName,
+    },
+    { skip: !roleId }  // Esto evita la consulta cuando no tenemos roleId
+  );
 
   const { data: pdfData, error: pdfError, isLoading: isLoadingPdf } = useGenerateDownloadPdfQuery(id ?? '', {
     skip: !id,
   });
+
+  const userPermissions = permissionsData?.permissions || [];
 
   const [generateSendPdf, { data: sendPdfResponse, error: sendPdfError }] = useGenerateSendPdfMutation(); 
 
@@ -65,6 +87,21 @@ const SaleDetailPage = () => {
   if (pdfError) {
     console.log('PDF Error:', pdfError);
   }
+
+  const transformPermissions = (userPermissions: string[]): PermissionPage => {
+    return {      
+      canAccess: userPermissions.includes("ACCESS"),    
+      canAdd: userPermissions.includes("ADD"),    
+      canEdit: userPermissions.includes("EDIT"),    
+      canDelete: userPermissions.includes("DELETE"),    
+      canImport: userPermissions.includes("IMPORT"),    
+      canExport: userPermissions.includes("EXPORT"),    
+      canViewDetail: userPermissions.includes("VIEW_DETAIL"),    
+    };
+  };
+
+  const permissions = transformPermissions(userPermissions);
+
 
 
   if (pdfError) return <div>Error al descargar los detalles de la venta</div>;
@@ -152,19 +189,21 @@ const SaleDetailPage = () => {
         >
           Regresar a Ventas
         </button>
+        {permissions.canExport && ( 
         <button
           onClick={handleSendEmail}  
           className="bg-green-500 text-white px-4 py-2 rounded shadow hover:bg-green-600"
         >
            Enviar a Cliente
-        </button>
+        </button> )}
+        {permissions.canExport && ( 
         <button
           onClick={handleDownload}
           disabled={!pdfData || isLoadingPdf}
           className="bg-green-500 text-white px-4 py-2 rounded shadow hover:bg-green-600"
         >
           {isLoadingPdf ? 'Descargando...' : 'Descargar Nota de Venta'}
-        </button>
+        </button> )}
       </div>
     </div>
   );

@@ -1,6 +1,10 @@
 import React, { useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { useGetMovementByIdQuery, useUpdateMovementMutation, User } from '@/state/api';
+import { useGetRolePermissionsByModuleQuery,
+         useGetMovementByIdQuery, 
+         useUpdateMovementMutation, 
+         PermissionPage,
+         User } from '@/state/api';
 import Header from '@/app/(components)/Header';
 import { useReactToPrint } from 'react-to-print';
 
@@ -27,10 +31,23 @@ const MovementReceptionPage = ({ movementId, currentUserDetails }: MovementRecep
   const [receivedBy, setReceivedBy] = useState<string>('');
   const [isReceived, setIsReceived] = useState<boolean>(true); // Por defecto, isReceived es true
   const [receptionNotes, setReceptionNotes] = useState<string | null>(null);
+  const roleId = currentUserDetails.roleId ? currentUserDetails.roleId.toString(): '';
+  const [moduleName, setModuleName] = useState("Inventory");
+  const [subModuleName, setSubModuleName] = useState("Movimientos");
+
+  const { data: permissionsData, isLoading: permissionsLoading } = useGetRolePermissionsByModuleQuery(
+    {
+      roleId: roleId || "",  // Si roleId no está disponible, pasamos una cadena vacía o un valor adecuado
+      moduleName,
+      subModuleName,
+    },
+    { skip: !roleId }  // Esto evita la consulta cuando no tenemos roleId
+  );
 
   // Mutación para actualizar el movimiento
   const [updateMovement] = useUpdateMovementMutation();
 
+  const userPermissions = permissionsData?.permissions || [];
 
   const handlePrint = useReactToPrint({
     contentRef: printRef,
@@ -57,6 +74,20 @@ const MovementReceptionPage = ({ movementId, currentUserDetails }: MovementRecep
       alert('Error al confirmar la recepción');
     }
   };
+
+  const transformPermissions = (userPermissions: string[]): PermissionPage => {
+    return {      
+      canAccess: userPermissions.includes("ACCESS"),    
+      canAdd: userPermissions.includes("ADD"),    
+      canEdit: userPermissions.includes("EDIT"),    
+      canDelete: userPermissions.includes("DELETE"),    
+      canImport: userPermissions.includes("IMPORT"),    
+      canExport: userPermissions.includes("EXPORT"),    
+      canViewDetail: userPermissions.includes("VIEW_DETAIL"),    
+    };
+  };
+
+  const permissions = transformPermissions(userPermissions);
 
   if (isLoading) return <div>Cargando...</div>;
   if (isError || !movement) return <div>Error al cargar los detalles del movimiento.</div>;
@@ -161,12 +192,14 @@ const MovementReceptionPage = ({ movementId, currentUserDetails }: MovementRecep
         </div>
 
         <div className="flex justify-end mt-4">
+        {permissions.canAdd && ( 
           <button
             onClick={handleConfirmReception}
             className="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-700"
           >
             Confirmar Recepción
           </button>
+        )}
         </div>
       </div>
 
@@ -178,13 +211,13 @@ const MovementReceptionPage = ({ movementId, currentUserDetails }: MovementRecep
         >
           Volver
         </button>
-
+        {permissions.canExport && ( 
         <button
           onClick={() => handlePrint()}
           className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-700"
         >
           Imprimir PDF
-        </button>
+        </button> )}
       </div>
     </div>
   );
