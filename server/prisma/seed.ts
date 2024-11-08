@@ -35,7 +35,7 @@ async function main() {
     "rolePermission.json",
   ];
 
-  await deleteAllData(orderedFileNames);
+  //await deleteAllData(orderedFileNames);
 
   for (const fileName of orderedFileNames) {
     const filePath = path.join(dataDirectory, fileName);
