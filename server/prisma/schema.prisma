@@ -57,7 +57,7 @@ model Module {
 model SubModule {
   subModuleId      Int              @id @default(autoincrement())
   name             String
-  module           Module           @relation(fields: [moduleId], references: [moduleId])
+  module           Module           @relation(fields: [moduleId], references: [moduleId], onDelete: Cascade)
   moduleId         Int
   permissions      Permission[]     @relation("SubModulePermissions")
 }
@@ -66,9 +66,9 @@ model Permission {
   permissionId     Int              @id @default(autoincrement())
   name             String           
   description      String?
-  module           Module?          @relation("ModulePermissions", fields: [moduleId], references: [moduleId])
+  module           Module?          @relation("ModulePermissions", fields: [moduleId], references: [moduleId], onDelete: Cascade)
   moduleId         Int?
-  subModule        SubModule?       @relation("SubModulePermissions", fields: [subModuleId], references: [subModuleId])
+  subModule        SubModule?       @relation("SubModulePermissions", fields: [subModuleId], references: [subModuleId], onDelete: Cascade)
   subModuleId      Int?
   rolePermissions  RolePermission[]
 }
@@ -77,7 +77,7 @@ model RolePermission {
   id               Int              @id @default(autoincrement())
   role             Roles             @relation(fields: [roleId], references: [roleId])
   roleId           Int
-  permission       Permission       @relation(fields: [permissionId], references: [permissionId])
+  permission       Permission       @relation(fields: [permissionId], references: [permissionId], onDelete: Cascade)
   permissionId     Int
 }
 

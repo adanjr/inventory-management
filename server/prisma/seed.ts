@@ -22,6 +22,18 @@ async function deleteAllData(orderedFileNames: string[]) {
   }
 }
 
+async function resetIdentity() {
+  try {
+    // Reemplaza "TableName" con el nombre de tu tabla
+    await prisma.$executeRaw`TRUNCATE TABLE public."Module" RESTART IDENTITY CASCADE`;
+    console.log('IDs reiniciados correctamente.');
+  } catch (error) {
+    console.error('Error al reiniciar IDs:', error);
+  } finally {
+    await prisma.$disconnect();
+  }
+}
+
 async function main() {
   const dataDirectory = path.join(__dirname, "seedData");
 
@@ -35,6 +47,7 @@ async function main() {
     "rolePermission.json",
   ];
 
+  await resetIdentity();
   //await deleteAllData(orderedFileNames);
 
   for (const fileName of orderedFileNames) {
