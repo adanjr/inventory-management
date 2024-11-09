@@ -302,6 +302,11 @@ export interface Vehicle {
   location: { name: string }; // Asumiendo que ubicación es un objeto similar
   warranty: { name: string }; // Asumiendo que garantía es un objeto similar
   batteryWarranty: { name: string }; // Asumiendo que garantía es un objeto similar
+
+  makeName?: string;
+  modelName?: string;
+  locationName?: string;
+  colorName?: string;
 }
 
 export interface NewVehicle {

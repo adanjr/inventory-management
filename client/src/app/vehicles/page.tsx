@@ -42,9 +42,20 @@ if (permissionsLoading) return <div>Cargando permisos...</div>;
 
 const userPermissions = permissionsData?.permissions || [];
   
-  const filteredVehicles = vehicles.filter((vehicle) =>
-    vehicle.internal_serial?.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+const filteredVehicles = vehicles.filter((vehicle) =>
+  [
+    vehicle.internal_serial,
+    vehicle.engineNumber,
+    vehicle.stockNumber,
+    vehicle.makeName,
+    vehicle.modelName,
+    vehicle.locationName,
+    vehicle.colorName,
+  ]
+    .some((field) =>
+      field?.toString().toLowerCase().includes(searchTerm.toLowerCase())
+    )
+);
 
   return (
     <div className="mx-auto pb-5 w-full">
