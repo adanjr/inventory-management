@@ -1,4 +1,4 @@
-import React, { ChangeEvent, FormEvent, useState } from "react";
+import React, { ChangeEvent, FormEvent, useEffect, useState } from "react";
 import { v4 } from "uuid";
 import Header from "@/app/(components)/Header";
 
@@ -27,6 +27,13 @@ const CreateManufacturerModal = ({
     contact_info: "",
   });
 
+  useEffect(() => {
+    if (isOpen) {
+      setFormData({ manufacturerId: v4(), name: "", country: "", contact_info: "" });
+    }
+  }, [isOpen]);
+
+
   const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData({
@@ -37,7 +44,13 @@ const CreateManufacturerModal = ({
 
   const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    onCreate(formData);
+    const newManufacturer: ManufacturerFormData = {
+      manufacturerId: formData.manufacturerId,
+      name: formData.name,
+      country: formData.country,
+      contact_info: formData.contact_info,
+    };
+    onCreate(newManufacturer);
     onClose();
   };
 

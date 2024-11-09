@@ -23,10 +23,9 @@ export const getManufacturers = async (req: Request, res: Response): Promise<voi
 // Crear un nuevo fabricante
 export const createManufacturer = async (req: Request, res: Response): Promise<void> => {
   try {
-    const { manufacturerId, name, country, contact_info } = req.body;
+    const { name, country, contact_info } = req.body;
     const manufacturer = await prisma.manufacturers.create({
       data: {
-        manufacturerId,
         name,
         country,
         contact_info,

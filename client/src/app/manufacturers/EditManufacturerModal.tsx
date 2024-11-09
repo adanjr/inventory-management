@@ -1,46 +1,62 @@
 import React, { ChangeEvent, FormEvent, useEffect, useState } from "react";
-import { useUpdateManufacturerMutation, useGetManufacturersQuery } from "@/state/api";
+import { useUpdateManufacturerMutation, useGetManufacturersQuery, Manufacturer } from "@/state/api";
 import Header from "@/app/(components)/Header";
+
+type ManufacturerFormData = {
+  manufacturerId: string;
+  name: string;
+  country: string;
+  contact_info: string;
+};
 
 type EditManufacturerModalProps = {
   isOpen: boolean;
   onClose: () => void;
-  manufacturerId: string; 
+  onEdit: (manufacturerId: string, formData: Partial<ManufacturerFormData>) => void;
+  selectedManufacturer: Manufacturer | null;
 };
 
-const EditManufacturerModal = ({ isOpen, onClose, manufacturerId }: EditManufacturerModalProps) => {
+const EditManufacturerModal = ({ 
+  isOpen, 
+  onClose,
+  onEdit,
+  selectedManufacturer,
+}: EditManufacturerModalProps) => {
   const [formData, setFormData] = useState({
-    name: "",
-    country: "",
-    contact_info: "",
+    manufacturerId: selectedManufacturer?.manufacturerId || "",
+    name: selectedManufacturer?.name || "",
+    country: selectedManufacturer?.country || "",
+    contact_info: selectedManufacturer?.contact_info || "",
   });
-  const [updateManufacturer] = useUpdateManufacturerMutation();
-  const { data: manufacturers } = useGetManufacturersQuery();
 
   useEffect(() => {
-    if (manufacturerId && manufacturers) {
-      const manufacturer = manufacturers.find((m) => m.manufacturerId === manufacturerId);
-      if (manufacturer) {
-        setFormData({
-          name: manufacturer.name,
-          country: manufacturer.country,
-          contact_info: manufacturer.contact_info || "",
-        });
-      }
+    if (selectedManufacturer && isOpen) {
+      // Actualiza el formulario con los datos de la categoría seleccionada
+      setFormData({
+        manufacturerId: selectedManufacturer.manufacturerId,
+        name: selectedManufacturer.name,
+        country: selectedManufacturer.country,
+        contact_info: selectedManufacturer.contact_info || "",
+      });
     }
-  }, [manufacturerId, manufacturers]);
+  }, [selectedManufacturer, isOpen]);
 
   const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    setFormData({ ...formData, [name]: value });
+    setFormData({
+      ...formData,
+      [name]: value,
+    });
   };
 
-  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
+  const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    if (manufacturerId) {
-      await updateManufacturer({ id: manufacturerId, data: formData });
-      onClose();
-    }
+    onEdit(formData.manufacturerId, {
+      name: formData.name,
+      country: formData.country,
+      contact_info: formData.contact_info,
+    });
+    onClose();
   };
 
   if (!isOpen) return null;
@@ -96,7 +112,7 @@ const EditManufacturerModal = ({ isOpen, onClose, manufacturerId }: EditManufact
             type="submit"
             className="mt-4 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-700"
           >
-            Save
+            Guardar
           </button>
           <button
             onClick={onClose}

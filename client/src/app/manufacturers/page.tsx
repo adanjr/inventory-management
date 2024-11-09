@@ -15,6 +15,7 @@ import CreateManufacturerModal from "./CreateManufacturerModal";
 import { useRouter } from 'next/navigation';
  
 import { Manufacturer } from "@/state/api";
+import EditManufacturerModal from "./EditManufacturerModal";
 
 const Manufacturers = () => {
   const { data: currentUser } = useGetAuthUserQuery({});
@@ -54,7 +55,13 @@ const Manufacturers = () => {
     await createManufacturer(manufacturerData);
     setIsCreateModalOpen(false);
   };
- 
+
+  const handleEditManufacturer = async (manufacturerId: string, updatedData: Partial<Manufacturer>) => {
+    if (manufacturerId) {
+      await updateManufacturer({ id: manufacturerId, data: updatedData });
+      setIsEditModalOpen(false);
+    } 
+  }; 
 
   const handleDeleteManufacturer = async (manufacturerId: string) => {
     if (manufacturerId) {
@@ -162,6 +169,13 @@ const Manufacturers = () => {
         isOpen={isCreateModalOpen}
         onClose={() => setIsCreateModalOpen(false)}
         onCreate={handleCreateManufacturer}
+      />
+
+      <EditManufacturerModal
+        isOpen={isEditModalOpen}
+        onClose={() => setIsEditModalOpen(false)}
+        onEdit={handleEditManufacturer}
+        selectedManufacturer={selectedManufacturer}
       />
        
     </div>
