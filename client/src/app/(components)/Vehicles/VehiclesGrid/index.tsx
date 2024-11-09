@@ -7,7 +7,9 @@ import { DataGrid, GridColDef, GridRowSelectionModel } from "@mui/x-data-grid";
 import { PlusCircleIcon, EditIcon, DeleteIcon, UploadIcon, DownloadIcon, Eye } from "lucide-react";
 import ImportVehiclesModal from "./ImportVehicles";
 import * as XLSX from 'xlsx';
-import { PermissionPage, Vehicle } from "@/state/api";
+import { useDeleteVehicleMutation,
+         PermissionPage, 
+         Vehicle } from "@/state/api";
 
 // Formato de moneda para México
 const formatCurrency = (value: number | null | undefined) => {
@@ -63,13 +65,20 @@ const VehiclesGrid: React.FC<VehiclesGridProps> = ({ vehicles, locations, role, 
     };
   };
 
+  const [deleteVehicle] = useDeleteVehicleMutation();
+
   // Transformar los permisos a booleanos
   const userPermissions = transformPermissions(permissions);
 
-  const handleDelete = () => {
+  const handleDelete = async () => {
     const selectedVehicleId = rowSelectionModel[0];
     if (window.confirm("¿Estás seguro de que deseas eliminar este vehículo?")) {
-      // Lógica para eliminar el vehículo
+      try {
+        await deleteVehicle(String(selectedVehicleId));
+        alert("Vehiculo eliminado con éxito.");
+      } catch (error) {
+        console.error("Error eliminando el vehiculo:", error);         
+      }
     }
   };
 

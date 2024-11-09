@@ -34,6 +34,7 @@ const CheckoutPage = () => {
     const [cartItems, setCartItems] = useState<CartItem[]>([]);
     const [quantity, setQuantity] = useState<number>(initialQuantity);
     const [paymentMethod, setPaymentMethod] = useState<string>('');
+    const [deliveryMethod, setDeliveryMethod] = useState<string>('');
 
     const search = ""; 
 
@@ -117,9 +118,13 @@ const CheckoutPage = () => {
         setPaymentMethod(event.target.value);
     }
 
+    function handleDeliveryChange(event: ChangeEvent<HTMLSelectElement>): void {
+        setDeliveryMethod(event.target.value);
+    }
+
     const handleVehicleSelection = (selected: Vehicle[]) => {
     setSelectedVehicles(selected);
-  };
+    };
 
     async function handlePayment() {
 
@@ -130,9 +135,13 @@ const CheckoutPage = () => {
             return;
         }
 
-        // Validar que haya seleccionado un método de pago
         if (!paymentMethod) {
             alert("Por favor, selecciona un método de pago.");
+            return;
+        }
+
+        if (!deliveryMethod) {
+            alert("Por favor, selecciona una forma de entrega.");
             return;
         }
 
@@ -146,9 +155,10 @@ const CheckoutPage = () => {
                 totalAmount: total,
                 customerId: 0,  // Supongamos que no tienes un customerId aún
                 paymentMethod: paymentMethod,
+                deliveryMethod: deliveryMethod,
                 enviarADomicilio: false,  // Según la lógica que tengas
                 recogerEnTieda: true,     // Según la lógica que tengas
-                compraOnline: true,       // Según la lógica que tengas
+                compraOnline: false,       // Según la lógica que tengas
                 locationId: Number(locationId),
                 saleDetails: cartItems.map(item => ({
                     saleDetailId: 0,  // Esto también lo puede generar el backend
@@ -397,6 +407,26 @@ const CheckoutPage = () => {
                 <div className="flex justify-between mb-6">
                     <h3 className="text-xl font-semibold">Total:</h3>
                     <span className="text-xl font-bold">{new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN' }).format(total)}</span>
+                </div>
+            </div>
+
+            <div className="border p-4 bg-white">
+                <h2 className="text-2xl font-bold mb-4 text-center">FORMA DE ENTREGA</h2>
+                
+                {/* Opciones de método de pago */}
+                <div className="flex flex-col space-y-4">
+                <select
+                    name="deliveryMethod"
+                    value={deliveryMethod}
+                    onChange={handleDeliveryChange}
+                    className="border border-gray-300 rounded p-2"
+                >
+                    <option value="">Seleccionar ubicación</option>
+                    <option value="ENTREGA INMEDIATA">ENTREGA INMEDIATA</option>
+                    <option value="RECOGER EN TIENDA">RECOGER EN TIENDA</option>
+                    <option value="ENVÍO A DOMICILIO">ENVÍO A DOMICILIO</option>
+                    <option value="RESERVADO">RESERVADO</option>
+                </select>
                 </div>
             </div>
 

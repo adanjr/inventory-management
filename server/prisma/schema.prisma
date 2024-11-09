@@ -299,6 +299,7 @@ model Sales {
   timestamp         DateTime
   totalAmount       Float
   paymentMethod     String?
+  deliveryMethod    String?
   customerId        Int?
   enviarADomicilio  Boolean
   recogerEnTieda    Boolean

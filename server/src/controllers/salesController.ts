@@ -100,6 +100,7 @@ export const getSaleById = async (req: Request, res: Response): Promise<void> =>
       const {
         totalAmount,
         paymentMethod,
+        deliveryMethod,
         customerId,
         customerData,
         enviarADomicilio,
@@ -226,6 +227,7 @@ export const getSaleById = async (req: Request, res: Response): Promise<void> =>
           data: {
             totalAmount,
             paymentMethod,
+            deliveryMethod,
             customerId: customer?.customerId ?? null,
             enviarADomicilio,
             recogerEnTieda,
@@ -297,6 +299,7 @@ export const updateSale = async (req: Request, res: Response): Promise<void> => 
     const {
       totalAmount,
       paymentMethod,
+      deliveryMethod,
       customerId,
       customerData,
       enviarADomicilio,
@@ -345,6 +348,7 @@ export const updateSale = async (req: Request, res: Response): Promise<void> => 
       data: {
         totalAmount,
         paymentMethod,
+        deliveryMethod,
         customerId: customer?.customerId ?? null,
         enviarADomicilio,
         recogerEnTieda,

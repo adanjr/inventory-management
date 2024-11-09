@@ -708,6 +708,7 @@ export interface Sale {
   timestamp: string; // o Date dependiendo de tu preferencia
   totalAmount: number;
   paymentMethod?: string;
+  deliveryMethod?: string;
   customerId?: number;
   customerName: string;
   enviarADomicilio: boolean;
@@ -728,6 +729,7 @@ export interface NewSale {
   totalAmount: number;
   customerId?: number;
   paymentMethod?: string;
+  deliveryMethod?: string;
   enviarADomicilio: boolean;
   recogerEnTieda: boolean;
   compraOnline: boolean;

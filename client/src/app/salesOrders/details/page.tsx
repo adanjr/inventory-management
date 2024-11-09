@@ -55,7 +55,7 @@ const SaleDetailPage = () => {
         a.click();
         a.remove();
         window.URL.revokeObjectURL(url); // Limpia el objeto URL después de la descarga
-        alert('Exito descargando el correo');
+        alert('Exito descargando la nota');
       }
     } catch (error) {
       console.error('Error al descargar el PDF:', error);
@@ -167,6 +167,11 @@ const SaleDetailPage = () => {
           <label className="block text-sm font-medium">Dirección:</label>
           <input type="text" value={`${sale.customer?.address || ""}, ${sale.customer?.postalCode || ""} ${sale.customer?.city || ""} ${sale.customer?.state || ""}`.trim() || "No especificado"} 
           readOnly className="border rounded w-full p-2" />
+        </div>
+
+        <div className="border p-4 rounded shadow">
+          <label className="block text-sm font-medium">Forma de Entrega:</label>
+          <input type="text" value={sale.deliveryMethod || "No especificado"} readOnly className="border rounded w-full p-2" />
         </div>
       </div>
 

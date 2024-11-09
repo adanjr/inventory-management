@@ -1,7 +1,11 @@
 // page.tsx
 "use client";
 
-import { useGetVehiclesQuery, useGetLocationsQuery, useGetAuthUserQuery, useGetRolePermissionsByModuleQuery } from "@/state/api";
+import {  useGetVehiclesQuery, 
+          useGetLocationsQuery, 
+          useGetAuthUserQuery, 
+          useGetRolePermissionsByModuleQuery,
+           } from "@/state/api";
 import Header from "@/app/(components)/Header";
 import VehiclesGrid from "@/app/(components)/Vehicles/VehiclesGrid";
 import { useState, useEffect } from "react";
