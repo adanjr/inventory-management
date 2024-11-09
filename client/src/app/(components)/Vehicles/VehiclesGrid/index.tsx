@@ -131,7 +131,7 @@ const VehiclesGrid: React.FC<VehiclesGridProps> = ({ vehicles, locations, role, 
             Eliminar Vehículo
           </button>
         )}
-        {userPermissions.canImport && (
+        {userPermissions.canAdd && (
           <button
             className="flex items-center bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded"
             onClick={() => setIsModalOpen(true)}
