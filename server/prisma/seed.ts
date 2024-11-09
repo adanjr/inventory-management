@@ -34,6 +34,27 @@ async function resetIdentity() {
   }
 }
 
+async function deleteTodayVehicles() {
+  const today = new Date();
+  today.setHours(0, 0, 0, 0); // Ajustar la hora al inicio del día para que el filtro incluya solo registros de hoy
+
+  try {
+    const deletedVehicles = await prisma.vehicles.deleteMany({
+      where: {
+        createdAt: {
+          gte: today,
+        },
+      },
+    });
+
+    console.log(`${deletedVehicles.count} vehículos eliminados.`);
+  } catch (error) {
+    console.error("Error al eliminar vehículos:", error);
+  } finally {
+    await prisma.$disconnect();
+  }
+}
+
 async function main() {
   const dataDirectory = path.join(__dirname, "seedData");
 
@@ -47,8 +68,9 @@ async function main() {
     "rolePermission.json",
   ];
 
-  await resetIdentity();
+  //await resetIdentity();
   //await deleteAllData(orderedFileNames);
+  await deleteTodayVehicles();
 
   for (const fileName of orderedFileNames) {
     const filePath = path.join(dataDirectory, fileName);
