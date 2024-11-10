@@ -295,7 +295,8 @@ model BatteryWarranty {
 }
 
 model Sales {
-  saleId            Int           @id @default(autoincrement())   
+  saleId            Int           @id @default(autoincrement())
+  noteNumber        String? 
   timestamp         DateTime
   totalAmount       Float
   paymentMethod     String?

@@ -71,7 +71,7 @@ export const generateDownloadPdf = async (req: Request, res: Response): Promise<
 
     // Establecer los encabezados para la respuesta
     res.setHeader('Content-Type', 'application/pdf');
-    res.setHeader('Content-Disposition', `attachment; filename="nota-venta-${id}.pdf"`);
+    res.setHeader('Content-Disposition', `attachment; filename="factura-venta-${sale.noteNumber}.pdf"`);
 
     // Pipe del documento PDF a la respuesta
     doc.pipe(res);
@@ -114,9 +114,9 @@ export const generateDownloadPdf = async (req: Request, res: Response): Promise<
     const formattedDate = format(sale.timestamp, "MMMM dd, yyyy", { locale: es }).toUpperCase();
 
     doc.font('Helvetica').fontSize(9)
-    .text(`${sale.saleId || ""}`, 460, 170);
+    .text(`${sale.noteNumber || ""}`, 460, 170);
     doc.text(`${formattedDate || ""}`, 460, 194);
-    doc.text(`${sale.saleId || ""}`, 460, 218);
+    doc.text(`${sale.noteNumber || ""}`, 460, 218);
     doc.text(`${formattedDate   || ""}`, 460, 230);
     doc.text(`${sale.paymentMethod || ""}`, 460, 242);
 
@@ -289,14 +289,15 @@ export const generateSendPdf = async (req: Request, res: Response): Promise<void
 
       // Enviar el correo con el PDF adjunto
       transporter.sendMail({
-        from: process.env.EMAIL_USER,
+        //from: process.env.EMAIL_USER,
+        from: `YAII MOTORS Sucursal Terraza Oblatos <${process.env.EMAIL_USER}>`,
         to,
         subject,
         text,
         html,
         attachments: [
           {
-            filename: `nota-venta-${id}.pdf`,
+            filename: `factura-venta-${sale.noteNumber}.pdf`,
             content: pdfBuffer, // El contenido del PDF como Buffer
             contentType: 'application/pdf',
           },
@@ -344,9 +345,9 @@ export const generateSendPdf = async (req: Request, res: Response): Promise<void
     doc.text(`METODO DE PAGO:`, 355, 242);
 
     doc.font('Helvetica').fontSize(9)
-    .text(`${sale.saleId || ""}`, 460, 170);
+    .text(`${sale.noteNumber || ""}`, 460, 170);
     doc.text(`${formattedDate || ""}`, 460, 194);
-    doc.text(`${sale.saleId || ""}`, 460, 218);
+    doc.text(`${sale.noteNumber || ""}`, 460, 218);
     doc.text(`${formattedDate   || ""}`, 460, 230);
     doc.text(`${sale.paymentMethod || ""}`, 460, 242);
 

@@ -162,15 +162,15 @@ const OrganizationProfilePage = () => {
       </div>
       <div>
         <label htmlFor="purchaseOrderPrefix" className="block">Prefijo Orden de Compra</label>
-        <input type="text" name="purchaseOrderPrefix" defaultValue={organization?.purchaseOrderPrefix} required readOnly={!permissions.canEdit} className="border rounded w-full p-2" />
+        <input type="text" name="purchaseOrderPrefix" defaultValue={organization?.purchaseOrderPrefix} readOnly={!permissions.canEdit} className="border rounded w-full p-2" />
       </div>
       <div>
         <label htmlFor="saleOrderPrefix" className="block">Prefijo Orden de Venta</label>
-        <input type="text" name="saleOrderPrefix" defaultValue={organization?.saleOrderPrefix} required readOnly={!permissions.canEdit} className="border rounded w-full p-2" />
+        <input type="text" name="saleOrderPrefix" defaultValue={organization?.saleOrderPrefix} readOnly={!permissions.canEdit} className="border rounded w-full p-2" />
       </div>
       <div>
         <label htmlFor="invoicePrefix" className="block">Prefijo Factura</label>
-        <input type="text" name="invoicePrefix" defaultValue={organization?.invoicePrefix} required readOnly={!permissions.canEdit} className="border rounded w-full p-2" />
+        <input type="text" name="invoicePrefix" defaultValue={organization?.invoicePrefix} readOnly={!permissions.canEdit} className="border rounded w-full p-2" />
       </div>
       <div>
         <label htmlFor="startingOrderNumber" className="block">Número Inicial de Orden</label>

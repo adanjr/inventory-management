@@ -56,11 +56,12 @@ const SalesOrdersPage = () => {
   // Configuración de columnas para DataGrid
   const columns: GridColDef[] = [
     { field: "saleId", headerName: "ID", width: 50 },
+    { field: "noteNumber", headerName: "No. de Nota", width: 90 },
     { field: "locationName", headerName: "Ubicación", width: 200 },
     {
       field: "timestamp",
       headerName: "Fecha",
-      width: 150,
+      width: 100,
       valueGetter: (params) => {
         const date = new Date(params);
         return date.toLocaleDateString();

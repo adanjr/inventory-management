@@ -710,6 +710,7 @@ export interface UpdatedLocation {
 
 export interface Sale {
   saleId: number;
+  noteNumber: String; 
   timestamp: string; // o Date dependiendo de tu preferencia
   totalAmount: number;
   paymentMethod?: string;

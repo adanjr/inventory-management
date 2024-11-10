@@ -221,6 +221,14 @@ export const getSaleById = async (req: Request, res: Response): Promise<void> =>
             };
           })
         );
+
+        const organization = await prisma.organization.findFirst();
+            if (!organization) throw new Error("Organization not found");
+
+        // Incrementar el número de venta
+        const saleCount = await prisma.sales.count();
+        const saleOrderNumber = organization.startingOrderNumber + saleCount + 1;
+        const saleOrderNote = `${organization.saleOrderPrefix}${saleOrderNumber}`;
   
         // Crear la venta
         const sale = await prisma.sales.create({
@@ -233,6 +241,7 @@ export const getSaleById = async (req: Request, res: Response): Promise<void> =>
             recogerEnTieda,
             compraOnline,
             locationId: location?.locationId ?? null,
+            noteNumber: saleOrderNote,
             timestamp: new Date(),
             saleDetails: {
               create: saleDetailsWithVehicle,

@@ -50,7 +50,7 @@ const SaleDetailPage = () => {
         const url = window.URL.createObjectURL(new Blob([pdfData], { type: 'application/pdf' }));
         const a = document.createElement('a');
         a.href = url;
-        a.download = `nota_venta_${id}.pdf`; // Nombre del archivo a descargar
+        a.download = `factura-venta-${sale?.noteNumber || '' }.pdf`; // Nombre del archivo a descargar
         document.body.appendChild(a);
         a.click();
         a.remove();
@@ -139,7 +139,7 @@ const SaleDetailPage = () => {
 
   return (
     <div className="mx-auto py-5 w-full">
-      <h1 className="text-2xl font-bold">Detalles de la Venta #{sale.saleId}</h1>
+      <h1 className="text-2xl font-bold">Detalles de la Venta #{sale.noteNumber}</h1>
       
       {/* Información general de la venta */}
       <div className="grid grid-cols-2 gap-4 mt-4">
