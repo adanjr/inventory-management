@@ -109,8 +109,7 @@ const CreateCustomerModal = ({
                 placeholder="Email"
                 onChange={handleChange}
                 value={formData.email}
-                className={inputCssStyles}
-                required
+                className={inputCssStyles}                
               />
             </div>
 

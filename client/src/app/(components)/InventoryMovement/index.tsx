@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, SetStateAction } from 'react';
 import { useRouter } from 'next/navigation';
 import {
   useGetLocationsQuery,
@@ -12,6 +12,7 @@ import {
 import Header from '@/app/(components)/Header';
 import { Product, Location, Vehicle, User } from '@/state/api';
 import VehicleModal from '@/app/(components)/VehicleModal';
+import ProductModal from '../ProductModal';
 
 interface InventoryMovementProps {  
   currentUserDetails: User
@@ -32,8 +33,9 @@ type MovementFormData = {
 
 const InventoryMovement = ({ currentUserDetails }: InventoryMovementProps) => {
     const router = useRouter();
-    const { data: products = [] } = useGetProductsQuery();
+    const { data: products = [] } = useGetProductsQuery('');
     const { data: locations = [] } = useGetLocationsQuery();
+    const [activeTab, setActiveTab] = useState("vehiculos");
     const [moduleName, setModuleName] = useState("Inventory");
     const [subModuleName, setSubModuleName] = useState("Movimientos");
   
@@ -65,7 +67,10 @@ const InventoryMovement = ({ currentUserDetails }: InventoryMovementProps) => {
     
     const [selectedVehicles, setSelectedVehicles] = useState<Vehicle[]>([]);
     const [availableVehicles, setAvailableVehicles] = useState<Vehicle[]>([]);
+    const [selectedProducts, setSelectedProducts] = useState<Product[]>([]);
+    const [availableProducts, setAvailableProducts] = useState<Product[]>([]);
     const [modalOpen, setModalOpen] = useState(false);
+    const [productModalOpen, setProductModalOpen] = useState(false);
   
     const { data: vehicles } = useGetVehiclesByLocationIdQuery(currentUserDetails.locationId ? currentUserDetails.locationId.toString() : '', {
       skip: !formData.fromLocationId, // Solo se llama si hay un fromLocationId
@@ -81,6 +86,15 @@ const InventoryMovement = ({ currentUserDetails }: InventoryMovementProps) => {
         setSelectedVehicles([]);
       }
     }, [vehicles]);
+
+    useEffect(() => {    
+      if (products && products.length > 0) {
+        setAvailableProducts(products);
+      } else {
+        setAvailableProducts([]); // Limpia los vehículos si no hay selección
+        setSelectedProducts([]);
+      }
+    }, [products]);
   
     const handleChange = (e: React.ChangeEvent<HTMLSelectElement | HTMLInputElement | HTMLTextAreaElement>) => {
       const { name, value } = e.target;
@@ -101,9 +115,21 @@ const InventoryMovement = ({ currentUserDetails }: InventoryMovementProps) => {
     const handleRemoveVehicle = (vehicleId: number) => {
       setSelectedVehicles(selectedVehicles.filter((v) => v.vehicleId !== vehicleId));
     };
-  
+
+    const handleRemoveProduct = (productId: number) => {
+      setSelectedProducts(selectedProducts.filter((v) => v.productId !== productId));
+    };
+
     const handleVehicleSelection = (selected: Vehicle[]) => {
       setSelectedVehicles(selected);
+    };
+
+    const handleProductSelection = (selected: Product[]) => {
+      setSelectedProducts(selected);
+    };
+
+    const handleTabChange = (tab: SetStateAction<string>) => {
+      setActiveTab(tab);
     };
   
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -252,55 +278,116 @@ const InventoryMovement = ({ currentUserDetails }: InventoryMovementProps) => {
                 </option>
               ))}
             </select>
-          </div>              
-  
+          </div>
+
+          {/* Tabs */}
           <div className="col-span-2">
-          {permissions.canAdd && ( 
-            <button
-              type="button"
-              onClick={() => setModalOpen(true)}
-              className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-700"
-            >
-              Agregar Vehículos
-            </button>
-          )}
-          </div>     
+            <div className="flex border-b border-gray-300 mb-4">
+              <button
+                type="button"
+                onClick={() => handleTabChange("vehiculos")}
+                className={`py-2 px-4 ${activeTab === "vehiculos" ? "border-b-2 border-blue-500 text-blue-500" : "text-gray-500"}`}
+              >
+                Vehículos
+              </button>
+              <button
+                type="button"
+                onClick={() => handleTabChange("productos")}
+                className={`py-2 px-4 ${activeTab === "productos" ? "border-b-2 border-blue-500 text-blue-500" : "text-gray-500"}`}
+              >
+                Productos
+              </button>
+          </div>
+
+          {/* Content for Vehículos Tab */}
+          {activeTab === "vehiculos" && (
+            <div>
+              <div className="col-span-2">
+                {permissions.canAdd && ( 
+                <button
+                  type="button"
+                  onClick={() => setModalOpen(true)}
+                  className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-700"
+                >
+                  Agregar Vehículos
+                </button>
+                )}
+              </div>
+
+                {/* Vehículos Seleccionados Grid */}
+              <div className="col-span-2 mt-4">
+                <label className="text-gray-700 font-medium">Vehículos Seleccionados</label>
+                <table className="min-w-full table-auto border-collapse border border-gray-400">
+                  <thead>
+                    <tr>
+                      <th className="border border-gray-300 px-4 py-2">Modelo</th>
+                      <th className="border border-gray-300 px-4 py-2">Color</th>
+                      <th className="border border-gray-300 px-4 py-2">Serial</th>
+                      <th className="border border-gray-300 px-4 py-2">Numero de Motor</th>
+                      <th className="border border-gray-300 px-4 py-2">Acciones</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {selectedVehicles.map((vehicle: Vehicle) => (
+                      <tr key={vehicle.vehicleId}>
+                        <td className="border border-gray-300 px-4 py-2">{vehicle.model.name}</td>
+                        <td className="border border-gray-300 px-4 py-2">{vehicle.color.name}</td>
+                        <td className="border border-gray-300 px-4 py-2">{vehicle.internal_serial}</td>
+                        <td className="border border-gray-300 px-4 py-2">{vehicle.engineNumber}</td>
+                        <td className="border border-gray-300 px-4 py-2">
+                          <button
+                            type="button"
+                            onClick={() => handleRemoveVehicle(vehicle.vehicleId)}
+                            className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-700"
+                          >
+                            Eliminar
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>      
+            </div>
+            )}
+
+            {/* Content for Productos Tab */}
+            {activeTab === "productos" && (
+              <div>
+                <div className="col-span-2">
+                  {permissions.canAdd && (
+                    <button
+                      type="button"
+                      onClick={() => setProductModalOpen(true)} // Cambia esto a la lógica que maneja los productos
+                      className="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-700"
+                    >
+                      Agregar Productos
+                    </button>
+                  )}
+                </div>
   
-          {/* Vehículos Seleccionados Grid */}
-          <div className="col-span-2">
-            <label className="text-gray-700 font-medium">Vehículos Seleccionados</label>
-            <table className="min-w-full table-auto border-collapse border border-gray-400">
-              <thead>
-                <tr>
-                  <th className="border border-gray-300 px-4 py-2">Modelo</th>
-                  <th className="border border-gray-300 px-4 py-2">Color</th>
-                  <th className="border border-gray-300 px-4 py-2">Serial</th>
-                  <th className="border border-gray-300 px-4 py-2">Numero de Motor</th>
-                  <th className="border border-gray-300 px-4 py-2">Acciones</th>
-                </tr>
-              </thead>
-              <tbody>
-                {selectedVehicles.map((vehicle: Vehicle) => (
-                  <tr key={vehicle.vehicleId}>
-                    <td className="border border-gray-300 px-4 py-2">{vehicle.model.name}</td>
-                    <td className="border border-gray-300 px-4 py-2">{vehicle.color.name}</td>
-                    <td className="border border-gray-300 px-4 py-2">{vehicle.internal_serial}</td>
-                    <td className="border border-gray-300 px-4 py-2">{vehicle.engineNumber}</td>
-                    <td className="border border-gray-300 px-4 py-2">
-                      <button
-                        type="button"
-                        onClick={() => handleRemoveVehicle(vehicle.vehicleId)}
-                        className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-700"
-                      >
-                        Eliminar
-                      </button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>                
-  
+                {/* Aquí puedes agregar el contenido para los productos seleccionados */}
+                <div className="col-span-2 mt-4">
+                  <label className="text-gray-700 font-medium">Productos Seleccionados</label>
+                  {/* Tabla de productos seleccionados (similar a la de vehículos) */}
+                  <table className="min-w-full table-auto border-collapse border border-gray-400">
+                    <thead>
+                      <tr>
+                        <th className="border border-gray-300 px-4 py-2">Nombre</th>
+                        <th className="border border-gray-300 px-4 py-2">Cantidad</th>
+                        <th className="border border-gray-300 px-4 py-2">Código</th>
+                        <th className="border border-gray-300 px-4 py-2">Acciones</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {/* Aquí podrías mapear una lista de productos seleccionados similar a la de vehículos */}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+               )}
+          </div>
+
           <div className="flex flex-col col-span-2">
             <label className="text-gray-700 font-medium">Notas</label>
             <textarea
@@ -331,6 +418,13 @@ const InventoryMovement = ({ currentUserDetails }: InventoryMovementProps) => {
           availableVehicles={availableVehicles}
           selectedVehicles={selectedVehicles}
           onSelect={handleVehicleSelection}
+        />
+        <ProductModal
+          open={productModalOpen}
+          onClose={() => setProductModalOpen(false)}
+          availableProducts={availableProducts}
+          selectedProducts={selectedProducts}
+          onSelect={handleProductSelection}
         />
       </div>
     );

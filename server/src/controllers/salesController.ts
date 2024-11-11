@@ -127,30 +127,20 @@ export const getSaleById = async (req: Request, res: Response): Promise<void> =>
             throw new Error("Customer not found");
           }
         } else if (customerData) {
-
-          const existingCustomer = await prisma.customers.findUnique({
-            where: { email: customerData.email },
+          customer = await prisma.customers.create({
+            data: {
+              name: customerData.name,
+              lastname: customerData.lastname,
+              email: customerData.email,
+              phone: customerData.phone,
+              address: customerData.address,
+              postalCode: customerData.postalCode,
+              city: customerData.city,
+              state: customerData.state,
+              country: customerData.country,
+              mainImageUrl: customerData.mainImageUrl,
+            },
           });
-
-          if (existingCustomer) {
-            // Si existe, asigna el cliente existente a la variable
-            customer = existingCustomer;
-          } else {
-            customer = await prisma.customers.create({
-              data: {
-                name: customerData.name,
-                lastname: customerData.lastname,
-                email: customerData.email,
-                phone: customerData.phone,
-                address: customerData.address,
-                postalCode: customerData.postalCode,
-                city: customerData.city,
-                state: customerData.state,
-                country: customerData.country,
-                mainImageUrl: customerData.mainImageUrl,
-              },
-            });
-          }
         }
   
         // Buscar la ubicación si locationId es proporcionado

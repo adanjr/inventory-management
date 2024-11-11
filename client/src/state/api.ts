@@ -3,7 +3,7 @@ import { fetchAuthSession, getCurrentUser } from "aws-amplify/auth";
 import numeral from "numeral";
 
 export interface Product {
-  productId: string;
+  productId: number;
   name: string;
   description?: string;
   price: number;
@@ -25,6 +25,15 @@ export interface NewProduct {
   manufacturerId: string;
   mainImageUrl?: string;
   additionalImages?: string[];
+}
+
+export interface NewProductCSV {
+  name: string;
+  description?: string;
+  price: number;
+  stockQuantity: number;
+  categoryName: string;
+  manufacturerName: string;
 }
 
 export interface UpdatedProduct {
@@ -1391,6 +1400,14 @@ export const api = createApi({
       }),
       providesTags: ["Customers"],
     }),
+
+    getCustomerById: build.query<Customer, string>({
+      query: (id) => ({
+        url: `/customers/${id}`,
+      }),
+      providesTags: (result, error, id) => [{ type: "Customers", id }],
+    }),
+
     createCustomer: build.mutation<Customer, NewCustomer>({
       query: (newCustomer) => ({
         url: "/customers",
@@ -2221,6 +2238,7 @@ export const {
   useDeleteManufacturerMutation,
 
   useGetCustomersQuery,
+  useGetCustomerByIdQuery,
   useCreateCustomerMutation,
   useUpdateCustomerMutation,
   useDeleteCustomerMutation,

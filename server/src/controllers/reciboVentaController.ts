@@ -256,7 +256,7 @@ export const generateSendPdf = async (req: Request, res: Response): Promise<void
       };
     });
 
-    const to = sale.customer!.email;
+    const to = sale.customer?.email || organization?.email || '';
     const subject = "¡Gracias por tu compra!";
     const text = "Agradecemos su compra en nuestra tienda. Pronto estará recibiendo más detalles.";
     const html = generateMailTemplate(fullName,formattedDate, formattedDate,saleDetailsArray,subtotalParaMail,deliveryMethodToMail,paymentMethodToMail,totalParaMail);
@@ -325,7 +325,7 @@ export const generateSendPdf = async (req: Request, res: Response): Promise<void
     doc.font('Helvetica').fontSize(9)
     .text(`${sale.customer?.name || ""} ${sale.customer?.lastname || ""}`, 54, 180);
     doc.text(`${sale.customer?.postalCode || ""}`, 54, 192);
-    doc.text(`${sale.customer?.email || ""}`, 54, 204);
+    doc.text(`${sale.customer?.email || "Sin Email"}`, 54, 204);
     doc.text(`${sale.customer?.phone || ""}`, 54, 216);
 
     doc.font('Helvetica-Bold').fontSize(9) 

@@ -129,9 +129,9 @@ const CheckoutPage = () => {
     async function handlePayment() {
 
         // Validar que se han ingresado todos los datos obligatorios del cliente
-        const { name, lastname, email } = formData;
-        if (!name || !lastname || !email) {
-            alert("Por favor, completa todos los campos obligatorios del cliente (Nombre, Apellidos y Email).");
+        const { name, lastname } = formData;
+        if (!name || !lastname) {
+            alert("Por favor, completa todos los campos obligatorios del cliente (Nombre y Apellidos).");
             return;
         }
 
@@ -286,8 +286,7 @@ const CheckoutPage = () => {
                                     placeholder="EMAIL"
                                     value={formData.email}
                                     onChange={handleChange}
-                                    className="border w-full p-2 mb-2 rounded"
-                                    required
+                                    className="border w-full p-2 mb-2 rounded"                                    
                                 />
                         </div>
 
