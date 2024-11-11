@@ -6,8 +6,7 @@ import { useRouter } from 'next/navigation';
 import { DataGrid, GridColDef, GridRowSelectionModel } from "@mui/x-data-grid";
 import { PlusCircleIcon, EditIcon, DeleteIcon, UploadIcon, DownloadIcon, Eye } from "lucide-react";
  import * as XLSX from 'xlsx';
-import { useDeleteProductMutation,
-         PermissionPage, 
+import { PermissionPage, 
          Product } from "@/state/api";
 
 // Formato de moneda para México
@@ -64,8 +63,6 @@ const ProductsGrid: React.FC<ProductsGridProps> = ({ Products, locations, role, 
     };
   };
 
-  const [deleteProduct] = useDeleteProductMutation();
-
   // Transformar los permisos a booleanos
   const userPermissions = transformPermissions(permissions);
 
@@ -73,7 +70,7 @@ const ProductsGrid: React.FC<ProductsGridProps> = ({ Products, locations, role, 
     const selectedProductId = rowSelectionModel[0];
     if (window.confirm("¿Estás seguro de que deseas eliminar este vehículo?")) {
       try {
-        await deleteProduct(String(selectedProductId));
+        //await deleteProduct(String(selectedProductId));
         alert("Vehiculo eliminado con éxito.");
       } catch (error) {
         console.error("Error eliminando el vehiculo:", error);         
