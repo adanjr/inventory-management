@@ -58,9 +58,10 @@ const ProductModal: React.FC<ProductModalProps> = ({
 
   const columns: GridColDef[] = [
     { field: "productId", headerName: "ID", width: 30 },
-    { field: "name", headerName: "Nombre", width: 100 },
+    { field: "productCode", headerName: "Codigo", width: 120 },
+    { field: "name", headerName: "Nombre", width: 180 },
     { field: "price", headerName: "Precio", width: 100 },
-    { field: 'stockQuantity', headerName: 'Cantidad en Stock', width: 150 },
+    { field: 'quantityStockInLocation', headerName: 'Cantidad en Stock', width: 120 },
   ];
 
   return (

@@ -61,6 +61,7 @@ export const createOrganization = async (req: Request, res: Response): Promise<v
       startingInvoiceNumber,
       startingPurchaseOrderNumber,
       responsiblePerson,
+      timezone,
       logoUrl,
     } = req.body;
 
@@ -85,6 +86,7 @@ export const createOrganization = async (req: Request, res: Response): Promise<v
         startingInvoiceNumber,
         startingPurchaseOrderNumber,
         responsiblePerson,
+        timezone,
         logoUrl,
       },
     });
@@ -120,6 +122,7 @@ export const updateOrganization = async (req: Request, res: Response): Promise<v
       startingInvoiceNumber,
       startingPurchaseOrderNumber,
       responsiblePerson,
+      timezone,
       logoUrl,
     } = req.body;
 
@@ -145,6 +148,7 @@ export const updateOrganization = async (req: Request, res: Response): Promise<v
         startingInvoiceNumber,
         startingPurchaseOrderNumber,
         responsiblePerson,
+        timezone,
         logoUrl,
       },
     });

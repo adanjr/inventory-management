@@ -3,7 +3,7 @@ import { useRouter } from 'next/navigation';
 import {
   useGetLocationsQuery,
   useGetVehiclesByLocationIdQuery,
-  useGetProductsQuery,
+  useGetProductsByLocationIdQuery,
   useCreateMovementMutation,
   useGetAuthUserQuery,
   useGetRolePermissionsByModuleQuery,
@@ -19,8 +19,6 @@ interface InventoryMovementProps {
 };
 
 type MovementFormData = {
-    productId?: number | null; // Cambia a number o null
-    vehicleId?: number;
     fromLocationId: string;
     toLocationId: string;
     quantity?: number;
@@ -33,7 +31,6 @@ type MovementFormData = {
 
 const InventoryMovement = ({ currentUserDetails }: InventoryMovementProps) => {
     const router = useRouter();
-    const { data: products = [] } = useGetProductsQuery('');
     const { data: locations = [] } = useGetLocationsQuery();
     const [activeTab, setActiveTab] = useState("vehiculos");
     const [moduleName, setModuleName] = useState("Inventory");
@@ -56,8 +53,6 @@ const InventoryMovement = ({ currentUserDetails }: InventoryMovementProps) => {
     const [formData, setFormData] = useState<MovementFormData>({
       fromLocationId: '',
       toLocationId: '',
-      vehicleId: undefined,
-      productId: undefined,
       movementType: 'TRANSFERENCIA',
       movementDate: new Date().toISOString().slice(0, 10),
       status: 'EN TRANSITO',
@@ -75,6 +70,8 @@ const InventoryMovement = ({ currentUserDetails }: InventoryMovementProps) => {
     const { data: vehicles } = useGetVehiclesByLocationIdQuery(currentUserDetails.locationId ? currentUserDetails.locationId.toString() : '', {
       skip: !formData.fromLocationId, // Solo se llama si hay un fromLocationId
     });
+
+    const { data: products } = useGetProductsByLocationIdQuery(currentUserDetails.locationId ? currentUserDetails.locationId.toString() : '' );
 
     const userPermissions = permissionsData?.permissions || [];
   
@@ -109,6 +106,7 @@ const InventoryMovement = ({ currentUserDetails }: InventoryMovementProps) => {
         movementType: value,
         fromLocationId: value === 'ENTRADA' ? '' : prevFormData.fromLocationId,  // Limpia el fromLocationId si es 'Entrada'
         toLocationId: value === 'SALIDA' ? '' : prevFormData.toLocationId,      // Limpia el toLocationId si es 'Salida'
+        status: value === 'TRANSFERENCIA' ? 'EN TRANSITO' : 'COMPLETADO',  
       }));
     };
   
@@ -138,7 +136,7 @@ const InventoryMovement = ({ currentUserDetails }: InventoryMovementProps) => {
       // Prepara los detalles del movimiento para enviarlos
       const movementDetails = selectedVehicles.map(vehicle => ({
         vehicleId: vehicle.vehicleId,
-        productId: formData.productId, // Si es necesario puedes añadir un productId aquí
+        productId: null,  
         inspectionStatus: 'PENDIENTE', // Estado inicial de la inspección
       }));
     
@@ -268,15 +266,19 @@ const InventoryMovement = ({ currentUserDetails }: InventoryMovementProps) => {
             >
               <option value="">Seleccionar ubicación</option>
               {locations
-              .filter((location: Location) => Number(location.locationId) !== currentUserDetails.locationId)
-              .map((location: Location) => (
-                <option
-                  key={location.locationId}
-                  value={location.locationId}
-                >
-                  {location.name}
-                </option>
-              ))}
+                .filter((location: Location) => {
+                  // Si es ENTRADA, solo muestra la ubicación actual del usuario
+                  if (formData.movementType === 'ENTRADA') {
+                    return Number(location.locationId) === currentUserDetails.locationId;
+                  }
+                  // Si es otro tipo, excluye la ubicación del usuario
+                  return Number(location.locationId) !== currentUserDetails.locationId;
+                })
+                .map((location: Location) => (
+                  <option key={location.locationId} value={location.locationId}>
+                    {location.name}
+                  </option>
+                ))}
             </select>
           </div>
 
@@ -373,14 +375,29 @@ const InventoryMovement = ({ currentUserDetails }: InventoryMovementProps) => {
                   <table className="min-w-full table-auto border-collapse border border-gray-400">
                     <thead>
                       <tr>
+                        <th className="border border-gray-300 px-4 py-2">Codigo</th>
                         <th className="border border-gray-300 px-4 py-2">Nombre</th>
                         <th className="border border-gray-300 px-4 py-2">Cantidad</th>
-                        <th className="border border-gray-300 px-4 py-2">Código</th>
                         <th className="border border-gray-300 px-4 py-2">Acciones</th>
                       </tr>
                     </thead>
                     <tbody>
-                      {/* Aquí podrías mapear una lista de productos seleccionados similar a la de vehículos */}
+                    {selectedProducts.map((product: Product) => (
+                      <tr key={product.productId}>
+                        <td className="border border-gray-300 px-4 py-2">{product.productCode}</td>
+                        <td className="border border-gray-300 px-4 py-2">{product.name}</td>
+                        <td className="border border-gray-300 px-4 py-2">{product.stockQuantity}</td>
+                        <td className="border border-gray-300 px-4 py-2">
+                          <button
+                            type="button"
+                            onClick={() => handleRemoveProduct(product.productId)}
+                            className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-700"
+                          >
+                            Eliminar
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
                     </tbody>
                   </table>
                 </div>

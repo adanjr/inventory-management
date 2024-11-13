@@ -1,5 +1,6 @@
 import { Request, Response } from "express";
 import { PrismaClient } from "@prisma/client";
+import { format } from 'date-fns-tz';
 
 const prisma = new PrismaClient();
 
@@ -109,8 +110,6 @@ export const getSaleById = async (req: Request, res: Response): Promise<void> =>
         locationId,
         saleDetails,
       } = req.body;
-
-      console.log("body de create sale",req.body);
   
       // Validación básica de datos
       if (!totalAmount || !paymentMethod || !saleDetails || saleDetails.length === 0) {
@@ -219,6 +218,10 @@ export const getSaleById = async (req: Request, res: Response): Promise<void> =>
         const saleCount = await prisma.sales.count();
         const saleOrderNumber = organization.startingOrderNumber + saleCount + 1;
         const saleOrderNote = `${organization.saleOrderPrefix}${saleOrderNumber}`;
+
+        const timezone = organization?.timezone || 'UTC';
+        const currentTimestamp = new Date();
+        const timestamp = format(currentTimestamp, "yyyy-MM-dd'T'HH:mm:ssXXX", { timeZone: timezone });
   
         // Crear la venta
         const sale = await prisma.sales.create({
@@ -232,7 +235,7 @@ export const getSaleById = async (req: Request, res: Response): Promise<void> =>
             compraOnline,
             locationId: location?.locationId ?? null,
             noteNumber: saleOrderNote,
-            timestamp: new Date(),
+            timestamp,
             saleDetails: {
               create: saleDetailsWithVehicle,
             },

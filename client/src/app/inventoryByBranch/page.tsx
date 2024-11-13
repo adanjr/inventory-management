@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, SetStateAction } from "react";
 import { useRouter } from 'next/navigation';
 import { 
         useGetAuthUserQuery, 
@@ -8,6 +8,7 @@ import {
          useGetGroupedVehiclesQuery, 
          GroupedVehicleData, 
          GetGroupedVehiclesResponse,
+         useGetProductsQuery,
          useGetLocationsQuery, 
          PermissionPage,
          Location } from "@/state/api";
@@ -26,6 +27,7 @@ import { PlusCircleIcon,
 const InventoryByBranch = () => {
   const { data: currentUser } = useGetAuthUserQuery({});
   const router = useRouter();
+  const [activeTab, setActiveTab] = useState('vehiculos');
   const [locationId, setLocationId] = useState<number | null>(null); // Estado para la ubicación
   const [rowSelectionModel, setRowSelectionModel] = useState<GridRowSelectionModel>([]);
   const [roleId, setRoleId] = useState<string | undefined>(undefined);
@@ -49,7 +51,8 @@ const InventoryByBranch = () => {
 
   // Consulta de vehículos agrupados por modelo, color y estado
   const { data: groupedVehiclesData, isError: isGroupedVehiclesError, isLoading: isGroupedVehiclesLoading } = useGetGroupedVehiclesQuery(locationId);
-  
+  const { data: products, isError, isLoading } = useGetProductsQuery("%");
+
   // Consulta de ubicaciones
   const { data: locations, isError: isLocationsError, isLoading: isLocationsLoading } = useGetLocationsQuery();
 
@@ -75,6 +78,16 @@ const InventoryByBranch = () => {
     { field: "availabilityStatus", headerName: "Disponibilidad", width: 150 },
     { field: "count", headerName: "Total", width: 100 },
   ];
+
+  const productColumns: GridColDef[] = [
+    { field: "productCode", headerName: "Codigo", width: 150 },
+    { field: "name", headerName: "Nombre", width: 150 },
+    { field: "stockQuantity", headerName: "Cantidad en Stock", width: 150 },
+  ];
+
+  const handleTabChange = (tab: SetStateAction<string>) => {
+    setActiveTab(tab);
+  };
 
   const exportToExcel = () => {
     const ws = XLSX.utils.json_to_sheet(rows); // Convierte los datos a una hoja de Excel
@@ -154,10 +167,27 @@ const InventoryByBranch = () => {
           </button> )} 
         </div>
       </div>
+
+      {/* Tabs */}
+      <div className="flex border-b border-gray-200">
+      <button
+          onClick={() => handleTabChange('vehiculos')}
+          className={`px-4 py-2 ${activeTab === 'vehiculos' ? 'border-b-2 border-blue-500 font-bold shadow-md text-blue-500' : 'text-gray-500'}`}
+          >
+          Vehículos
+        </button>
+        <button
+          onClick={() => handleTabChange('productos')}
+          className={`px-4 py-2 ${activeTab === 'productos' ? 'border-b-2 border-blue-500 font-bold shadow-md text-blue-500' : 'text-gray-500'}`}
+            >
+          Productos
+        </button>
+      </div>
   
       {/* Inventory DataGrid */}
-      <div className="w-full">
-        <DataGrid
+      <div className="w-full mt-5">
+        {activeTab === 'vehiculos' && (
+          <DataGrid
           rows={groupedData}
           columns={columns}
           getRowId={(row) => `${row.modelName}-${row.colorName}-${row.availabilityStatus}`} // Combina los campos para crear un ID único
@@ -167,6 +197,19 @@ const InventoryByBranch = () => {
           onRowSelectionModelChange={(newRowSelectionModel) => setRowSelectionModel(newRowSelectionModel)}
           rowSelectionModel={rowSelectionModel}
         />
+        )}
+        
+        {activeTab === 'productos' && (
+          <DataGrid
+            rows={products}
+            columns={productColumns}
+            getRowId={(row) => row.productId} // Asume un ID único para productos
+            checkboxSelection
+            disableMultipleRowSelection
+            className="bg-white shadow rounded-lg border border-gray-200 !text-gray-700"
+          />
+        )}
+        
       </div>
     </div>
   );

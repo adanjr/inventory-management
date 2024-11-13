@@ -5,14 +5,20 @@ import numeral from "numeral";
 export interface Product {
   productId: number;
   name: string;
+  productCode?: string;
   description?: string;
   price: number;
   rating?: number;
   stockQuantity: number;
+  reorderQuantity?: number;
   categoryId: string;
   manufacturerId: string;
   mainImageUrl?: string;
   additionalImages?: string[];
+  categoryName: string;
+  manufacturerName: string;
+  quantityStockInLocation: number;
+  reorderPoint: number;
 }
 
 export interface NewProduct {
@@ -38,14 +44,13 @@ export interface NewProductCSV {
 
 export interface UpdatedProduct {
   name?: string;
+  productCode?: string;
   description?: string;
   price?: number;
   rating?: number;
-  stockQuantity?: number;
+  reorderQuantity?: number;
   categoryId?: string;
-  manufacturerId?: string;
-  mainImageUrl?: string;
-  additionalImages?: string[];
+  manufacturerId?: string;   
 }
 
 /* ADDITIONAL INTERFACES */
@@ -1053,6 +1058,7 @@ export interface Organization {
   startingOrderNumber?: number;  // Número inicial de órdenes de venta
   startingInvoiceNumber?: number;  // Número inicial de facturas
   startingPurchaseOrderNumber?: number;  // Número inicial de órdenes de compra
+  timezone?: string;   
   createdAt?: Date;     // Fecha de creación
   updatedAt?: Date;     // Fecha de actualización
   logoUrl?: string;  
@@ -1093,6 +1099,7 @@ export interface UpdatedOrganization {
   state?: string;        // Estado
   postalCode?: string;   // Código postal
   country?: string;      // País
+  timezone?: string;    
   phone?: string; // Número de teléfono
   email?: string;       // Correo electrónico
   purchaseOrderPrefix?: string;  // Prefijo para órdenes de compra
@@ -1250,6 +1257,19 @@ export const api = createApi({
       }),
       providesTags: ["Products"],
     }),
+
+    getProductsByLocationId: build.query<Product[], string>({
+      query: (locationId) => ({
+        url: `/products/productsByLocation?locationId=${locationId}`,
+      }),
+      providesTags: (result, error, locationId) => [{ type: "Products", locationId }],
+    }),
+
+    getProductById: build.query<Product, string>({
+      query: (id) => `/products/${id}`,
+      providesTags: ["Products"],
+    }),
+
     createProduct: build.mutation<Product, NewProduct>({
       query: (newProduct) => ({
         url: "/products",
@@ -1263,6 +1283,13 @@ export const api = createApi({
         url: `/products/${id}`,
         method: "PUT",
         body: data,
+      }),
+      invalidatesTags: ["Products"],
+    }),
+    deleteProduct: build.mutation<void, string>({
+      query: (id) => ({
+        url: `/products/${id}`,
+        method: "DELETE",
       }),
       invalidatesTags: ["Products"],
     }),
@@ -2227,8 +2254,11 @@ export const {
   useDeleteOrganizationMutation,
 
   useGetProductsQuery,
+  useGetProductsByLocationIdQuery,
+  useGetProductByIdQuery,
   useCreateProductMutation,
   useUpdateProductMutation,
+  useDeleteProductMutation,
 
   useGetExpensesByCategoryQuery,
   

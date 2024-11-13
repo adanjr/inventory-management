@@ -91,7 +91,6 @@ model Products {
   stockQuantity      Int  
   categoryId         Int  
   manufacturerId     Int
-  locationId         Int  // Location of the product  
   barcode            String?        // Código de barras único (opcional, para inventario)
   mainImageUrl       String?      
   additionalImages   String[]
@@ -99,7 +98,6 @@ model Products {
 
   category           Categories  @relation(fields: [categoryId], references: [categoryId])
   manufacturer       Manufacturers  @relation(fields: [manufacturerId], references: [manufacturerId])
-  location           Locations @relation(fields: [locationId], references: [locationId])  
 
   inventoryLocations InventoryLocations[]
   saleDetails        SaleDetails[]
@@ -346,11 +344,11 @@ model Locations {
   additionalImages  String[]
   managerId         Int?
   created_at        DateTime    @default(now())
+  isActive          Boolean     @default(true)
 
   manager           User?      @relation("Manager", fields: [managerId], references: [userId]) 
 
   vehicles          Vehicles[]
-  products          Products[] 
   users             User[]   
   inventoryLocation InventoryLocations[]
   unitLocation      VehicleInventoryLocations[]
@@ -572,8 +570,9 @@ model Organization {
   neighborhood            String?   // Dirección principal
   city                    String   // Ciudad
   state                   String   // Estado
-  postalCode             String?  // Código postal
+  postalCode              String?  // Código postal
   country                 String   // País
+  timezone                String?  // Zona horaria, ejemplo: "America/Mexico_City"
   createdAt               DateTime @default(now()) // Fecha de creación
   updatedAt               DateTime @updatedAt // Fecha de actualización
   purchaseOrderPrefix     String   // Prefijo para órdenes de compra

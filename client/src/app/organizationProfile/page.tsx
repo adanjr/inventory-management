@@ -62,6 +62,7 @@ const OrganizationProfilePage = () => {
       country: formData.get("country") as string,
       email: formData.get("email") as string,
       phone: formData.get("phone") as string,
+      timezone: formData.get("timezone") as string,
       purchaseOrderPrefix: formData.get("purchaseOrderPrefix") as string,
       saleOrderPrefix: formData.get("saleOrderPrefix") as string,
       invoicePrefix: formData.get("invoicePrefix") as string,
@@ -159,6 +160,10 @@ const OrganizationProfilePage = () => {
       <div>
         <label htmlFor="country" className="block">País</label>
         <input type="text" name="country" defaultValue={organization?.country} required readOnly={!permissions.canEdit} className="border rounded w-full p-2" />
+      </div>
+      <div>
+        <label htmlFor="timezone" className="block">Zona Horaria</label>
+        <input type="text" name="timezone" defaultValue={organization?.timezone} required readOnly={!permissions.canEdit} className="border rounded w-full p-2" />
       </div>
       <div>
         <label htmlFor="purchaseOrderPrefix" className="block">Prefijo Orden de Compra</label>

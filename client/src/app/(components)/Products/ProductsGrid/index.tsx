@@ -7,6 +7,7 @@ import { DataGrid, GridColDef, GridRowSelectionModel } from "@mui/x-data-grid";
 import { PlusCircleIcon, EditIcon, DeleteIcon, UploadIcon, DownloadIcon, Eye } from "lucide-react";
  import * as XLSX from 'xlsx';
 import { PermissionPage, 
+         useDeleteProductMutation,
          Product } from "@/state/api";
 
 // Formato de moneda para México
@@ -18,16 +19,10 @@ const formatCurrency = (value: number | null | undefined) => {
 };
 
 const columns: GridColDef[] = [
-  { field: "ProductId", headerName: "ID", width: 30 },
-  { field: "internal_serial", headerName: "Serial", width: 150 },
-  { field: "engineNumber", headerName: "Número de Motor", width: 150 },
-  { field: "stockNumber", headerName: "Stock Number", width: 150 },
-  { field: "makeName", headerName: "Fabricante", width: 100 },
-  { field: "familyName", headerName: "Familia", width: 100 },
-  { field: "modelName", headerName: "Modelo", width: 100 },
-  { field: "locationName", headerName: "Ubicacion", width: 100 },
-  { field: "colorName", headerName: "Color", width: 100 },
-  { field: "year", headerName: "Año", width: 40 },
+  { field: "productId", headerName: "ID", width: 30 },
+  { field: "productCode", headerName: "Codigo", width: 150 },
+  { field: "name", headerName: "Nombre", width: 150 },
+  { field: "stockQuantity", headerName: "Cantidad en Stock", width: 150 },
   {
     field: "price",
     headerName: "Precio",
@@ -35,17 +30,16 @@ const columns: GridColDef[] = [
     type: "number",
     valueFormatter: (params) => formatCurrency(params),
   },
-  { field: "availabilityStatusName", headerName: "Disponibilidad", width: 100 },
+  { field: "reorderQuantity", headerName: "Cantidad de Reorden", width: 150 },
 ];
 
 interface ProductsGridProps {
-  Products: Product[];
-  locations: any[];
+  products: Product[];
   role: string;
   permissions: string[]; 
 }
 
-const ProductsGrid: React.FC<ProductsGridProps> = ({ Products, locations, role, permissions }) => {
+const ProductsGrid: React.FC<ProductsGridProps> = ({ products, role, permissions }) => {
   const router = useRouter();
   const [rowSelectionModel, setRowSelectionModel] = useState<GridRowSelectionModel>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -63,26 +57,28 @@ const ProductsGrid: React.FC<ProductsGridProps> = ({ Products, locations, role, 
     };
   };
 
+  const [deleteProduct] = useDeleteProductMutation();
+
   // Transformar los permisos a booleanos
   const userPermissions = transformPermissions(permissions);
 
   const handleDelete = async () => {
     const selectedProductId = rowSelectionModel[0];
-    if (window.confirm("¿Estás seguro de que deseas eliminar este vehículo?")) {
+    if (window.confirm("¿Estás seguro de que deseas eliminar este producto?")) {
       try {
-        //await deleteProduct(String(selectedProductId));
-        alert("Vehiculo eliminado con éxito.");
+        await deleteProduct(String(selectedProductId));
+        alert("Producto eliminado con éxito.");
       } catch (error) {
-        console.error("Error eliminando el vehiculo:", error);         
+        console.error("Error eliminando el producto:", error);         
       }
     }
   };
 
   const exportToExcel = () => {
-    const worksheet = XLSX.utils.json_to_sheet(Products);
+    const worksheet = XLSX.utils.json_to_sheet(products);
     const workbook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(workbook, worksheet, "Vehículos");
-    XLSX.writeFile(workbook, "vehiculos.xlsx");
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Productos");
+    XLSX.writeFile(workbook, "productos.xlsx");
   };
 
   return (
@@ -91,16 +87,16 @@ const ProductsGrid: React.FC<ProductsGridProps> = ({ Products, locations, role, 
         {userPermissions.canAdd && (
           <button
             className="flex items-center bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
-            onClick={() => router.push("/Products/create")}
+            onClick={() => router.push("/products/create")}
           >
             <PlusCircleIcon className="w-5 h-5 mr-2" />
-            Agregar Vehículo
+            Agregar Producto
           </button>
         )}
         {userPermissions.canViewDetail && (
           <button
             className="flex items-center bg-indigo-500 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded"
-            onClick={() => router.push(`/Products/detail/${rowSelectionModel[0]}`)}
+            onClick={() => router.push(`/products/detail/${rowSelectionModel[0]}`)}
             disabled={rowSelectionModel.length === 0}
           >
             <Eye className="w-5 h-5 mr-2" />
@@ -110,11 +106,11 @@ const ProductsGrid: React.FC<ProductsGridProps> = ({ Products, locations, role, 
         {userPermissions.canEdit && (
           <button
             className="flex items-center bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
-            onClick={() => router.push(`/Products/edit/${rowSelectionModel[0]}`)}
+            onClick={() => router.push(`/products/edit/${rowSelectionModel[0]}`)}
             disabled={rowSelectionModel.length === 0}
           >
             <EditIcon className="w-5 h-5 mr-2" />
-            Editar Vehículo
+            Editar Producto
           </button>
         )}
         {userPermissions.canDelete && (
@@ -124,7 +120,7 @@ const ProductsGrid: React.FC<ProductsGridProps> = ({ Products, locations, role, 
             disabled={rowSelectionModel.length === 0}
           >
             <DeleteIcon className="w-5 h-5 mr-2" />
-            Eliminar Vehículo
+            Eliminar Producto
           </button>
         )}
         {userPermissions.canAdd && (
@@ -150,10 +146,11 @@ const ProductsGrid: React.FC<ProductsGridProps> = ({ Products, locations, role, 
       {/* Espacio entre botones y el grid */}
       <div className="mt-6">
         <DataGrid
-          rows={Products}
+          rows={products}
           columns={columns}
-          getRowId={(row) => row.ProductId}
+          getRowId={(row) => row.productId}          
           checkboxSelection
+          disableMultipleRowSelection 
           onRowSelectionModelChange={(newSelection) => setRowSelectionModel(newSelection)}
           rowSelectionModel={rowSelectionModel}
         />
