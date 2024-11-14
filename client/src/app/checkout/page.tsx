@@ -9,7 +9,7 @@ import { useGetVehicleSummaryByModelAndColorQuery,
          Vehicle,
          useGetVehiclesByLocationIdQuery,
          useGetVehiclesForSaleQuery} from "@/state/api";
-import { ChangeEvent, FormEvent, useEffect, useState } from 'react';
+import { ChangeEvent, FormEvent, SetStateAction, useEffect, useState } from 'react';
 import SelectVehicleModal from './SelectVehicleModal';
 
 type CartItem = {
