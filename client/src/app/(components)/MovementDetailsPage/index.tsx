@@ -57,13 +57,13 @@ const MovementDetailsPage = ({ movementId, currentUserDetails }: { movementId: s
         {/* Ubicación de Origen */}
         <div className="flex flex-col">
           <label className="text-gray-700 font-medium">Ubicación de Origen</label>
-          <p className="border border-gray-300 rounded p-2">{movement.fromLocationName}</p>
+          <p className="border border-gray-300 rounded p-2">{movement.fromLocationName || ' '}</p>
         </div>
 
         {/* Ubicación de Destino */}
         <div className="flex flex-col">
           <label className="text-gray-700 font-medium">Ubicación de Destino</label>
-          <p className="border border-gray-300 rounded p-2">{movement.toLocationName}</p>
+          <p className="border border-gray-300 rounded p-2">{movement.toLocationName || ' '}</p>
         </div>
 
         {/* Tipo de Movimiento */}
@@ -91,7 +91,7 @@ const MovementDetailsPage = ({ movementId, currentUserDetails }: { movementId: s
        
         {/* Vehículos Seleccionados */}
         <div className="col-span-2">
-          <label className="text-gray-700 font-medium">Vehículos Transferidos</label>
+          <label className="text-gray-700 font-medium">Vehículos </label>
           <table className="min-w-full table-auto border-collapse border border-gray-400">
             <thead>
               <tr>
@@ -114,13 +114,36 @@ const MovementDetailsPage = ({ movementId, currentUserDetails }: { movementId: s
           </table>
         </div>
 
+        {/* Vehículos Seleccionados */}
+        <div className="col-span-2">
+          <label className="text-gray-700 font-medium">Productos</label>
+          <table className="min-w-full table-auto border-collapse border border-gray-400">
+            <thead>
+              <tr>
+                <th className="border border-gray-300 px-4 py-2">Codigo</th>
+                <th className="border border-gray-300 px-4 py-2">Nombre</th>
+                <th className="border border-gray-300 px-4 py-2">Cantidad</th>
+              </tr>
+            </thead>
+            <tbody>
+              {movement.products.map((product: any) => (
+                <tr key={product.productId}>
+                  <td className="border border-gray-300 px-4 py-2">{product.productCode}</td>
+                  <td className="border border-gray-300 px-4 py-2">{product.name}</td>
+                  <td className="border border-gray-300 px-4 py-2">{product.quantity}</td>               
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+
         {/* Notas */}
         <div className="flex flex-col col-span-2">
           <label className="text-gray-700 font-medium">Notas</label>
           <p className="border border-gray-300 rounded p-2">{movement.notes || "Sin notas"}</p>
         </div>
 
-        {movement.status === "COMPLETADO" && (
+        {movement.status === "COMPLETADO" && movement.movementType === "TRANSFERENCIA" && (
           <div className="border border-gray-300 rounded-lg p-4 mb-4 col-span-2">
             <h2 className="text-lg font-bold mb-4">Información de Recepción</h2>
 

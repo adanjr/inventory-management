@@ -951,6 +951,13 @@ export interface VehicleMovement {
   colorName: string,
 }
 
+export interface ProductMovement {
+  productId: number,
+  name:string,
+  productCode: string,
+  quantity: number,
+}
+
 export interface Movement {
   movementId: number;
   fromLocationId?: number | null;  // Puede ser opcional para ciertos tipos de movimientos
@@ -976,6 +983,7 @@ export interface Movement {
   details: MovementDetail[];   
   
   vehicles: VehicleMovement[]; 
+  products: ProductMovement[]; 
 
   arrivalDate?:      Date;    
   receivedBy?:       string;

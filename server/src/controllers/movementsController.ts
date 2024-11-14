@@ -53,60 +53,175 @@ export const createMovement = async (req: Request, res: Response): Promise<void>
 
     const movementDateObj = new Date(movementDate);
 
-    // Crear el movimiento original
-    const movement = await prisma.movements.create({
-      data: {
-        fromLocation: {
-          connect: { locationId: fromLocationId }
+    console.log(req.body);
+
+    const result = await prisma.$transaction(async (prisma) => {
+
+      // Crear el movimiento original
+      const movement = await prisma.movements.create({
+        data: {
+          fromLocation: fromLocationId ? {
+            connect: { locationId: fromLocationId }
+          } :  {},
+          toLocation: toLocationId ? {
+            connect: { locationId: toLocationId }
+          } :  {},
+          quantity,
+          movementType,
+          movementDate: movementDateObj,
+          status,
+          notes,
+          approved,
+          orderReference,       
+          createdBy: { connect: { userId: Number(createdById) } },
         },
-        toLocation: {
-          connect: { locationId: toLocationId }
-        },
-        quantity,
-        movementType,
-        movementDate: movementDateObj,
-        status,
-        notes,
-        approved,
-        orderReference,       
-        createdBy: { connect: { userId: Number(createdById) } },
-      },
-    });
+      });
 
-    // Crear los detalles del movimiento original
-    await prisma.movementDetail.createMany({
-      data: details.map((detail: any) => ({
-        movementId: movement.movementId,
-        vehicleId: detail.vehicleId,
-        productId: detail.productId,
-        inspectionStatus: detail.inspectionStatus,
-      })),
-    });
+      // Crear los detalles del movimiento original
+      await prisma.movementDetail.createMany({
+        data: details.map((detail: any) => ({
+          movementId: movement.movementId,
+          ...(detail.vehicleId ? { vehicleId: detail.vehicleId } : {}),
+          ...(detail.productId ? { productId: detail.productId } : {}),
+          inspectionStatus: detail.inspectionStatus,
+          quantity: detail.quantity,
+        })),
+      });
 
-    const inTransitStatus = await prisma.vehicleAvailabilityStatus.findFirst({
-      where: {
-        name: 'EN TRANSITO',
-      },
-    });
+      const shouldUpdateVehicles = 
+        movementType === 'TRANSFERENCIA' &&
+        status === 'EN TRANSITO' &&
+        details.some((detail: any) => detail.vehicleId !== null);
 
-    if (!inTransitStatus) {
-      throw new Error('No se encontró el estado de "EN TRANSITO"');
-    }
+        if (shouldUpdateVehicles) {
+          const inTransitStatus = await prisma.vehicleAvailabilityStatus.findFirst({
+            where: {
+              name: status,
+            },
+          });
+    
+          if (!inTransitStatus) {
+            throw new Error('No se encontró el estado de "EN TRANSITO"');
+          }
+    
+          // Actualizar la ubicación y el availabilityStatusId de los vehículos
+          await prisma.vehicles.updateMany({
+            where: {
+              vehicleId: {
+                in: details.map((detail: any) => detail.vehicleId), // Los IDs de los vehículos a actualizar
+              },
+            },
+            data: {
+              locationId: null, // O null si prefieres
+              availabilityStatusId: inTransitStatus.statusId, // Asigna el ID de "EN TRANSITO"
+            },
+          });
+        }
 
-    // Actualizar la ubicación y el availabilityStatusId de los vehículos
-    await prisma.vehicles.updateMany({
-      where: {
-        vehicleId: {
-          in: details.map((detail: any) => detail.vehicleId), // Los IDs de los vehículos a actualizar
-        },
-      },
-      data: {
-        locationId: null, // O null si prefieres
-        availabilityStatusId: inTransitStatus.statusId, // Asigna el ID de "EN TRANSITO"
-      },
-    });
+        const shouldInsertProducts = 
+        movementType === 'ENTRADA' &&
+        status === 'COMPLETADO' &&
+        details.some((detail: any) => detail.productId !== null);
 
-    res.status(201).json(movement);
+        if (shouldInsertProducts) {
+          for (const detail of details) {
+            if (detail.productId !== null) {
+              const existingInventoryLocation = await prisma.inventoryLocations.findFirst({
+                where: {
+                  productId: detail.productId,
+                  locationId: toLocationId, // Buscar el producto en la ubicación `toLocationId`
+                },
+              });
+        
+              if (existingInventoryLocation) {
+                // Si existe, sumarle la cantidad al `quantity_in_stock`
+                await prisma.inventoryLocations.update({
+                  where: {
+                    inventoryLocationId: existingInventoryLocation.inventoryLocationId,
+                  },
+                  data: {
+                    quantity_in_stock: (existingInventoryLocation.quantity_in_stock || 0) + detail.quantity,
+                  },
+                });
+              } else {
+                // Si no existe, crear un nuevo registro con `quantity_in_stock` igual a `detail.quantity`
+                await prisma.inventoryLocations.create({
+                  data: {
+                    productId: detail.productId,
+                    locationId: toLocationId,
+                    quantity_in_stock: detail.quantity,
+                  },
+                });
+              }
+
+              await prisma.products.update({
+                where: {
+                  productId: detail.productId,
+                },
+                data: {
+                  stockQuantity: + detail.quantity,
+                },
+              });
+
+            }
+          }
+        }
+
+        const shouldDeleteProducts = 
+        movementType === 'SALIDA' &&
+        status === 'COMPLETADO' &&
+        details.some((detail: any) => detail.productId !== null);
+
+        if (shouldDeleteProducts) {
+          for (const detail of details) {
+            if (detail.productId !== null) {
+              // Buscar el inventario existente en `fromLocationId`
+              const existingInventoryLocation = await prisma.inventoryLocations.findFirst({
+                where: {
+                  productId: detail.productId,
+                  locationId: fromLocationId, // Buscar el producto en la ubicación `fromLocationId`
+                },
+              });
+        
+              if (!existingInventoryLocation) {
+                // Lanzar un error si no existe el producto en la ubicación de origen
+                throw new Error(`No existe inventario para el producto ${detail.productId} en la ubicación de origen ${fromLocationId}`);
+              }
+        
+              if ((existingInventoryLocation.quantity_in_stock ?? 0) < detail.quantity) {
+                // Lanzar un error si la cantidad en stock es insuficiente
+                throw new Error(
+                  `Inventario insuficiente para el producto ${detail.productId} en la ubicación de origen ${fromLocationId}. ` +
+                  `Cantidad en stock: ${existingInventoryLocation.quantity_in_stock}, Cantidad requerida: ${detail.quantity}`
+                );
+              }
+        
+              // Actualizar el inventario restando la cantidad
+              await prisma.inventoryLocations.update({
+                where: {
+                  inventoryLocationId: existingInventoryLocation.inventoryLocationId,
+                },
+                data: {
+                  quantity_in_stock: (existingInventoryLocation.quantity_in_stock ?? 0) - detail.quantity,
+                },
+              });
+
+              await prisma.products.update({
+                where: {
+                  productId: detail.productId,
+                },
+                data: {
+                  stockQuantity: - detail.quantity,
+                },
+              });
+            }
+          }
+        } 
+
+    return movement;
+  });
+
+    res.status(201).json(result);
   } catch (error) {
     if (error instanceof Error) {
       console.error("Error creating movement:", error); // Imprime el error completo
@@ -166,6 +281,12 @@ export const getMovementById = async (req: Request, res: Response): Promise<void
           engineNumber: detail.vehicle?.engineNumber,
           modelName: detail.vehicle?.model?.name,
           colorName: detail.vehicle?.color?.name,
+        })),
+        products: movement.MovementDetail.map(detail => ({
+          productId: detail.product?.productId,
+          name: detail.product?.name,
+          productCode: detail.product?.productCode,
+          quantity: detail.quantity,         
         })),
       };
 

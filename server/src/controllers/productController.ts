@@ -38,9 +38,9 @@ export const getProductsByLocation = async (req: Request, res: Response): Promis
       },
       include: {
         inventoryLocations: {
-          where: {
-            locationId: locationId || undefined,
-          },
+          where: locationId && locationId !== 0
+            ? { locationId }
+            : undefined, // No filtrar por locationId si es '0'
           select: {
             locationId: true,
             quantity_in_stock: true,

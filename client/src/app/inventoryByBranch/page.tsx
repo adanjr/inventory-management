@@ -8,7 +8,7 @@ import {
          useGetGroupedVehiclesQuery, 
          GroupedVehicleData, 
          GetGroupedVehiclesResponse,
-         useGetProductsQuery,
+         useGetProductsByLocationIdQuery,
          useGetLocationsQuery, 
          PermissionPage,
          Location } from "@/state/api";
@@ -51,7 +51,7 @@ const InventoryByBranch = () => {
 
   // Consulta de vehículos agrupados por modelo, color y estado
   const { data: groupedVehiclesData, isError: isGroupedVehiclesError, isLoading: isGroupedVehiclesLoading } = useGetGroupedVehiclesQuery(locationId);
-  const { data: products, isError, isLoading } = useGetProductsQuery("%");
+  const { data: products, isError, isLoading} = useGetProductsByLocationIdQuery(locationId ? locationId.toString() : '0');
 
   // Consulta de ubicaciones
   const { data: locations, isError: isLocationsError, isLoading: isLocationsLoading } = useGetLocationsQuery();
@@ -82,7 +82,8 @@ const InventoryByBranch = () => {
   const productColumns: GridColDef[] = [
     { field: "productCode", headerName: "Codigo", width: 150 },
     { field: "name", headerName: "Nombre", width: 150 },
-    { field: "stockQuantity", headerName: "Cantidad en Stock", width: 150 },
+    { field: "quantityStockInLocation", headerName: "Cantidad en Stock", width: 150 },
+    //{ field: "stockQuantity", headerName: "Cantidad en Stock", width: 150 },
   ];
 
   const handleTabChange = (tab: SetStateAction<string>) => {

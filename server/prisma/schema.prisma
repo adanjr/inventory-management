@@ -416,7 +416,8 @@ model MovementDetail {
   movementDetailId    Int         @id @default(autoincrement())
   movementId          Int      
   vehicleId           Int?        // The vehicle being moved
-  productId           Int?   
+  productId           Int?
+  quantity            Int? 
   inspectionStatus    String      // e.g., 'Pending', 'Approved', 'Rejected'
 
   movement            Movements?  @relation(fields: [movementId], references: [movementId])

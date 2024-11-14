@@ -5,7 +5,6 @@ import {
   useGetVehiclesByLocationIdQuery,
   useGetProductsByLocationIdQuery,
   useCreateMovementMutation,
-  useGetAuthUserQuery,
   useGetRolePermissionsByModuleQuery,
   PermissionPage
 } from '@/state/api';
@@ -63,6 +62,7 @@ const InventoryMovement = ({ currentUserDetails }: InventoryMovementProps) => {
     const [selectedVehicles, setSelectedVehicles] = useState<Vehicle[]>([]);
     const [availableVehicles, setAvailableVehicles] = useState<Vehicle[]>([]);
     const [selectedProducts, setSelectedProducts] = useState<Product[]>([]);
+    const [productQuantities, setProductQuantities] = useState<{ [productId: number]: number }>({});
     const [availableProducts, setAvailableProducts] = useState<Product[]>([]);
     const [modalOpen, setModalOpen] = useState(false);
     const [productModalOpen, setProductModalOpen] = useState(false);
@@ -96,6 +96,13 @@ const InventoryMovement = ({ currentUserDetails }: InventoryMovementProps) => {
     const handleChange = (e: React.ChangeEvent<HTMLSelectElement | HTMLInputElement | HTMLTextAreaElement>) => {
       const { name, value } = e.target;
       setFormData((prevFormData) => ({ ...prevFormData, [name]: value }));
+    };
+
+    const handleProductQuantityChange = (productId: number, quantity: number) => {
+      setProductQuantities((prevQuantities) => ({
+        ...prevQuantities,
+        [productId]: quantity,
+      }));
     };
   
     const handleMovementTypeChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
@@ -134,12 +141,21 @@ const InventoryMovement = ({ currentUserDetails }: InventoryMovementProps) => {
       e.preventDefault();
       
       // Prepara los detalles del movimiento para enviarlos
-      const movementDetails = selectedVehicles.map(vehicle => ({
+      const vehiclemovementDetails = selectedVehicles.map(vehicle => ({
         vehicleId: vehicle.vehicleId,
+        quantity: 1,
         productId: null,  
         inspectionStatus: 'PENDIENTE', // Estado inicial de la inspección
       }));
-    
+
+      const productMovementDetails = selectedProducts.map(product => ({
+        productId: product.productId,
+        quantity: productQuantities[product.productId] || 0,
+        inspectionStatus: 'PENDIENTE', // Estado inicial de la inspección
+      }));
+
+      const combinedMovementDetails = [...vehiclemovementDetails, ...productMovementDetails];
+
       const movementData = {
         fromLocationId: Number(formData.fromLocationId),
         toLocationId: Number(formData.toLocationId),
@@ -151,7 +167,7 @@ const InventoryMovement = ({ currentUserDetails }: InventoryMovementProps) => {
         orderReference: formData.orderReference,
         approved: false,
         createdById: userId,
-        details: movementDetails,
+        details: combinedMovementDetails,
       };
     
       try {
@@ -386,7 +402,20 @@ const InventoryMovement = ({ currentUserDetails }: InventoryMovementProps) => {
                       <tr key={product.productId}>
                         <td className="border border-gray-300 px-4 py-2">{product.productCode}</td>
                         <td className="border border-gray-300 px-4 py-2">{product.name}</td>
-                        <td className="border border-gray-300 px-4 py-2">{product.stockQuantity}</td>
+                          <input 
+                              type="number"
+                              value={productQuantities[product.productId] || 1}
+                              min={1}
+                              max={
+                                formData.movementType === 'ENTRADA' ? undefined : product.stockQuantity
+                              }
+                              onChange={(e) => handleProductQuantityChange(
+                                product.productId,
+                                Math.max(1, Number(e.target.value))
+                              )}
+                              className="border border-gray-300 rounded p-1 w-20"
+                              disabled={product.stockQuantity === 0 && formData.movementType !== 'ENTRADA'}
+                            />
                         <td className="border border-gray-300 px-4 py-2">
                           <button
                             type="button"
@@ -421,7 +450,7 @@ const InventoryMovement = ({ currentUserDetails }: InventoryMovementProps) => {
             <button
               type="submit"
               className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-700"
-              disabled={selectedVehicles.length < 1}
+              disabled={selectedVehicles.length < 1 && selectedProducts.length < 1}
             >
               Registrar Movimiento
             </button>

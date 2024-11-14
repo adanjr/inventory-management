@@ -35,6 +35,7 @@ const CheckoutPage = () => {
     const [quantity, setQuantity] = useState<number>(initialQuantity);
     const [paymentMethod, setPaymentMethod] = useState<string>('');
     const [deliveryMethod, setDeliveryMethod] = useState<string>('');
+    const [timestamp, setTimestamp] = useState<string>(new Date().toISOString().slice(0, 10),);
 
     const search = ""; 
 
@@ -107,6 +108,10 @@ const CheckoutPage = () => {
     const subtotal = cartItems.reduce((acc, item) => acc + item.price * item.quantity, 0);
     const total = subtotal;
 
+    const handleDateChange = (e: { target: { value: SetStateAction<string>; }; }) => {
+        setTimestamp(e.target.value);
+    };
+
     function handleChange(event: ChangeEvent<HTMLInputElement | HTMLSelectElement>): void {
         setFormData({
             ...formData,
@@ -146,22 +151,21 @@ const CheckoutPage = () => {
         }
 
         try {
-            // Datos para crear la venta
-            const newSale = {
-                saleId: 0,  // Esto puede generarlo el backend
-                timestamp: new Date().toISOString(),
+             const newSale = {
+                saleId: 0,  
+                timestamp: timestamp,
                 quantity: quantity,
                 unitPrice: cartItems[0].price,
                 totalAmount: total,
-                customerId: 0,  // Supongamos que no tienes un customerId aún
+                customerId: 0,   
                 paymentMethod: paymentMethod,
                 deliveryMethod: deliveryMethod,
-                enviarADomicilio: false,  // Según la lógica que tengas
-                recogerEnTieda: true,     // Según la lógica que tengas
-                compraOnline: false,       // Según la lógica que tengas
+                enviarADomicilio: false,  
+                recogerEnTieda: true,    
+                compraOnline: false,      
                 locationId: Number(locationId),
                 saleDetails: cartItems.map(item => ({
-                    saleDetailId: 0,  // Esto también lo puede generar el backend
+                    saleDetailId: 0,   
                     modelId: Number(item.modelId),
                     colorId: Number(item.color),
                     isVehicle: true,
@@ -169,14 +173,13 @@ const CheckoutPage = () => {
                     quantity: item.quantity,
                     unitPrice: item.price,
                     subtotal: item.price * item.quantity,
-                    assemblyAndConfigurationCost: 0,  // Ajustar según sea necesario
+                    assemblyAndConfigurationCost: 0,   
                 })),
                 customerData: {
                     ...formData,
                 }
             };
 
-            // Llamar a la mutación para crear la venta
             const saleResponse = await createSale(newSale);
 
             if (saleResponse.data?.saleId) {                
@@ -362,6 +365,19 @@ const CheckoutPage = () => {
 
         {/* Detalles de Tu Pedido */}
         <div className="w-1/3 pl-4">
+
+            <div className="border p-4 bg-white">
+                <h2 className="text-2xl font-bold mb-4 text-center">FECHA DE VENTA</h2>
+                <div className="flex flex-col space-y-4">
+                    <input
+                            type="date"
+                            name="timestamp"
+                            value={timestamp}
+                            onChange={handleDateChange}
+                            className="border border-gray-300 rounded p-2"
+                    />
+                </div>
+            </div>
             {/* Resumen del pedido */}
             <div className="border p-4 bg-white mb-4">
                 <h2 className="text-2xl font-bold mb-4 text-center">RESUMEN DE TU PEDIDO</h2>

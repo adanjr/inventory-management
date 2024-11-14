@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import { PrismaClient } from "@prisma/client";
-import { format } from 'date-fns-tz';
+import { formatInTimeZone  } from 'date-fns-tz';
+import { es } from "date-fns/locale";
 
 const prisma = new PrismaClient();
 
@@ -86,7 +87,12 @@ export const getSaleById = async (req: Request, res: Response): Promise<void> =>
     if (!sale) {
       res.status(404).json({ message: "Sale not found" });
     } else {
-      res.json(sale); // Devuelve la venta con toda la información relacionada
+      // Formatea los campos de fecha a la zona horaria deseada
+      const formattedSale = {
+        ...sale,
+        createdtimestampAt: sale.timestamp ? new Date(sale.timestamp).toLocaleString("es-ES", { timeZone: "America/Mexico_City" }) : null,
+      };
+      res.json(formattedSale); // Devuelve la venta con la fecha formateada
     }
   } catch (error) {
     console.error(error); // Imprimir el error en el servidor para depuración
@@ -99,6 +105,7 @@ export const getSaleById = async (req: Request, res: Response): Promise<void> =>
   export const createSale = async (req: Request, res: Response): Promise<void> => {
     try {
       const {
+        timestamp,
         totalAmount,
         paymentMethod,
         deliveryMethod,
@@ -118,6 +125,7 @@ export const getSaleById = async (req: Request, res: Response): Promise<void> =>
   
       // Transacción para asegurar consistencia
       const result = await prisma.$transaction(async (prisma) => {
+
         // Buscar o crear el cliente
         let customer = null;
         if (customerId && customerId > 0) {
@@ -221,8 +229,13 @@ export const getSaleById = async (req: Request, res: Response): Promise<void> =>
 
         const timezone = organization?.timezone || 'UTC';
         const currentTimestamp = new Date();
-        const timestamp = format(currentTimestamp, "yyyy-MM-dd'T'HH:mm:ssXXX", { timeZone: timezone });
-  
+        //const timestamp = format(currentTimestamp, "yyyy-MM-dd'T'HH:mm:ssXXX", { timeZone: timezone });
+        const timeZone = "America/Mexico_City";
+        const formattedDate = formatInTimeZone(timestamp, timeZone, "yyyy-MM-dd HH:mm:ss", { locale: es });
+        
+        console.log('formattedDate',formattedDate);
+        const dateObject = new Date(formattedDate);
+
         // Crear la venta
         const sale = await prisma.sales.create({
           data: {
@@ -235,7 +248,7 @@ export const getSaleById = async (req: Request, res: Response): Promise<void> =>
             compraOnline,
             locationId: location?.locationId ?? null,
             noteNumber: saleOrderNote,
-            timestamp,
+            timestamp: dateObject,
             saleDetails: {
               create: saleDetailsWithVehicle,
             },
@@ -388,3 +401,5 @@ export const deleteSale = async (req: Request, res: Response): Promise<void> => 
     res.status(500).json({ message: "Error deleting sale" });
   }
 };
+  
+

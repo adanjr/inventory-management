@@ -1,5 +1,7 @@
 import { Request, Response } from "express";
 import PDFDocument from "pdfkit"; 
+import { toZonedTime } from "date-fns-tz";
+import { es } from "date-fns/locale";
 import { PrismaClient, SaleDetails } from "@prisma/client";
 
 import nodemailer from 'nodemailer';
@@ -111,7 +113,13 @@ export const generateDownloadPdf = async (req: Request, res: Response): Promise<
     doc.text(`FECHA DE PEDIDO:`, 355, 230);
     doc.text(`METODO DE PAGO:`, 355, 242);
 
-    const formattedDate = format(sale.timestamp, "MMMM dd, yyyy", { locale: es }).toUpperCase();
+    //const formattedDate = format(sale.timestamp, "MMMM dd, yyyy", { locale: es }).toUpperCase();
+    const timeZone = "America/Mexico_City";
+    const zonedDate = toZonedTime(sale.timestamp, timeZone); // Ajusta la fecha a la zona de México
+    
+    const formattedDate = sale.timestamp
+      ? format(zonedDate, "MMMM dd, yyyy", { locale: es }).toUpperCase()
+      : null;
 
     doc.font('Helvetica').fontSize(9)
     .text(`${sale.noteNumber || ""}`, 460, 170);
@@ -232,7 +240,14 @@ export const generateSendPdf = async (req: Request, res: Response): Promise<void
       return;
     }
 
-    const formattedDate = format(sale.timestamp, "MMMM dd, yyyy", { locale: es }).toUpperCase();
+    //const formattedDate = format(sale.timestamp, "MMMM dd, yyyy", { locale: es }).toUpperCase();
+    const timeZone = "America/Mexico_City";
+    const zonedDate = toZonedTime(sale.timestamp, timeZone); // Ajusta la fecha a la zona de México
+    
+    const formattedDate = sale.timestamp
+      ? format(zonedDate, "MMMM dd, yyyy", { locale: es }).toUpperCase()
+      : null;
+
     const fullName = `${sale.customer?.name} ${sale.customer?.lastname}` || '';
     const deliveryMethodToMail = sale.deliveryMethod || '';
     const paymentMethodToMail = sale.paymentMethod || '';
